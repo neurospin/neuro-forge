@@ -15,7 +15,7 @@ def read_recipes():
     """
     Iterate over all recipes files defined in soma-forge.
     """
-    for recipe_file in (pixi_root / "src" / "neuro-forge" / "soma" / "recipes").glob(
+    for recipe_file in (pixi_root / "src" / "neuro-forge" / "soma-forge" / "recipes").glob(
         "*/recipe.yaml"
     ):
         with open(recipe_file) as f:
@@ -85,7 +85,7 @@ def selected_recipes(selection=None):
         else:
             remove = False
         m = metapackages.get(s)
-        if m:
+        if m is not None:
             s = m
         else:
             s = {s}
