@@ -1,4 +1,5 @@
 export CASA="$PIXI_PROJECT_ROOT"
+export CASA_BRANCH="master"
 export CASA_CONF="$CASA/conf"
 export CASA_SRC="$CASA/src"
 export CASA_BUILD="$CASA/build"
