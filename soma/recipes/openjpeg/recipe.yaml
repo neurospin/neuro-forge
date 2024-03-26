@@ -1,0 +1,43 @@
+context:
+  version: 2.5.2
+
+package:
+  name: openjpeg
+  version: ${{ version }}
+
+source:
+  git: https://github.com/uclouvain/openjpeg
+  tag:  v${{ version }}
+
+build:
+  number: 0
+  script: |
+    # Due to a bug in rattler-build 0.13.0, it is necessary to select appropriate tag
+    git -C "$SRC_DIR" checkout v${{ version }}
+    cmake -DCMAKE_BUILD_TYPE=Release "-DCMAKE_INSTALL_PREFIX=$PREFIX" "-DCMAKE_PREFIX_PATH=$CONDA_PREFIX;;$CONDA_PREFIX/x86_64-conda-linux-gnu/sysroot/usr"  "-DCMAKE_REQUIRED_INCLUDES=$CONDA_PREFIX/include;$CONDA_PREFIX/x86_64-conda-linux-gnu/sysroot/usr/include" "$SRC_DIR"
+    make -j8
+    make install
+
+requirements:
+  build:
+    - ${{ compiler('c') }}
+    - cmake
+    - make
+    - zlib
+    - libpng
+    - lcms2
+
+  run:
+    - zlib
+    - libpng
+    - lcms2
+
+about:
+  homepage: https://github.com/uclouvain/openjpeg
+  summary: OpenJPEG is an open-source JPEG 2000 codec written in C language.
+  description: |
+    OpenJPEG is an open-source JPEG 2000 codec written in C language.
+    It has been developed in order to promote the use of JPEG 2000, a still-image
+    compression standard from the Joint Photographic Experts Group (JPEG). Since
+    April 2015, it is officially recognized by ISO/IEC and ITU-T as a JPEG 2000
+    Reference Software.

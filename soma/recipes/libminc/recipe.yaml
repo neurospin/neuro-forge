@@ -1,0 +1,45 @@
+package:
+    name: libminc
+    version: 2.3.0
+
+source:
+  git: https://github.com/BIC-MNI/libminc
+  tag: libminc-2-3-00
+
+build:
+  number: 0
+  script: |
+    # Due to a bug in rattler-build 0.13.0, it is necessary to select appropriate tag
+    git -C "$SRC_DIR" checkout libminc-2-3-00
+    cmake -DCMAKE_BUILD_TYPE=Release -DBUILD_TESTING=OFF -DLIBMINC_BUILD_SHARED_LIBS=ON -DLIBMINC_MINC1_SUPPORT=ON "-DCMAKE_INSTALL_PREFIX=$PREFIX" "-DCMAKE_PREFIX_PATH=$CONDA_PREFIX;$CONDA_PREFIX/x86_64-conda-linux-gnu/sysroot/usr"  "-DCMAKE_REQUIRED_INCLUDES=$CONDA_PREFIX/include;$CONDA_PREFIX/x86_64-conda-linux-gnu/sysroot/usr/include" "$SRC_BUILD"
+    make -j -k
+    make install
+
+requirements:
+  build:
+    - ${{ compiler('cxx') }}
+    - cmake
+    - make
+    - hdf5
+    - zlib
+    - libnetcdf
+
+  run:
+    - hdf5
+    - zlib
+    - libnetcdf
+
+
+about:
+  homepage: https://github.com/BIC-MNI/libminc
+  summary: MINC - Medical Image NetCDF or MINC isn't netCDF.
+  description: |
+    The MINC file format is a highly flexible medical image file format
+    built on the HDF5 generalized data format. The format is
+    simple, self-describing, extensible, portable and N-dimensional, with
+    programming interfaces for both low-level data access and high-level
+    volume manipulation. On top of the libraries is a suite of generic
+    image-file manipulation tools. The format, libraries and tools are
+    designed for use in a medical-imaging research environment : they are
+    simple and powerful and make no attempt to provide a pretty interface
+    to users.

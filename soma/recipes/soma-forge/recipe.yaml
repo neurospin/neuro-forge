@@ -1,0 +1,32 @@
+context:
+  version: "0.0.1"
+
+package:
+  name: "soma-forge"
+  version: ${{ version }}
+
+build:
+  noarch: generic
+  script: |
+    mkdir -p "$PREFIX/lib/python$PY_VER/site-packages"
+    cp -a "$RECIPE_DIR/python/soma_forge" "$PREFIX/lib/python$PY_VER/site-packages"
+
+requirements:
+  host:
+    - python
+  
+  run:
+    - python
+    - toml
+    - pyaml
+    - pixi
+
+tests:
+  - python:
+      imports:
+        - soma_forge
+      pip_check: false
+
+about:
+  homepage: https://github.com/neurospin/neuro-forge
+  summary: Development environment for soma-based software

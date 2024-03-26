@@ -1,0 +1,10 @@
+253,256c253,256
+< add_executable(eglxfakerut eglxfakerut.cpp)
+< target_link_libraries(eglxfakerut "${MINUSZ}now ${OPENGL_gl_LIBRARY}"
+< 	"${MINUSZ}now ${X11_X11_LIB}" "${MINUSZ}now ${OPENGL_egl_LIBRARY}" ${LIBDL}
+< 	vglutil)
+---
+> #add_executable(eglxfakerut eglxfakerut.cpp)
+> #target_link_libraries(eglxfakerut "${MINUSZ}now ${OPENGL_gl_LIBRARY}"
+> #	"${MINUSZ}now ${X11_X11_LIB}" "${MINUSZ}now ${OPENGL_egl_LIBRARY}" ${LIBDL}
+> #	vglutil)
