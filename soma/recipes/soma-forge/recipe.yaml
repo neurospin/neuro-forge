@@ -20,7 +20,8 @@ requirements:
     - toml
     - pyaml
     - pixi
-
+    - rattler-build
+    
 tests:
   - python:
       imports:
