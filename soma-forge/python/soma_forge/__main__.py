@@ -44,7 +44,6 @@ def setup(verbose=None):
             ]
         )
 
-
     # Find recipes for external projects and recipes build using bv_maker
     external_recipes = []
     bv_maker_recipes = []
@@ -53,7 +52,11 @@ def setup(verbose=None):
         build = recipe.get("build")
         if build is not None:
             script = build.get("script")
-        if build is None or isinstance(script, str) and "BRAINVISA_INSTALL_PREFIX" in script:
+        if (
+            build is None
+            or isinstance(script, str)
+            and "BRAINVISA_INSTALL_PREFIX" in script
+        ):
             bv_maker_recipes.append(recipe)
             bv_maker_packages.add(recipe["package"]["name"])
         else:
@@ -69,11 +72,22 @@ def setup(verbose=None):
             if result:
                 return result
 
-    # Add internal forge to pixi project
+    # Add internal forge and activation to pixi project
     channel = f"file://{pixi_root / 'forge'}"
     pixi_config = read_pixi_config()
+    modified = False
     if channel not in pixi_config["project"]["channels"]:
         pixi_config["project"]["channels"].append(channel)
+        modified = True
+    activation_script = "src/neuro-forge/soma-forge/activate.sh"
+    scripts = d.get("activation", {}).get("scripts")
+    if scripts is None:
+        d["activation"] = {"scripts": [activation_script]}
+        modified = True
+    elif activation_script not in scripts:
+        scripts.append(activation_script)
+        modified = True
+    if modified:
         write_pixi_config(pixi_config)
 
     # Compute all packages build and run dependencies

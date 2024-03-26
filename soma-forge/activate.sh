@@ -1,5 +1,3 @@
-export CASA_DISTRO="brainvisa"
-export CASA_BRANCH="master"
 export CASA="$PIXI_PROJECT_ROOT"
 export CASA_CONF="$CASA/conf"
 export CASA_SRC="$CASA/src"

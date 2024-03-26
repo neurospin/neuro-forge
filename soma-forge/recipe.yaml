@@ -19,8 +19,13 @@ requirements:
     - python
     - toml
     - pyaml
-    - pixi
+    - git
     - rattler-build
+    - cmake
+    - gcc
+    - gxx
+    - sphinx
+    - pytest
     
 tests:
   - python:
