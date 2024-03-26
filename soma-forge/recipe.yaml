@@ -1,5 +1,5 @@
 context:
-  version: "0.0.1"
+  version: "0.0.2"
 
 package:
   name: "soma-forge"
@@ -16,16 +16,18 @@ requirements:
     - python
   
   run:
-    - python
-    - toml
-    - pyaml
-    - git
-    - rattler-build
     - cmake
     - gcc
+    - git
     - gxx
-    - sphinx
     - pytest
+    - pip
+    - pyaml
+    - python
+    - rattler-build
+    - six
+    - sphinx
+    - toml
     
 tests:
   - python:

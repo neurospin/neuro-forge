@@ -1,6 +1,7 @@
 import argparse
 import fnmatch
 import os
+import pathlib
 import re
 import shutil
 import subprocess
@@ -76,19 +77,29 @@ def setup(verbose=None):
     channel = f"file://{pixi_root / 'forge'}"
     pixi_config = read_pixi_config()
     modified = False
-    if channel not in pixi_config["project"]["channels"]:
-        pixi_config["project"]["channels"].append(channel)
+    channels = pixi_config["project"]["channels"]
+    if "pytorch" not in channels:
+        channels.remove("conda-forge")
+        channels.extend(["nvidia", "pytorch", "conda-forge"])
         modified = True
+    if channel not in channels:
+        channels.append(channel)
+        modified = True
+
     activation_script = "src/neuro-forge/soma-forge/activate.sh"
-    scripts = d.get("activation", {}).get("scripts")
+    scripts = pixi_config.get("activation", {}).get("scripts")
     if scripts is None:
-        d["activation"] = {"scripts": [activation_script]}
+        pixi_config["activation"] = {"scripts": [activation_script]}
         modified = True
     elif activation_script not in scripts:
         scripts.append(activation_script)
         modified = True
     if modified:
         write_pixi_config(pixi_config)
+
+    # Copy default conf directory
+    if not (pixi_root / "conf").exists():
+        shutil.copytree(pathlib.Path(__file__).parent / "conf", pixi_root / "conf")
 
     # Compute all packages build and run dependencies
     dependencies = {i["package"]["name"]: set() for i in external_recipes}
@@ -154,8 +165,9 @@ def build():
     (pixi_root / "build" / "success").unlink(missing_ok=True)
     # Do not take into account failure on bv_maker sources as long as
     # unstandard branches are used.
-    subprocess.call(["bv_maker", "sources"])
-    subprocess.check_call(["bv_maker", "configure", "build", "doc"])
+    bv_maker = str(pixi_root / "src" / "brainvisa-cmake" / "bin" / "bv_maker")
+    subprocess.call([bv_maker, "sources"])
+    subprocess.check_call([bv_maker, "configure", "build", "doc"])
     with open(pixi_root / "build" / "success", "w"):
         pass
 
