@@ -1,5 +1,5 @@
 context:
-  version: "0.0.2"
+  version: "0.0.3"
 
 package:
   name: "soma-forge"
@@ -24,10 +24,15 @@ requirements:
     - pip
     - pyaml
     - python
-    - rattler-build
+    - rattler-build >=0.13
     - six
     - sphinx
     - toml
+    - libglu
+    - mesalib-devel-only
+    - mesa-libgl-devel-cos7-x86_64
+    - virtualgl
+    - libglvnd-devel-cos7-x86_64
     
 tests:
   - python:
