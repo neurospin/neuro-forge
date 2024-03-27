@@ -25,7 +25,7 @@ requirements:
 
   run:
     - python >=3.9
-    - populse-db >=3.0
+    - populse-db ==${{ distro_version }}
     - pydantic <2
     - pyqt
     - pyqtwebengine
