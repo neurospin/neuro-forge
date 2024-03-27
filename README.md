@@ -30,3 +30,13 @@ The creation of a packages for neuro-forge is based on the use of [rattler-build
 - Base packages that are standard rattler-build recipes that can be build independently using only dependencies from conda-forge.
 - soma-forge packages that are packages from the [BrainVISA](https://brainvisa.info) project and requires a soma-forge development environement to be build.
 
+
+In order to build a neuro-forge channel from scratch, one must use pixi. The following script will create a `channel` directory containing the base packages that are necessary to complement conda-forge in order to build other packages.
+
+```
+git clone https://github.com/neurospin/neuro-forge
+cd neuro-forge
+pixi run neuro-forge init channel
+```
+
+This w
