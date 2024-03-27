@@ -1,0 +1,27 @@
+context:
+  version: 24.0.3
+
+package:
+  name: mesalib-devel-only
+  version: ${{ version }}
+
+
+build:
+  number: 0
+  script: |
+    wget https://github.com/conda-forge/miniforge/releases/latest/download/Miniforge3-Linux-x86_64.sh
+    sh Miniforge3-Linux-x86_64.sh -b -p conda
+    . conda/bin/activate
+    mamba install 'mesalib==${{ version }}'
+    cd conda/pkgs/mesalib-${{ version }}-*/
+    rm -r info
+    mkdir $PREFIX/mesalib
+    cp -a * $PREFIX/mesalib
+
+requirements:
+  build:
+    - wget
+
+
+about:
+  summary: A copy of the mesalib conda-forge package not included in standard paths.
