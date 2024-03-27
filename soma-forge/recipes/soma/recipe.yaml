@@ -37,6 +37,7 @@ requirements:
     - pyyaml
     - libminc
     - openjpeg
+    - soma-python
 
   run:
     - libblitz
