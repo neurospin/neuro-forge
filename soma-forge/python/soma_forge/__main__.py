@@ -73,7 +73,7 @@ def setup(verbose=None):
             if result:
                 return result
 
-    # Add internal forge and activation to pixi project
+    # Add pytorch channels and activation to pixi project
     pixi_config = read_pixi_config()
     modified = False
     channels = pixi_config["project"]["channels"]
@@ -81,7 +81,12 @@ def setup(verbose=None):
         channels.remove("conda-forge")
         channels.extend(["nvidia", "pytorch", "conda-forge"])
         modified = True
-
+    if "libjpeg-turbo" not in pixi_config["dependencies"]:
+        pixi_config["dependencies"]["libjpeg-turbo"] = {
+            "channel": "conda-forge",
+            "version": ">=3.0.0",
+        }
+        modified = True
     activation_script = "src/neuro-forge/soma-forge/activate.sh"
     scripts = pixi_config.get("activation", {}).get("scripts")
     if scripts is None:

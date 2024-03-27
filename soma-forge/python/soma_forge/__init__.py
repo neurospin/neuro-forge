@@ -15,9 +15,9 @@ def read_recipes():
     """
     Iterate over all recipes files defined in soma-forge.
     """
-    for recipe_file in (pixi_root / "src" / "neuro-forge" / "soma-forge" / "recipes").glob(
-        "*/recipe.yaml"
-    ):
+    for recipe_file in (
+        pixi_root / "src" / "neuro-forge" / "soma-forge" / "recipes"
+    ).glob("*/recipe.yaml"):
         with open(recipe_file) as f:
             recipe = yaml.safe_load(f)
             recipe["soma-forge"] = {"recipe_dir": str(recipe_file.parent)}
