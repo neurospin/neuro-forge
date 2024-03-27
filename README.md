@@ -3,7 +3,10 @@
 This project contains everything you need to build and update the neuro-forge packages. neuro-forge is a set of packages for the Conda ecosystem dedicated to image analysis and data analysis in neuroimaging.
 
 # How to install and use neuro-forge packages
-neuro-forge packages are contained in a Conda channel located in https://brainvisa.info/neuro-forge. They can be installed using [Pixi](https://pixi.sh), [Mamba](https://mamba.readthedocs.io) or [Conda](https://docs.conda.io). We recommand the use of pixi. For instance, once pixi is install, one can use the following script to setup a workspace containing anatomist:
+
+neuro-forge is still in early alpha stage and should only be used for testing.
+
+neuro-forge packages are contained in a Conda channel located in https://brainvisa.info/neuro-forge (this is a temporary URL, it may change at any moment). They can be installed using [Pixi](https://pixi.sh), [Mamba](https://mamba.readthedocs.io) or [Conda](https://docs.conda.io). We recommand the use of pixi. For instance, once pixi is install, one can use the following script to setup a workspace containing anatomist:
 
 ```
 # Create a workspace directory
@@ -39,4 +42,3 @@ cd neuro-forge
 pixi run neuro-forge init channel
 ```
 
-This w
