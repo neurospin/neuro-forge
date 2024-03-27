@@ -74,16 +74,12 @@ def setup(verbose=None):
                 return result
 
     # Add internal forge and activation to pixi project
-    channel = f"file://{pixi_root / 'forge'}"
     pixi_config = read_pixi_config()
     modified = False
     channels = pixi_config["project"]["channels"]
     if "pytorch" not in channels:
         channels.remove("conda-forge")
         channels.extend(["nvidia", "pytorch", "conda-forge"])
-        modified = True
-    if channel not in channels:
-        channels.append(channel)
         modified = True
 
     activation_script = "src/neuro-forge/soma-forge/activate.sh"
