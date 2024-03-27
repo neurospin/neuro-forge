@@ -1,0 +1,17 @@
+[project]
+name = "neuro-forge"
+version = "0.0.1"
+description = "Build and publish neuro-forge packages"
+authors = ["sapetnioc <sapetnioc@users.noreply.github.com>"]
+channels = ["conda-forge"]
+platforms = ["linux-64"]
+
+[activation]
+scripts = ["activate.sh"]
+
+[tasks]
+
+[dependencies]
+fire = "*"
+conda-build = "*"
+rattler-build = "*"
