@@ -14,7 +14,7 @@ curl -fsSL https://pixi.sh/install.sh | env PIXI_HOME=/somewhere bash
 
 Soma-orge packages are hosted in neuro-forge channel and can be tested by [installing a neuro-forge workspace](https://github.com/neurospin/neuro-forge/tree/main?tab=readme-ov-file#how-to-install-and-use-neuro-forge-packages).
 
-## som-forge packages
+## soma-forge packages
 
 The packages currently built have the following dependencies:
 - green: package containing brainvisa-cmake components ;
