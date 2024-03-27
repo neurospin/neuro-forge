@@ -6,6 +6,7 @@ from pathlib import Path
 import shutil
 from subprocess import check_call
 
+
 class Commands:
     @staticmethod
     def init(channel_dir: str):
@@ -19,10 +20,19 @@ class Commands:
 
         # Create base packages
         neuro_forge = Path(__file__).parent
-        for recipe_dir in chain([neuro_forge / "soma-forge"], ( neuro_forge / "recipes").iterdir()):
+        for recipe_dir in chain(
+            [neuro_forge / "soma-forge"], (neuro_forge / "recipes").iterdir()
+        ):
             if not (recipe_dir / "recipe.yaml").exists():
                 continue
-            command = ["rattler-build", "build", "-r", str(recipe_dir), "--output-dir", str(channel_dir)]
+            command = [
+                "rattler-build",
+                "build",
+                "-r",
+                str(recipe_dir),
+                "--output-dir",
+                str(channel_dir),
+            ]
             variants = recipe_dir / "variants.yaml"
             if variants.exists():
                 command.extend(["-m", str(variants)])
@@ -34,6 +44,7 @@ class Commands:
             if to_delete.exists():
                 shutil.rmtree(to_delete)
         check_call(["conda", "index", channel_dir])
+
 
 if __name__ == "__main__":
     fire.Fire(Commands)
