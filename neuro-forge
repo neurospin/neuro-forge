@@ -2,6 +2,7 @@
 
 import fire
 from itertools import chain
+import os
 from pathlib import Path
 import shutil
 from subprocess import check_call
@@ -13,9 +14,9 @@ class Commands:
         """Initialise a new channel directory"""
         # Create an empty channel
         channel_dir = Path(channel_dir)
-        channel_dir.mkdir()
-        (channel_dir / "noarch").mkdir()
-        (channel_dir / "linux-64").mkdir()
+        channel_dir.mkdir(exist_ok=True)
+        (channel_dir / "noarch").mkdir(exist_ok=True)
+        (channel_dir / "linux-64").mkdir(exist_ok=True)
         check_call(["conda", "index", channel_dir])
 
         # Create base packages
@@ -25,6 +26,8 @@ class Commands:
         ):
             if not (recipe_dir / "recipe.yaml").exists():
                 continue
+            env = os.environ.copy()
+            env["HOME"] = str(channel_dir)
             command = [
                 "rattler-build",
                 "build",
@@ -36,10 +39,10 @@ class Commands:
             variants = recipe_dir / "variants.yaml"
             if variants.exists():
                 command.extend(["-m", str(variants)])
-            check_call(command)
+            check_call(command, env=env)
 
         # Cleanup and create channel index
-        for i in ("bld", "src_cache"):
+        for i in ("bld", "src_cache", ".rattler", ".cache"):
             to_delete = channel_dir / i
             if to_delete.exists():
                 shutil.rmtree(to_delete)

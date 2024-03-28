@@ -17,6 +17,7 @@ build:
 
 requirements:
   build:
+    - git
     - ${{ compiler('cxx') }}
     - cmake
     - make

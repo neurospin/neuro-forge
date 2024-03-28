@@ -20,6 +20,7 @@ build:
 
 requirements:
   build:
+    - git
     - ${{ compiler('c') }}
     - cmake
     - make
