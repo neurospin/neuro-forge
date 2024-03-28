@@ -1,4 +1,4 @@
-# neuro-forge: provisioning of neuroimaging workspace for image processing and data analysis
+# neuro-forge: reproducible provisioning of neuroimaging workspaces for image processing and data analysis
 
 This project contains everything you need to build and update the neuro-forge packages. neuro-forge is a set of packages for the Conda ecosystem dedicated to image analysis and data analysis in neuroimaging.
 
