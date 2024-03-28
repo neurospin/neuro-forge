@@ -17,10 +17,12 @@ build:
     rm -r info
     mkdir $PREFIX/mesalib
     cp -a * $PREFIX/mesalib
+    conda deactivate
 
 requirements:
   build:
     - wget
+
 
 
 about:
