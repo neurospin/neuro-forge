@@ -1,12 +1,12 @@
 # neuro-forge: reproducible provisioning of neuroimaging workspaces for image processing and data analysis
 
-This project contains everything you need to build and update the neuro-forge packages. neuro-forge is a set of packages for the Conda ecosystem dedicated to image analysis and data analysis in neuroimaging.
+This project contains everything needed to build and update the neuro-forge packages. neuro-forge is a set of packages for the Conda ecosystem dedicated to image analysis and data analysis in neuroimaging.
 
-# How to install and use neuro-forge packages
+## How to create a workspace and install neuro-forge packages
 
 neuro-forge is still in early alpha stage and should only be used for testing.
 
-neuro-forge packages are contained in a Conda channel located in https://brainvisa.info/neuro-forge (this is a temporary URL, it may change at any moment). They can be installed using [Pixi](https://pixi.sh), [Mamba](https://mamba.readthedocs.io) or [Conda](https://docs.conda.io). We recommand the use of pixi. For instance, once pixi is install, one can use the following script to setup a workspace containing anatomist:
+neuro-forge packages are contained in a Conda channel located in https://brainvisa.info/neuro-forge (this is a temporary URL, it may change at any moment). They can be installed using [Pixi](https://pixi.sh), [Mamba](https://mamba.readthedocs.io) or [Conda](https://docs.conda.io). We recommand the use of pixi. For instance, once pixi is installed, one can use the following script to setup a workspace containing anatomist:
 
 ```
 # Create a workspace directory
@@ -26,7 +26,7 @@ pixi add anatomist
 anatomist
 ```
 
-# How to create neuro-forge channel
+## How to create neuro-forge channel
 
 The creation of a packages for neuro-forge is based on the use of [rattler-build](https://prefix-dev.github.io/rattler-build). The neuro-forge channel is composed of two kind of packages:
 
