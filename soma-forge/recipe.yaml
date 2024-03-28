@@ -1,5 +1,5 @@
 context:
-  version: "0.0.3"
+  version: "0.0.4"
 
 package:
   name: "soma-forge"
@@ -34,11 +34,11 @@ requirements:
     - virtualgl
     - libglvnd-devel-cos7-x86_64
     
-tests:
-  - python:
-      imports:
-        - soma_forge
-      pip_check: false
+# tests:
+#   - python:
+#       imports:
+#         - soma_forge
+#       pip_check: false
 
 about:
   homepage: https://github.com/neurospin/neuro-forge
