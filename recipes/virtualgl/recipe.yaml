@@ -24,9 +24,11 @@ build:
 
 requirements:
   build:
+    - git
     - ${{ compiler('cxx') }}
     - cmake
     - make
+    - patch
     - libjpeg-turbo
     - openjdk
     - xorg-libx11

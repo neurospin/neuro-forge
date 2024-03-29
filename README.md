@@ -28,9 +28,9 @@ anatomist
 
 ## How to create neuro-forge channel
 
-The creation of a packages for neuro-forge is based on the use of [rattler-build](https://prefix-dev.github.io/rattler-build). The neuro-forge channel is composed of two kind of packages:
+The creation of packages for neuro-forge is based on the use of [rattler-build](https://prefix-dev.github.io/rattler-build). The neuro-forge channel is composed of two kinds of packages:
 
-- [Base packages](https://github.com/neurospin/neuro-forge/tree/main/recipes) that are standard rattler-build recipes that can be build independently using only dependencies from conda-forge.
+- [Base packages](https://github.com/neurospin/neuro-forge/tree/main/recipes) that are standard rattler-build recipes that can be built independently using only dependencies from conda-forge.
 - [soma-forge packages](https://github.com/neurospin/neuro-forge/tree/main/soma-forge) that are packages from the [BrainVISA](https://brainvisa.info) project and requires a soma-forge development environement to be build.
 
 
