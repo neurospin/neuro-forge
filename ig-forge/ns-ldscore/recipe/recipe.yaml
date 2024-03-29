@@ -1,0 +1,54 @@
+# this sets up "context variables" (in this case name and version) that
+# can later be used in Jinja expressions
+context:
+  version: 2.0.1
+  name: ldscore
+
+# top level package information (name and version)
+package:
+  name: ${{ name }}
+  version: ${{ version }}
+
+# location to get the source from
+source:
+  path: ../local/ldsc-2.0.1
+
+# build number (should be incremented if a new build is made, but version is not incrementing)
+build:
+  noarch: python
+  script: python -m pip install --no-deps --ignore-installed .
+
+# the requirements at build and runtime
+requirements:
+  host:
+    - python
+    - pip
+    - build
+  run:
+    - python
+    - fire 
+    - joblib
+    - pandas
+    - numpy
+    - scipy
+    - ipython
+    - pyarrow 
+    - bitarray
+
+# tests to validate that the package works as expected
+#
+tests:
+  - python:
+      imports:
+        - ldscore 
+
+# information about the package
+about:
+  #~ homepage: https://github.com/shibukawa/imagesize_py
+  #~ license: MIT
+  #~ summary: 'Getting image size from png/jpeg/jpeg2000/gif file'
+  #~ description: |
+    #~ This module analyzes jpeg/jpeg2000/png/gif image header and
+    #~ return image size.
+  #~ documentation: https://github.com/shibukawa/imagesize_py/blob/master/README.rst
+
