@@ -9,18 +9,12 @@ package:
 build:
   number: 0
   script: |
-    wget https://github.com/conda-forge/miniforge/releases/latest/download/Miniforge3-Linux-x86_64.sh
-    sh Miniforge3-Linux-x86_64.sh -b -p conda
-    . conda/bin/activate
-    mamba install 'mesalib==${{ version }}'
-    cd conda/pkgs/mesalib-${{ version }}-*/
-    rm -r info
-    mkdir $PREFIX/mesalib
-    cp -a * $PREFIX/mesalib
+    python "$RECIPE_DIR/download_package.py" mesalib '${{ version }}' "$PREFIX"
 
 requirements:
   build:
-    - wget
+    - python
+    - requests
 
 
 about:
