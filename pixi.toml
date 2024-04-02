@@ -1,6 +1,6 @@
 [project]
 name = "neuro-forge"
-version = "0.0.1"
+version = "0.0.2"
 description = "Build and publish neuro-forge packages"
 authors = ["sapetnioc <sapetnioc@users.noreply.github.com>"]
 channels = ["conda-forge"]
@@ -16,3 +16,4 @@ fire = "*"
 conda-build = "*"
 rattler-build = "*"
 git = "*"
+pip = "*"
