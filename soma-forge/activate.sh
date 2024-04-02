@@ -9,6 +9,6 @@ export CMAKE_LIBRARY_PATH="$CONDA_PREFIX/lib:$CONDA_PREFIX/x86_64-conda-linux-gn
 export BRAINVISA_BVMAKER_CFG="$CASA/conf/bv_maker.cfg"
 export LD_LIBRARY_PATH="$CASA/build/lib:$LD_LIBRARY_PATH"
 python_short=$(python -c 'import sys; print(".".join(str(i) for i in sys.version_info[0:2]))')
-export PYTHONPATH="$CASA/python:$CASA/src/brainvisa-cmake/python:$CASA/build/lib/python${python_short}/site-packages"
+export PYTHONPATH="$CASA/src/brainvisa-cmake/python:$CASA/build/lib/python${python_short}/site-packages:$PYTHONPATH"
 export BRAINVISA_TEST_REF_DATA_DIR="$CASA_TEST/ref"
 export BRAINVISA_TEST_RUN_DATA_DIR="$CASA_TEST/test"
