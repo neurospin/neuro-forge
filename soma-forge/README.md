@@ -34,7 +34,7 @@ git clone https://github.com/neurospin/neuro-forge ~/workspace
 
 # Setup workspace
 cd ~/workspace
-pixi init -c https://brainvisa.info/neuro-forge -c conda-forge
+pixi init
 pixi run soma-forge setup
 ```
 

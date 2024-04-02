@@ -290,6 +290,7 @@ def setup(verbose=None):
 
 
     # Add pytorch channels and activation to pixi project
+    neuro_forge_url = "https://brainvisa.info/neuro-forge"
     soma_forge_dependencies = {
         "cmake": "*",
         "gcc": "*",
@@ -316,12 +317,16 @@ def setup(verbose=None):
         channels.remove("conda-forge")
         channels.extend(["nvidia", "pytorch", "conda-forge"])
         modified = True
+    if neuro_forge_url not in channels:
+        channels.append(neuro_forge_url)
+        modified = True
     if "libjpeg-turbo" not in pixi_config["dependencies"]:
         pixi_config["dependencies"]["libjpeg-turbo"] = {
             "channel": "conda-forge",
             "version": ">=3.0.0",
         }
         modified = True
+    
     for package, version in soma_forge_dependencies.items():
         if package not in pixi_config["dependencies"]:
             pixi_config["dependencies"][package] = version
