@@ -11,7 +11,7 @@ package:
 
 # location to get the source from
 source:
-  path: ../local/ldsc-2.0.1
+  path: ../ldsc-2.0.1
 
 # build number (should be incremented if a new build is made, but version is not incrementing)
 build:
