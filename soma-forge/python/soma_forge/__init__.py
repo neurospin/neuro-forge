@@ -257,19 +257,6 @@ def get_test_commands(log_lines=None):
     return tests
 
 def setup(verbose=None):
-    # Download neuro-forge sources
-    if not (pixi_root / "src" / "neuro-forge").exists():
-        (pixi_root / "src").mkdir(exist_ok=True)
-        subprocess.check_call(
-            [
-                "git",
-                "-C",
-                str(pixi_root / "src"),
-                "clone",
-                "https://github.com/neurospin/neuro-forge",
-            ]
-        )
-
     # Download brainvisa-cmake sources
     if not (pixi_root / "src" / "brainvisa-cmake").exists():
         (pixi_root / "src").mkdir(exist_ok=True)
@@ -301,17 +288,27 @@ def setup(verbose=None):
         else:
             external_recipes.append(recipe)
 
-    # Build external packages
-    for recipe in external_recipes:
-        package = recipe["package"]["name"]
-        if not any(forged_packages(re.escape(package))):
-            result = forge(
-                [package], force=False, show=False, check_build=False, verbose=verbose
-            )
-            if result:
-                return result
 
     # Add pytorch channels and activation to pixi project
+    soma_forge_dependencies = {
+        "cmake": "*",
+        "gcc": "*",
+        "git": "*",
+        "gxx": "*",
+        "pytest": "*",
+        "pip": "*",
+        "pyaml": "*",
+        "python": "*",
+        "rattler-build": ">=0.13",
+        "six": "*",
+        "sphinx": "*",
+        "toml": "*",
+        "libglu": "*",
+        "mesalib-devel-only": "*",
+        "mesa-libgl-devel-cos7-x86_64": "*",
+        "virtualgl": "*",
+        "libglvnd-devel-cos7-x86_64": "*",
+    }
     pixi_config = read_pixi_config()
     modified = False
     channels = pixi_config["project"]["channels"]
@@ -325,7 +322,11 @@ def setup(verbose=None):
             "version": ">=3.0.0",
         }
         modified = True
-    activation_script = "src/neuro-forge/soma-forge/activate.sh"
+    for package, version in soma_forge_dependencies.items():
+        if package not in pixi_config["dependencies"]:
+            pixi_config["dependencies"][package] = version
+            modified = True
+    activation_script = "soma-forge/activate.sh"
     scripts = pixi_config.get("activation", {}).get("scripts")
     if scripts is None:
         pixi_config["activation"] = {"scripts": [activation_script]}
@@ -351,8 +352,7 @@ def setup(verbose=None):
                 or requirement.startswith("$")
                 or requirement.split()[0] == "mesalib"
             ):
-                # mesalib is required to compile virtualgl
-                # but makes Anatomist crash
+                # mesalib makes Anatomist crash
                 continue
             package, constraint = (requirement.split(None, 1) + [None])[:2]
             if package not in bv_maker_packages:

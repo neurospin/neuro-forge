@@ -29,14 +29,13 @@ The packages currently built have the following dependencies:
 A soma-forge development workspace is a [neuro-forge workspace](https://github.com/neurospin/neuro-forge/tree/main?tab=readme-ov-file#how-to-install-and-use-neuro-forge-packages) where the `soma-forge` package is installed and configured. It can be setup with the following script:
 
 ```
-# Create a workspace directory
-mkdir ~/workspace
+# Clone neuro-forge to create workspace directory
+git clone https://github.com/neurospin/neuro-forge ~/workspace
 
 # Setup workspace
 cd ~/workspace
 pixi init -c https://brainvisa.info/neuro-forge -c conda-forge
-pixi add soma-forge
-pixi run python -m soma_forge setup
+pixi run soma-forge setup
 ```
 
 If https://brainvisa.info/neuro-forge is not available, a local directory can be used. Such a directory [can be created using neuro-forge](https://github.com/neurospin/neuro-forge/tree/main?tab=readme-ov-file#how-to-create-neuro-forge-channel).
