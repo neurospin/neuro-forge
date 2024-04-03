@@ -20,7 +20,7 @@ class Commands:
         check_call(["conda", "index", channel_dir])
 
         # Create base packages
-        neuro_forge = Path(__file__).parent
+        neuro_forge = Path(__file__).parent.parent
         for recipe_dir in chain(
             [neuro_forge / "soma-forge"], (neuro_forge / "recipes").iterdir()
         ):
