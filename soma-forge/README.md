@@ -3,11 +3,10 @@
 Development and packaging environment for packages that depends on soma, the C++/Python ecosystem of [BrainVISA](https://brainvisa.info) project.
 
 ## Prerequisite
-Whatever you want to do with soma-forge, you must first [install Pixi](https://pixi.sh). It is a binary without dependency to put somewhere in the PATH. The install script copy it in the `bin` subdirectory of a parent directory that can be specified (default is `$HOME/.pixi`) with `PIXI_HOME`:
+Whatever you want to do with soma-forge, you must first [install Pixi](https://pixi.sh). It is a binary without dependency to put somewhere in the PATH. If you want to avoid the use of the script proposed by Pixi team (that install in `~/.pixi/bin` and changes `~/.bashrc`), you can download the latest release of `pixi`executable for Linux x86_64 achitecture with the following command:
 
 ```
-# To install it in /somewhere/bin/pixi
-curl -fsSL https://pixi.sh/install.sh | env PIXI_HOME=/somewhere bash
+curl -fsSL https://github.com/prefix-dev/pixi/releases/latest/download/pixi-x86_64-unknown-linux-musl.tar.gz | tar zx
 ```
 
 ## Test soma-forge packages
