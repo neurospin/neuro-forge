@@ -312,6 +312,9 @@ def setup(verbose=None):
     }
     pixi_config = read_pixi_config()
     modified = False
+    if pixi_config["project"]["name"] == "neuro-forge":
+        pixi_config["project"]["name"] = "soma-forge"
+        modified = True
     channels = pixi_config["project"]["channels"]
     if "pytorch" not in channels:
         channels.remove("conda-forge")
