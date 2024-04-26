@@ -32,6 +32,7 @@ requirements:
     - numpy
     - ipykernel
     - six
+    - pycryptodome
 
 tests:
   - script: "python -m soma.tests"
