@@ -30,4 +30,4 @@ requirements:
     - pydicom
     - scikit-image
     - pandas
-    - pycrypto
+    - pycryptodome
