@@ -1,0 +1,2 @@
+set PYTHONPATH="%PIXI_PROJECT_ROOT%\python;%PIXI_PROJECT_ROOT%\soma-forge\python;%$PYTHONPATH%"
+set PATH="%PIXI_PROJECT_ROOT%\bin;%PIXI_PROJECT_ROOT%soma-forge\bin;%PATH%"
