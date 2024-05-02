@@ -29,7 +29,7 @@ requirements:
   run:
     - soma ==${{ distro_version }}
     - qwt
-    - matplotlib ==3.4.3
+    - matplotlib
     - virtualgl
     - qtconsole
     - ipycanvas
