@@ -34,6 +34,8 @@ git clone https://github.com/neurospin/neuro-forge ~/workspace
 # Setup workspace
 cd ~/workspace
 pixi run soma-forge setup
+# Select Python version, must be >= 3.10 and <= 3.11
+pixi add 'python==3.11'
 ```
 
 If https://brainvisa.info/neuro-forge is not available, a local directory can be used. Such a directory [can be created using neuro-forge](https://github.com/neurospin/neuro-forge/tree/main?tab=readme-ov-file#how-to-create-neuro-forge-channel).
