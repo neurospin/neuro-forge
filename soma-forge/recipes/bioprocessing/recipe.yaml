@@ -26,3 +26,4 @@ requirements:
   run:
     - soma ==${{ distro_version }}
     - anatomist ==${{ distro_version }}
+    - scikit-learn

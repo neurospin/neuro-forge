@@ -15,8 +15,6 @@ build:
       make install-${component}-dev
       make install-${component}-usrdoc
       make install-${component}-devdoc
-      make install-${component}-devdoc
-      make install-${component}-devdoc
     done
 
 requirements:
@@ -33,6 +31,9 @@ requirements:
     - capsul ==${{ distro_version }}
     - pytorch
     - torchvision
+    # dependencies found in deepsulci
+    - scikit-learn
+    - pcl
     # Following dependencies are required to run "morphologist"
     - configobj
     - pyqtwebkit
