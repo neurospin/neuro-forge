@@ -1,2 +1,6 @@
-from . import main
-main()
+import rich.traceback
+rich.traceback.install()
+
+from . import cli
+
+cli()

@@ -1,5 +1,6 @@
-import argparse
+import click
 import fnmatch
+import git
 import json
 import os
 import pathlib
@@ -11,16 +12,245 @@ import sys
 import toml
 import yaml
 
-pixi_root = pathlib.Path(os.environ["PIXI_PROJECT_ROOT"])
+from rich.console import Console
+from rich.table import Table
+from rich.pretty import Pretty
+
+
+@click.group(context_settings={"help_option_names": ["-h", "--help"]})
+def cli():
+    global console
+
+    console = Console()
+
+
+@cli.command()
+@click.option(
+    "-p",
+    "--python",
+    type=click.Choice(["3.10", "3.11", "3.12"]),
+    default=None,
+    help="Python version (default=config file value or 3.11)",
+)
+@click.option(
+    "-c",
+    "--capsul",
+    type=click.Choice(["2", "3"]),
+    default=None,
+    help="Capsul major version (default=config file value or 3)",
+)
+@click.option(
+    "-q",
+    "--qt",
+    type=click.Choice(["5", "6"]),
+    default=None,
+    help="Qt major version (default=config file value or 5)",
+)
+@click.option("--force", is_flag=True)
+@click.argument("directory", type=click.Path())
+def init(directory, python, capsul, qt, force):
+    """Create or reconfigure a full BrainVISA development directory"""
+
+    pixi_root = pathlib.Path(directory)
+    if not pixi_root.exists():
+        pixi_root.mkdir()
+        subprocess.check_call(
+            [
+                "pixi",
+                "init",
+                "-c",
+                "https://brainvisa.info/neuro-forge",
+                "-c",
+                "conda-forge",
+                str(pixi_root),
+            ]
+        )
+
+    build_dir = pixi_root / "build"
+    build_dir.mkdir(exist_ok=True)
+
+    build_options_file = build_dir / "build_options.json"
+    build_options = {}
+    if build_options_file.exists():
+        with open(build_options_file) as f:
+            current_build_options = json.load(f)
+        build_options = current_build_options.copy()
+    for name, default in (("python", "3.11"), ("capsul", "3"), ("qt", "5")):
+        build_options[name] = locals()[name] or default
+    build_options["prefix"] = (
+        f"p{build_options['python'].replace('.', '_')}c{build_options['capsul']}q{build_options['qt']}"
+    )
+    if force or not build_options_file.exists():
+        with open(build_dir / "build_options.json", "w") as f:
+            json.dump(build_options, f, indent=4)
+    else:
+        with open(build_dir / "build_options.json") as f:
+            current_build_options = json.load(f)
+        if current_build_options != build_options:
+            console.print(
+                f'[red]Existing build options in [bold]{build_dir / "build_options.json"}[/bold] differs from the selected ones[/red]'
+            )
+            table = Table()
+            table.add_column("existing options")
+            table.add_column("selected options")
+            table.add_row(Pretty(current_build_options), Pretty(build_options))
+            console.print(table)
+            console.print(
+                "Either remove the build directory or use [code]--force[/code] option."
+            )
+            sys.exit(1)
+        with open(build_dir / "build_options.json", "w") as f:
+            json.dump(build_options, f, indent=4)
+
+    # Download brainvisa-cmake sources
+    if not (pixi_root / "src" / "brainvisa-cmake").exists():
+        (pixi_root / "src").mkdir(exist_ok=True)
+        git.Repo.clone_from("https://github.com/brainvisa/brainvisa-cmake", str(pixi_root / "src" / "brainvisa-cmake"))
+    
+    return # To be continued...
+
+    # Find recipes for external projects and recipes build using bv_maker
+    external_recipes = []
+    bv_maker_recipes = []
+    bv_maker_packages = set()
+    for recipe in selected_recipes():
+        build = recipe.get("build")
+        if build is not None:
+            script = build.get("script")
+        if (
+            build is None
+            or isinstance(script, str)
+            and "BRAINVISA_INSTALL_PREFIX" in script
+        ):
+            bv_maker_recipes.append(recipe)
+            bv_maker_packages.add(recipe["package"]["name"])
+        else:
+            external_recipes.append(recipe)
+
+    # Add pytorch channels and activation to pixi project
+    neuro_forge_url = "https://brainvisa.info/neuro-forge"
+    soma_forge_dependencies = {
+        "cmake": "*",
+        "gcc": "*",
+        "git": "*",
+        "gxx": "*",
+        "pytest": "*",
+        "pip": "*",
+        "pyaml": "*",
+        "python": "*",
+        "rattler-build": ">=0.13",
+        "six": "*",
+        "sphinx": "*",
+        "toml": "*",
+        "libglu": "*",
+        "mesalib-devel-only": "*",
+        "mesa-libgl-devel-cos7-x86_64": "*",
+        "virtualgl": "*",
+        "libglvnd-devel-cos7-x86_64": "*",
+    }
+    pixi_config = read_pixi_config()
+    modified = False
+    if pixi_config["project"]["name"] == "neuro-forge":
+        pixi_config["project"]["name"] = "soma-forge"
+        modified = True
+    channels = pixi_config["project"]["channels"]
+    if "pytorch" not in channels:
+        channels.remove("conda-forge")
+        channels.extend(["nvidia", "pytorch", "conda-forge"])
+        modified = True
+    if neuro_forge_url not in channels:
+        channels.append(neuro_forge_url)
+        modified = True
+    if "libjpeg-turbo" not in pixi_config["dependencies"]:
+        pixi_config["dependencies"]["libjpeg-turbo"] = {
+            "channel": "conda-forge",
+            "version": ">=3.0.0",
+        }
+        modified = True
+
+    for package, version in soma_forge_dependencies.items():
+        if package not in pixi_config["dependencies"]:
+            pixi_config["dependencies"][package] = version
+            modified = True
+    activation_script = "soma-forge/activate.sh"
+    scripts = pixi_config.get("activation", {}).get("scripts")
+    if scripts is None:
+        pixi_config["activation"] = {"scripts": [activation_script]}
+        modified = True
+    elif activation_script not in scripts:
+        scripts.append(activation_script)
+        modified = True
+    if modified:
+        write_pixi_config(pixi_config)
+
+    # Copy default conf directory
+    if not (pixi_root / "conf").exists():
+        shutil.copytree(pathlib.Path(__file__).parent / "conf", pixi_root / "conf")
+
+    # Compute all packages build and run dependencies
+    dependencies = {i["package"]["name"]: set() for i in external_recipes}
+    for recipe in external_recipes + bv_maker_recipes:
+        for requirement in recipe.get("requirements", {}).get("run", []) + recipe.get(
+            "requirements", {}
+        ).get("build", []):
+            if (
+                not isinstance(requirement, str)
+                or requirement.startswith("$")
+                or requirement.split()[0] == "mesalib"
+            ):
+                # mesalib makes Anatomist crash
+                continue
+            package, constraint = (requirement.split(None, 1) + [None])[:2]
+            if package not in bv_maker_packages:
+                dependencies.setdefault(package, set())
+                if constraint:
+                    existing_constraint = dependencies[package]
+                    if constraint not in existing_constraint:
+                        existing_constraint.add(constraint)
+                        dependencies[package] = existing_constraint
+
+    # Add dependencies to pixi project
+    remove = []
+    add = []
+    for package, constraint in dependencies.items():
+        pixi_constraint = pixi_config.get("dependencies", {}).get(package)
+        if pixi_constraint is not None:
+            if pixi_constraint == "*":
+                pixi_constraint = set()
+            else:
+                pixi_constraint = set(pixi_constraint.split(","))
+            if constraint == "*":
+                constraint = set()
+            if pixi_constraint != constraint:
+                remove.append(package)
+            else:
+                continue
+        if constraint:
+            add.append(f"{package} {','.join(constraint)}")
+        else:
+            add.append(f"{package}=*")
+    try:
+        if remove:
+            command = ["pixi", "remove"] + remove
+            subprocess.check_call(command)
+        if add:
+            command = ["pixi", "add"] + add
+            subprocess.check_call(command)
+    except subprocess.CalledProcessError:
+        print(
+            "ERROR command failed:",
+            " ".join(f"'{i}'" for i in command),
+            file=sys.stdout,
+            flush=True,
+        )
+        return 1
 
 
 def read_recipes():
     """
     Iterate over all recipes files defined in soma-forge.
     """
-    for recipe_file in (
-        pixi_root / "soma-forge" / "recipes"
-    ).glob("*/recipe.yaml"):
+    for recipe_file in (pixi_root / "soma-forge" / "recipes").glob("*/recipe.yaml"):
         with open(recipe_file) as f:
             recipe = yaml.safe_load(f)
             recipe["soma-forge"] = {"recipe_dir": str(recipe_file.parent)}
@@ -255,157 +485,6 @@ def get_test_commands(log_lines=None):
             json.dumps(tests, indent=4, separators=(",", ": ")),
         ]
     return tests
-
-def setup(verbose=None):
-    # Download brainvisa-cmake sources
-    if not (pixi_root / "src" / "brainvisa-cmake").exists():
-        (pixi_root / "src").mkdir(exist_ok=True)
-        subprocess.check_call(
-            [
-                "git",
-                "-C",
-                str(pixi_root / "src"),
-                "clone",
-                "https://github.com/brainvisa/brainvisa-cmake",
-            ]
-        )
-
-    # Find recipes for external projects and recipes build using bv_maker
-    external_recipes = []
-    bv_maker_recipes = []
-    bv_maker_packages = set()
-    for recipe in selected_recipes():
-        build = recipe.get("build")
-        if build is not None:
-            script = build.get("script")
-        if (
-            build is None
-            or isinstance(script, str)
-            and "BRAINVISA_INSTALL_PREFIX" in script
-        ):
-            bv_maker_recipes.append(recipe)
-            bv_maker_packages.add(recipe["package"]["name"])
-        else:
-            external_recipes.append(recipe)
-
-
-    # Add pytorch channels and activation to pixi project
-    neuro_forge_url = "https://brainvisa.info/neuro-forge"
-    soma_forge_dependencies = {
-        "cmake": "*",
-        "gcc": "*",
-        "git": "*",
-        "gxx": "*",
-        "pytest": "*",
-        "pip": "*",
-        "pyaml": "*",
-        "python": "*",
-        "rattler-build": ">=0.13",
-        "six": "*",
-        "sphinx": "*",
-        "toml": "*",
-        "libglu": "*",
-        "mesalib-devel-only": "*",
-        "mesa-libgl-devel-cos7-x86_64": "*",
-        "virtualgl": "*",
-        "libglvnd-devel-cos7-x86_64": "*",
-    }
-    pixi_config = read_pixi_config()
-    modified = False
-    if pixi_config["project"]["name"] == "neuro-forge":
-        pixi_config["project"]["name"] = "soma-forge"
-        modified = True
-    channels = pixi_config["project"]["channels"]
-    if "pytorch" not in channels:
-        channels.remove("conda-forge")
-        channels.extend(["nvidia", "pytorch", "conda-forge"])
-        modified = True
-    if neuro_forge_url not in channels:
-        channels.append(neuro_forge_url)
-        modified = True
-    if "libjpeg-turbo" not in pixi_config["dependencies"]:
-        pixi_config["dependencies"]["libjpeg-turbo"] = {
-            "channel": "conda-forge",
-            "version": ">=3.0.0",
-        }
-        modified = True
-    
-    for package, version in soma_forge_dependencies.items():
-        if package not in pixi_config["dependencies"]:
-            pixi_config["dependencies"][package] = version
-            modified = True
-    activation_script = "soma-forge/activate.sh"
-    scripts = pixi_config.get("activation", {}).get("scripts")
-    if scripts is None:
-        pixi_config["activation"] = {"scripts": [activation_script]}
-        modified = True
-    elif activation_script not in scripts:
-        scripts.append(activation_script)
-        modified = True
-    if modified:
-        write_pixi_config(pixi_config)
-
-    # Copy default conf directory
-    if not (pixi_root / "conf").exists():
-        shutil.copytree(pathlib.Path(__file__).parent / "conf", pixi_root / "conf")
-
-    # Compute all packages build and run dependencies
-    dependencies = {i["package"]["name"]: set() for i in external_recipes}
-    for recipe in external_recipes + bv_maker_recipes:
-        for requirement in recipe.get("requirements", {}).get("run", []) + recipe.get(
-            "requirements", {}
-        ).get("build", []):
-            if (
-                not isinstance(requirement, str)
-                or requirement.startswith("$")
-                or requirement.split()[0] == "mesalib"
-            ):
-                # mesalib makes Anatomist crash
-                continue
-            package, constraint = (requirement.split(None, 1) + [None])[:2]
-            if package not in bv_maker_packages:
-                dependencies.setdefault(package, set())
-                if constraint:
-                    existing_constraint = dependencies[package]
-                    if constraint not in existing_constraint:
-                        existing_constraint.add(constraint)
-                        dependencies[package] = existing_constraint
-
-    # Add dependencies to pixi project
-    remove = []
-    add = []
-    for package, constraint in dependencies.items():
-        pixi_constraint = pixi_config.get("dependencies", {}).get(package)
-        if pixi_constraint is not None:
-            if pixi_constraint == "*":
-                pixi_constraint = set()
-            else:
-                pixi_constraint = set(pixi_constraint.split(","))
-            if constraint == "*":
-                constraint = set()
-            if pixi_constraint != constraint:
-                remove.append(package)
-            else:
-                continue
-        if constraint:
-            add.append(f"{package} {','.join(constraint)}")
-        else:
-            add.append(f"{package}=*")
-    try:
-        if remove:
-            command = ["pixi", "remove"] + remove
-            subprocess.check_call(command)
-        if add:
-            command = ["pixi", "add"] + add
-            subprocess.check_call(command)
-    except subprocess.CalledProcessError:
-        print(
-            "ERROR command failed:",
-            " ".join(f"'{i}'" for i in command),
-            file=sys.stdout,
-            flush=True,
-        )
-        return 1
 
 
 def build():
