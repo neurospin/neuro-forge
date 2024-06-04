@@ -1,31 +1,16 @@
-context:
-    distro_version: ${{ load_from_file(env.get("PIXI_PROJECT_ROOT") + "/pixi.toml").project.version }} 
-
 package:
-    name: soma-python
-    version: ${{ distro_version }}
+  name: soma-python
 
-build:
-  number: 0
-  script: |
-    cd "$CASA_BUILD"
-    export BRAINVISA_INSTALL_PREFIX="$PREFIX"
-    for component in soma-base soma-workflow; do
-      make install-${component}
-      make install-${component}-dev
-      make install-${component}-usrdoc
-      make install-${component}-devdoc
-      make install-${component}-devdoc
-      make install-${component}-devdoc
-    done
+components:
+  - soma-base
+  - soma-workflow
+
+internal-dependencies:
+  - populse-db
 
 requirements:
-  build:
-    - make
-
   run:
     - python >=3.9
-    - populse-db ==${{ distro_version }}
     - pydantic <2
     - pyqt
     - pyqtwebengine

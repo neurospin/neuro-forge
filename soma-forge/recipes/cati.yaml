@@ -1,17 +1,12 @@
-context:
-    distro_version: ${{ load_from_file(env.get("PIXI_PROJECT_ROOT") + "/pixi.toml").project.version }} 
-
 package:
-    name: cati
-    version: ${{ distro_version }}
+  name: cati
 
-requirements:
-  run:
-    - qualicati ==${{ distro_version }}
-    - cati-longitudinal ==${{ distro_version }}
-    - cati-rsfmri ==${{ distro_version }}
-    - cati-sacha ==${{ distro_version }}
-    - cati-whasa ==${{ distro_version }}
-    - cati-deidentification ==${{ distro_version }}
-    - catidb ==${{ distro_version }}
-    - nuclear-imaging ==${{ distro_version }}
+internal-dependencies:
+    - qualicati
+    - cati-longitudinal
+    - cati-rsfmri
+    - cati-sacha
+    - cati-whasa
+    - cati-deidentification
+    - catidb
+    - nuclear-imaging

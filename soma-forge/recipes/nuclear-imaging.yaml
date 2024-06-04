@@ -1,29 +1,14 @@
-context:
-    distro_version: ${{ load_from_file(env.get("PIXI_PROJECT_ROOT") + "/pixi.toml").project.version }} 
-
 package:
-    name: nuclear-imaging
-    version: ${{ distro_version }}
+  name: nuclear-imaging
 
-build:
-  number: 0
-  script: |
-    cd "$CASA_BUILD"
-    export BRAINVISA_INSTALL_PREFIX="$PREFIX"
-    for component in nuclear_imaging-gpl nuclear_imaging-nonfree; do
-      make install-${component}
-      make install-${component}-dev
-      make install-${component}-usrdoc
-      make install-${component}-devdoc
-      make install-${component}-devdoc
-      make install-${component}-devdoc
-    done
+components:
+  - nuclear_imaging-gpl
+  - nuclear_imaging-nonfree
+
+internal-dependencies:
+    - soma
+    - anatomist
 
 requirements:
   build:
-    - make
-
-  run:
-    - soma ==${{ distro_version }}
-    - anatomist ==${{ distro_version }}
-
+    - ${{ compiler('cxx') }}
