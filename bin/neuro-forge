@@ -13,8 +13,20 @@ class Commands:
     def init(channel_dir: str):
         """Initialise a new channel directory"""
         # Create an empty channel
-        channel_dir = Path(channel_dir)
-        channel_dir.mkdir(exist_ok=True)
+        channel_dir = Path(channel_dir).absolute()
+        if not channel_dir.exists():
+            check_call(
+                [
+                    "datalad",
+                    "create",
+                    "--description",
+                    "Neuro-forge channel : https://brainvisa.info/neuro-forge",
+                    str(channel_dir),
+                ]
+            )
+            save_datalad = True
+        else:
+            save_datalad = False
         (channel_dir / "noarch").mkdir(exist_ok=True)
         (channel_dir / "linux-64").mkdir(exist_ok=True)
         check_call(["conda", "index", channel_dir])
@@ -26,9 +38,9 @@ class Commands:
         ):
             if not (recipe_dir / "recipe.yaml").exists():
                 continue
-            env = os.environ.copy()
-            env["HOME"] = str(channel_dir)
             command = [
+                "env",
+                f"HOME={channel_dir}",
                 "rattler-build",
                 "build",
                 "-r",
@@ -39,7 +51,7 @@ class Commands:
             variants = recipe_dir / "variants.yaml"
             if variants.exists():
                 command.extend(["-m", str(variants)])
-            check_call(command, env=env)
+            check_call(command)
 
         # Cleanup and create channel index
         for i in ("bld", "src_cache", ".rattler", ".cache"):
@@ -47,6 +59,10 @@ class Commands:
             if to_delete.exists():
                 shutil.rmtree(to_delete)
         check_call(["conda", "index", channel_dir])
+        if save_datalad:
+            check_call(
+                ["datalad", "save", "-m", "Created initial packages", str(channel_dir)]
+            )
 
 
 if __name__ == "__main__":
