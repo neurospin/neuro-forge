@@ -1,0 +1,40 @@
+package:
+  name: soma-forge
+  version: "0.0.1"
+
+source:
+  path: .
+
+build:
+  noarch: python
+
+  python:
+    entry_points:
+      - soma-forge = soma_forge:cli
+
+  script: python -m pip install --no-deps --ignore-installed .
+
+requirements:
+  host:
+    - python >=3.10
+    - pip
+  run:
+    - python >=3.10
+    - click
+    - rich
+    - toml
+    - pyaml
+    - gitpython
+
+
+tests:
+  - python:
+      imports:
+        - soma_forge 
+
+
+
+about:
+  homepage: https://github.com/neurospin/neuro-forge
+  license: BSD-3-Clause
+  summary: Tool to create development environment and Conda packages for BrainVISA platform.
