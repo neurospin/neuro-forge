@@ -16,6 +16,8 @@ import yaml
 from rich.console import Console
 from rich.table import Table
 from rich.pretty import Pretty
+import rich.traceback
+rich.traceback.install()
 
 default_qt = 5
 default_capsul = 2
@@ -33,6 +35,26 @@ components_branch = {
         "morpho-deepsulci": "capsul3",
     }
 }
+
+bv_maker_cfg_template = """[ source $CASA_SRC ]
+  default_source_dir = {{component}}
+  ignore_git_failure=ON
+
+{components_source}
+
+[ build $CASA_BUILD ]
+  default_steps = configure build doc
+  make_options = -j$NCPU
+  cmake_options += -DPIXI=$CASA
+  build_type = Release
+  packaging_thirdparty = OFF
+  clean_config = ON
+  clean_build = ON
+  test_ref_data_dir = $CASA_TESTS/ref
+  test_run_data_dir = $CASA_TESTS/test
+
+{components_build}
+"""
 
 
 @click.group(context_settings={"help_option_names": ["-h", "--help"]})
@@ -70,8 +92,8 @@ def cli():
 def init(directory, packages, python, capsul, qt, force):
     """Create or reconfigure a full BrainVISA development directory"""
     if not packages:
-        packages= ['all']
-    
+        packages = ["all"]
+
     neuro_forge_url = "https://brainvisa.info/neuro-forge"
     pixi_root = pathlib.Path(directory)
     if not pixi_root.exists():
@@ -181,8 +203,6 @@ def init(directory, packages, python, capsul, qt, force):
                     dependencies[package] = existing_constraint
 
     # Generate bv_maker.cfg
-    with open(pathlib.Path(__file__).parent / "conf" / "bv_maker.cfg") as f:
-        bv_maker_cfg_template = f.read()
     components_source = []
     components_build = []
     for package, cb in components.items():
@@ -190,7 +210,7 @@ def init(directory, packages, python, capsul, qt, force):
         components_build.append(f"# Components of package {package}")
         for component, branch in cb.items():
             components_source.append(f"brainvisa {component} {branch}")
-            components_build.append(f"brainvisa {component} $CASA_SRC")
+            components_build.append(f"brainvisa {component} {branch} $CASA_SRC")
     bv_maker_cfg = pixi_root / "conf" / "bv_maker.cfg"
     if bv_maker_cfg.exists() and not force:
         console.print(
@@ -247,7 +267,7 @@ def init(directory, packages, python, capsul, qt, force):
             pixi_config.setdefault("dependencies", {})[package] = "*"
 
     shutil.copy(
-        pathlib.Path(__file__).parent.parent.parent / "activate.sh",
+        pathlib.Path(__file__).parent / "activate.sh",
         pixi_root / "activate.sh",
     )
     activation_script = "activate.sh"
@@ -274,7 +294,7 @@ def read_recipes():
     """
     Iterate over all recipes files defined in soma-forge.
     """
-    for recipe_file in (pathlib.Path(__file__).parent.parent.parent / "recipes").glob(
+    for recipe_file in (pathlib.Path(__file__).parent / "recipes").glob(
         "*.yaml"
     ):
         with open(recipe_file) as f:
@@ -695,3 +715,6 @@ def main():
     kwargs = vars(args).copy()
     del kwargs["func"]
     sys.exit(args.func(**kwargs))
+
+if __name__ == '__main__':
+    cli()
