@@ -1,6 +1,7 @@
 import click
 import fnmatch
 import git
+import itertools
 import json
 import os
 import pathlib
@@ -16,6 +17,23 @@ from rich.console import Console
 from rich.table import Table
 from rich.pretty import Pretty
 
+default_qt = 5
+default_capsul = 2
+default_python = 3.11
+
+# Git branches to select for brainvisa-cmake components given
+# Capsul version (when different from defautl branch)
+components_branch = {
+    "3": {
+        "soma-base": "6.0",
+        "capsul": "3.0",
+        "anatomist-gpl": "capsul3",
+        "morphologist": "capsul3",
+        "morphologist-gpl": "capsul3",
+        "morpho-deepsulci": "capsul3",
+    }
+}
+
 
 @click.group(context_settings={"help_option_names": ["-h", "--help"]})
 def cli():
@@ -30,27 +48,31 @@ def cli():
     "--python",
     type=click.Choice(["3.10", "3.11", "3.12"]),
     default=None,
-    help="Python version (default=config file value or 3.11)",
+    help=f"Python version (default=config file value or {default_python})",
 )
 @click.option(
     "-c",
     "--capsul",
     type=click.Choice(["2", "3"]),
     default=None,
-    help="Capsul major version (default=config file value or 3)",
+    help=f"Capsul major version (default=config file value or {default_capsul})",
 )
 @click.option(
     "-q",
     "--qt",
     type=click.Choice(["5", "6"]),
     default=None,
-    help="Qt major version (default=config file value or 5)",
+    help=f"Qt major version (default=config file value or {default_qt})",
 )
 @click.option("--force", is_flag=True)
 @click.argument("directory", type=click.Path())
-def init(directory, python, capsul, qt, force):
+@click.argument("packages", type=str, nargs=-1)
+def init(directory, packages, python, capsul, qt, force):
     """Create or reconfigure a full BrainVISA development directory"""
-
+    if not packages:
+        packages= ['all']
+    
+    neuro_forge_url = "https://brainvisa.info/neuro-forge"
     pixi_root = pathlib.Path(directory)
     if not pixi_root.exists():
         pixi_root.mkdir()
@@ -59,7 +81,11 @@ def init(directory, python, capsul, qt, force):
                 "pixi",
                 "init",
                 "-c",
-                "https://brainvisa.info/neuro-forge",
+                neuro_forge_url,
+                "-c",
+                "nvidia",
+                "-c",
+                "pytorch",
                 "-c",
                 "conda-forge",
                 str(pixi_root),
@@ -67,28 +93,33 @@ def init(directory, python, capsul, qt, force):
         )
 
     build_dir = pixi_root / "build"
-    build_dir.mkdir(exist_ok=True)
+    conf_dir = pixi_root / "conf"
+    conf_dir.mkdir(exist_ok=True)
 
-    build_options_file = build_dir / "build_options.json"
-    build_options = {}
+    build_options_file = conf_dir / "build_options.json"
+    build_options = {
+        "packages": packages,
+    }
     if build_options_file.exists():
         with open(build_options_file) as f:
             current_build_options = json.load(f)
         build_options = current_build_options.copy()
-    for name, default in (("python", "3.11"), ("capsul", "3"), ("qt", "5")):
+    for name, default in (
+        ("python", default_python),
+        ("capsul", default_capsul),
+        ("qt", default_qt),
+    ):
         build_options[name] = locals()[name] or default
-    build_options["prefix"] = (
-        f"p{build_options['python'].replace('.', '_')}c{build_options['capsul']}q{build_options['qt']}"
-    )
+
     if force or not build_options_file.exists():
-        with open(build_dir / "build_options.json", "w") as f:
+        with open(build_options_file, "w") as f:
             json.dump(build_options, f, indent=4)
     else:
-        with open(build_dir / "build_options.json") as f:
+        with open(build_options_file) as f:
             current_build_options = json.load(f)
-        if current_build_options != build_options:
+        if current_build_options != build_options and build_dir.exists():
             console.print(
-                f'[red]Existing build options in [bold]{build_dir / "build_options.json"}[/bold] differs from the selected ones[/red]'
+                f"[red]Existing build options in [bold]{build_options_file}[/bold] differs from the selected ones[/red]"
             )
             table = Table()
             table.add_column("existing options")
@@ -96,70 +127,21 @@ def init(directory, python, capsul, qt, force):
             table.add_row(Pretty(current_build_options), Pretty(build_options))
             console.print(table)
             console.print(
-                "Either remove the build directory or use [code]--force[/code] option."
+                "Either remove the directory [code]{build_dir}[/code] or use [code]--force[/code] option."
             )
             sys.exit(1)
-        with open(build_dir / "build_options.json", "w") as f:
+        with open(build_options_file, "w") as f:
             json.dump(build_options, f, indent=4)
 
-    # Download brainvisa-cmake sources
-    if not (pixi_root / "src" / "brainvisa-cmake").exists():
-        (pixi_root / "src").mkdir(exist_ok=True)
-        git.Repo.clone_from("https://github.com/brainvisa/brainvisa-cmake", str(pixi_root / "src" / "brainvisa-cmake"))
-    
-    return # To be continued...
-
-    # Find recipes for external projects and recipes build using bv_maker
-    external_recipes = []
-    bv_maker_recipes = []
-    bv_maker_packages = set()
-    for recipe in selected_recipes():
-        build = recipe.get("build")
-        if build is not None:
-            script = build.get("script")
-        if (
-            build is None
-            or isinstance(script, str)
-            and "BRAINVISA_INSTALL_PREFIX" in script
-        ):
-            bv_maker_recipes.append(recipe)
-            bv_maker_packages.add(recipe["package"]["name"])
-        else:
-            external_recipes.append(recipe)
-
-    # Add pytorch channels and activation to pixi project
-    neuro_forge_url = "https://brainvisa.info/neuro-forge"
-    soma_forge_dependencies = {
-        "cmake": "*",
-        "gcc": "*",
-        "git": "*",
-        "gxx": "*",
-        "pytest": "*",
-        "pip": "*",
-        "pyaml": "*",
-        "python": "*",
-        "rattler-build": ">=0.13",
-        "six": "*",
-        "sphinx": "*",
-        "toml": "*",
-        "libglu": "*",
-        "mesalib-devel-only": "*",
-        "mesa-libgl-devel-cos7-x86_64": "*",
-        "virtualgl": "*",
-        "libglvnd-devel-cos7-x86_64": "*",
-    }
-    pixi_config = read_pixi_config()
+    pixi_config = read_pixi_config(pixi_root)
+    pixi_project_name = (
+        f"{'-'.join(packages)}-py{build_options['python']}"
+        f"-cap{build_options['capsul']}"
+        f"-qt{build_options['qt']}"
+    )
     modified = False
-    if pixi_config["project"]["name"] == "neuro-forge":
-        pixi_config["project"]["name"] = "soma-forge"
-        modified = True
-    channels = pixi_config["project"]["channels"]
-    if "pytorch" not in channels:
-        channels.remove("conda-forge")
-        channels.extend(["nvidia", "pytorch", "conda-forge"])
-        modified = True
-    if neuro_forge_url not in channels:
-        channels.append(neuro_forge_url)
+    if pixi_config["project"]["name"] != pixi_project_name:
+        pixi_config["project"]["name"] = pixi_project_name
         modified = True
     if "libjpeg-turbo" not in pixi_config["dependencies"]:
         pixi_config["dependencies"]["libjpeg-turbo"] = {
@@ -168,28 +150,18 @@ def init(directory, python, capsul, qt, force):
         }
         modified = True
 
-    for package, version in soma_forge_dependencies.items():
-        if package not in pixi_config["dependencies"]:
-            pixi_config["dependencies"][package] = version
-            modified = True
-    activation_script = "soma-forge/activate.sh"
-    scripts = pixi_config.get("activation", {}).get("scripts")
-    if scripts is None:
-        pixi_config["activation"] = {"scripts": [activation_script]}
-        modified = True
-    elif activation_script not in scripts:
-        scripts.append(activation_script)
-        modified = True
-    if modified:
-        write_pixi_config(pixi_config)
-
-    # Copy default conf directory
-    if not (pixi_root / "conf").exists():
-        shutil.copytree(pathlib.Path(__file__).parent / "conf", pixi_root / "conf")
-
     # Compute all packages build and run dependencies
-    dependencies = {i["package"]["name"]: set() for i in external_recipes}
-    for recipe in external_recipes + bv_maker_recipes:
+    dependencies = {}
+    components = {}
+    for recipe in selected_recipes(packages or ["all"]):
+        package = recipe["package"]["name"]
+        print(package, recipe["soma-forge"]["type"])
+        for component in recipe.get("components", []):
+            branch = components_branch.get(build_options["capsul"], {}).get(
+                component, "master"
+            )
+            components.setdefault(package, {})[component] = branch
+            print("   ", component, branch)
         for requirement in recipe.get("requirements", {}).get("run", []) + recipe.get(
             "requirements", {}
         ).get("build", []):
@@ -201,18 +173,60 @@ def init(directory, python, capsul, qt, force):
                 # mesalib makes Anatomist crash
                 continue
             package, constraint = (requirement.split(None, 1) + [None])[:2]
-            if package not in bv_maker_packages:
-                dependencies.setdefault(package, set())
-                if constraint:
-                    existing_constraint = dependencies[package]
-                    if constraint not in existing_constraint:
-                        existing_constraint.add(constraint)
-                        dependencies[package] = existing_constraint
+            dependencies.setdefault(package, set())
+            if constraint:
+                existing_constraint = dependencies[package]
+                if constraint not in existing_constraint:
+                    existing_constraint.add(constraint)
+                    dependencies[package] = existing_constraint
 
-    # Add dependencies to pixi project
-    remove = []
-    add = []
-    for package, constraint in dependencies.items():
+    # Generate bv_maker.cfg
+    with open(pathlib.Path(__file__).parent / "conf" / "bv_maker.cfg") as f:
+        bv_maker_cfg_template = f.read()
+    components_source = []
+    components_build = []
+    for package, cb in components.items():
+        components_source.append(f"# Components of package {package}")
+        components_build.append(f"# Components of package {package}")
+        for component, branch in cb.items():
+            components_source.append(f"brainvisa {component} {branch}")
+            components_build.append(f"brainvisa {component} $CASA_SRC")
+    bv_maker_cfg = pixi_root / "conf" / "bv_maker.cfg"
+    if bv_maker_cfg.exists() and not force:
+        console.print(
+            f"[red]File [code]{bv_maker_cfg}[/code] exist, remove it or use [code]--force[/code] option."
+        )
+    with open(bv_maker_cfg, "w") as f:
+        f.write(
+            bv_maker_cfg_template.format(
+                components_source="    " + "\n    ".join(components_source),
+                components_build="    " + "\n    ".join(components_build),
+            )
+        )
+    soma_forge_dependencies = {
+        "cmake": "*",
+        "gcc": "*",
+        "git": "*",
+        "gxx": "*",
+        "pytest": "*",
+        "pip": "*",
+        "pyaml": "*",
+        "python": "*",
+        "rattler-build": [">=0.13"],
+        "six": "*",
+        "sphinx": "*",
+        "toml": "*",
+        "libglu": "*",
+        "mesalib-devel-only": "*",
+        "mesa-libgl-devel-cos7-x86_64": "*",
+        "virtualgl": "*",
+        "libglvnd-devel-cos7-x86_64": "*",
+    }
+
+    # Add dependencies to pixi.toml
+    for package, constraint in itertools.chain(
+        soma_forge_dependencies.items(), dependencies.items()
+    ):
         pixi_constraint = pixi_config.get("dependencies", {}).get(package)
         if pixi_constraint is not None:
             if pixi_constraint == "*":
@@ -222,38 +236,49 @@ def init(directory, python, capsul, qt, force):
             if constraint == "*":
                 constraint = set()
             if pixi_constraint != constraint:
-                remove.append(package)
+                del pixi_config["dependencies"][package]
+                modified = True
+                # remove.append(package)
             else:
                 continue
         if constraint:
-            add.append(f"{package} {','.join(constraint)}")
+            pixi_config.setdefault("dependencies", {})[package] = ",".join(constraint)
         else:
-            add.append(f"{package}=*")
-    try:
-        if remove:
-            command = ["pixi", "remove"] + remove
-            subprocess.check_call(command)
-        if add:
-            command = ["pixi", "add"] + add
-            subprocess.check_call(command)
-    except subprocess.CalledProcessError:
-        print(
-            "ERROR command failed:",
-            " ".join(f"'{i}'" for i in command),
-            file=sys.stdout,
-            flush=True,
+            pixi_config.setdefault("dependencies", {})[package] = "*"
+
+    shutil.copy(
+        pathlib.Path(__file__).parent.parent.parent / "activate.sh",
+        pixi_root / "activate.sh",
+    )
+    activation_script = "activate.sh"
+    scripts = pixi_config.get("activation", {}).get("scripts")
+    if scripts is None:
+        pixi_config["activation"] = {"scripts": [activation_script]}
+        modified = True
+    elif activation_script not in scripts:
+        scripts.append(activation_script)
+        modified = True
+    if modified:
+        write_pixi_config(pixi_root, pixi_config)
+
+    # Download brainvisa-cmake sources
+    if not (pixi_root / "src" / "brainvisa-cmake").exists():
+        (pixi_root / "src").mkdir(exist_ok=True)
+        git.Repo.clone_from(
+            "https://github.com/brainvisa/brainvisa-cmake",
+            str(pixi_root / "src" / "brainvisa-cmake"),
         )
-        return 1
 
 
 def read_recipes():
     """
     Iterate over all recipes files defined in soma-forge.
     """
-    for recipe_file in (pixi_root / "soma-forge" / "recipes").glob("*/recipe.yaml"):
+    for recipe_file in (pathlib.Path(__file__).parent.parent.parent / "recipes").glob(
+        "*.yaml"
+    ):
         with open(recipe_file) as f:
             recipe = yaml.safe_load(f)
-            recipe["soma-forge"] = {"recipe_dir": str(recipe_file.parent)}
             yield recipe
 
 
@@ -265,51 +290,25 @@ def selected_recipes(selection=None):
     recipes = {r["package"]["name"]: r for r in read_recipes()}
 
     # Parse direct dependencies
-    no_dependency = set(recipes)
     for package, recipe in recipes.items():
-        build = recipe.get("build")
-        if build:
-            script = build.get("script")
-            if isinstance(script, str) and "BRAINVISA_INSTALL_PREFIX" in script:
-                recipe["soma-forge"]["type"] = "brainvisa-cmake"
+        if recipe.get("components"):
+            build_requirements = recipe.get("requirements", {}).get("build", [])
+            if any(
+                i for i in build_requirements if i.startswith("${{") and "compiler" in i
+            ):
+                recipe["soma-forge"] = {"type": "compiled"}
             else:
-                recipe["soma-forge"]["type"] = "soma-forge"
+                recipe["soma-forge"] = {"type": "interpreted"}
         else:
-            recipe["soma-forge"]["type"] = "virtual"
+            recipe["soma-forge"] = {"type": "virtual"}
 
-        for requirement in recipe.get("requirements").get("run", []):
-            if not isinstance(requirement, str) or requirement.startswith("$"):
-                continue
-            dependency = requirement.split(None, 1)[0]
-            no_dependency.discard(dependency)
-            if dependency not in recipes:
-                recipe["soma-forge"].setdefault("requirements", {}).setdefault(
-                    "conda-forge", set()
-                ).add(dependency)
-            else:
-                type = recipe["soma-forge"]["type"]
-                if type == "virtual":
-                    type = "brainvisa-cmake"
-                recipe["soma-forge"].setdefault("requirements", {}).setdefault(
-                    type, set()
-                ).add(dependency)
-
-    # Read soma-forge configuration
-    config_file = pixi_root / "conf" / "soma-forge.yaml"
     all_packages = set(recipes)
-    selected_packages = all_packages
-    if config_file.exists():
-        with open(config_file) as f:
-            config = yaml.safe_load(f)
-            s = config.get("packages")
-            if s:
-                selected_packages = list(s)
+
     metapackages = {
         "all": all_packages,
-        "selected": selected_packages,
     }
     if not selection:
-        selection = ["selected"]
+        selection = ["all"]
     selected_packages = set()
     for s in selection:
         if s.startswith("-"):
@@ -337,14 +336,7 @@ def selected_recipes(selection=None):
         recipe = recipes[package]
         yield recipe
         done.add(package)
-        dependencies = (
-            recipe["soma-forge"]
-            .get("requirements", {})
-            .get("brainvisa-cmake", set())
-            .union(
-                recipe["soma-forge"].get("requirements", {}).get("soma-forge", set())
-            )
-        )
+        dependencies = recipe.get("internal-dependencies", [])
         stack.extend(i for i in dependencies if i not in done)
 
 
@@ -406,7 +398,7 @@ def forged_packages(name_re):
                 yield package_info
 
 
-def read_pixi_config():
+def read_pixi_config(pixi_root):
     """
     Read pixi.toml file
     """
@@ -414,7 +406,7 @@ def read_pixi_config():
         return toml.load(f)
 
 
-def write_pixi_config(pixi_config):
+def write_pixi_config(pixi_root, pixi_config):
     """
     wite pixi.toml file
     """

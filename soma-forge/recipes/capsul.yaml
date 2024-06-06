@@ -1,6 +1,5 @@
 package:
   name: capsul
-    version: ${{ distro_version }}
 
 components:
   - capsul

@@ -49,7 +49,6 @@ requirements:
     - libblitz
     - boost-cpp
     - dcmtk
-    - soma-python ==${{ distro_version }}
     - numpy
     - pyyaml
     - libminc

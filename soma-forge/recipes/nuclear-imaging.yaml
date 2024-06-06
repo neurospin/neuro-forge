@@ -2,8 +2,8 @@ package:
   name: nuclear-imaging
 
 components:
-  - nuclear_imaging-gpl
   - nuclear_imaging-nonfree
+  - nuclear_imaging-gpl
 
 internal-dependencies:
     - soma
