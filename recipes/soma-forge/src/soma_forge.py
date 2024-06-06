@@ -17,11 +17,12 @@ from rich.console import Console
 from rich.table import Table
 from rich.pretty import Pretty
 import rich.traceback
+
 rich.traceback.install()
 
-default_qt = 5
-default_capsul = 2
-default_python = 3.11
+default_qt = "5"
+default_capsul = "2"
+default_python = "3.11"
 
 # Git branches to select for brainvisa-cmake components given
 # Capsul version (when different from defautl branch)
@@ -96,8 +97,8 @@ def init(directory, packages, python, capsul, qt, force):
 
     neuro_forge_url = "https://brainvisa.info/neuro-forge"
     pixi_root = pathlib.Path(directory)
-    if not pixi_root.exists():
-        pixi_root.mkdir()
+    if not (pixi_root / "pixi.toml").exists():
+        pixi_root.mkdir(exist_ok=True)
         subprocess.check_call(
             [
                 "pixi",
@@ -224,6 +225,7 @@ def init(directory, packages, python, capsul, qt, force):
             )
         )
     soma_forge_dependencies = {
+        "python": {f"={build_options['python']}"},
         "cmake": "*",
         "gcc": "*",
         "git": "*",
@@ -231,8 +233,7 @@ def init(directory, packages, python, capsul, qt, force):
         "pytest": "*",
         "pip": "*",
         "pyaml": "*",
-        "python": "*",
-        "rattler-build": [">=0.13"],
+        "rattler-build": {">=0.13"},
         "six": "*",
         "sphinx": "*",
         "toml": "*",
@@ -255,10 +256,10 @@ def init(directory, packages, python, capsul, qt, force):
                 pixi_constraint = set(pixi_constraint.split(","))
             if constraint == "*":
                 constraint = set()
+            constraint.update(pixi_constraint)
             if pixi_constraint != constraint:
                 del pixi_config["dependencies"][package]
                 modified = True
-                # remove.append(package)
             else:
                 continue
         if constraint:
@@ -294,9 +295,7 @@ def read_recipes():
     """
     Iterate over all recipes files defined in soma-forge.
     """
-    for recipe_file in (pathlib.Path(__file__).parent / "recipes").glob(
-        "*.yaml"
-    ):
+    for recipe_file in (pathlib.Path(__file__).parent / "recipes").glob("*.yaml"):
         with open(recipe_file) as f:
             recipe = yaml.safe_load(f)
             yield recipe
@@ -716,5 +715,6 @@ def main():
     del kwargs["func"]
     sys.exit(args.func(**kwargs))
 
-if __name__ == '__main__':
+
+if __name__ == "__main__":
     cli()
