@@ -61,7 +61,7 @@ pixi run python -m pip install -e recipes/soma-forge
 
 Then create the BrainVISA development directory by giving its location and the target packages. Target packages are the name of soma-forge packages. It will select all corresponding brainvisa-cmake components (taking into account pakages dependencies) and put them in `bv_maker.cfg` file. By default, all known packages are included including ones that had not been tested at all and will make compilation fail. Options can be given to select some build options : python version, Qt major version and Capsul major version.
 ```
-soma-forge init /somewhere/brainvisa-py3.11-cap2-qt5 brainvisa cortical-surface morphologist-baby constellation
+pixi run soma-forge init /somewhere/brainvisa-py3.11-cap2-qt5 brainvisa cortical-surface morphologist-baby constellation
 ```
 
 Finally, the development directory can be used independently of neuroforge:
