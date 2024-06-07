@@ -11,11 +11,14 @@ scripts = ["activate.sh"]
 [tasks]
 
 [dependencies]
-python = "*"
+python = "> 2"
 conda-build = "*"
 rattler-build = "*"
 fire = "*"
+click = "*"
+rich = "*"
 git = "*"
+gitpython = "*"
 pip = "*"
 toml = "*"
 pyaml = "*"
