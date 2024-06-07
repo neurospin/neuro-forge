@@ -42,3 +42,23 @@ cd neuro-forge
 pixi run neuro-forge init channel
 ```
 
+## How to create a BrainVISA development directory with soma-forge
+
+First install soma-forge command that is located in neuro-forge project.
+```
+git clone https://github.com/neurospin/neuro-forge
+cd neuro-forge
+pixi run python -m pip install -e recipes/soma-forge
+```
+
+Then create the BrainVISA development directory by giving its location and the target packages. Target packages are the name of soma-forge packages. It will select all corresponding brainvisa-cmake components (taking into account pakages dependencies) and put them in `bv_maker.cfg` file. Options can be given to select some build options : python version, Qt major version and Capsul major version.
+```
+soma-forge init /somewhere/brainvisa-py3.11-cap2-qt5 brainvisa
+```
+
+Finally, the development directory can be used independently of neuroforge:
+```
+cd /somewhere/brainvisa-py3.11-cap2-qt5
+pixi shell
+bv_maker
+```
