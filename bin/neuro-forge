@@ -59,13 +59,15 @@ def init(channel_dir):
         if variants.exists():
             command.extend(["-m", str(variants)])
         check_call(command)
+        
 
     # Cleanup and create channel index
-    for i in ("bld", "src_cache", ".rattler", ".cache"):
-        to_delete = channel_dir / i
-        if to_delete.exists():
-            shutil.rmtree(to_delete)
     check_call(["conda", "index", channel_dir])
+    to_delete = [channel_dir / i for i in ("bld", "src_cache", ".rattler", ".cache")]
+    to_delete.extend(channel_dir.glob("*/.cache"))
+    for i in to_delete:
+        if i.exists():
+            shutil.rmtree(i)
     if save_datalad:
         check_call(
             ["datalad", "save", "-m", "Created initial packages", str(channel_dir)]
