@@ -54,6 +54,7 @@ pixi run neuro-forge init channel
 First install soma-forge command that is located in neuro-forge project.
 ```
 git clone https://github.com/neurospin/neuro-forge
+cd rolling-release
 cd neuro-forge
 pixi run python -m pip install -e recipes/soma-forge
 ```
