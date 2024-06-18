@@ -72,7 +72,3 @@ def init(channel_dir):
         check_call(
             ["datalad", "save", "-m", "Created initial packages", str(channel_dir)]
         )
-
-
-if __name__ == "__main__":
-    main()

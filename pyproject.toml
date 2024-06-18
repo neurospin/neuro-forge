@@ -37,3 +37,22 @@ soma-forge = "neuro_forge.soma_forge:main"
 
 [tool.setuptools]
 include-package-data = true
+
+[tool.pixi.project]
+channels = ["conda-forge"]
+platforms = ["linux-64"]
+
+[tool.pixi.dependencies]
+fire = "*"
+click ="*"
+rich = "*"
+toml = "*"
+pyaml = "*"
+gitpython = "*"
+conda-build = "*"
+rattler-build = "*"
+git = "*"
+gitpython = "*"
+pip = "*"
+datalad = "*"
+ipython = "*"

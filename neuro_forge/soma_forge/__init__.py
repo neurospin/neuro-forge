@@ -19,19 +19,9 @@ from rich.pretty import Pretty
 import rich.traceback
 
 rich.traceback.install()
+from . import main
 
-default_qt = "5"
-default_capsul = "2"
-default_python = "3.11"
-
-# Git branches to select for brainvisa-cmake components given
-# Capsul version (when different from defautl branch)
-components_branch = {
-    "3": {
-        "soma-base": "6.0",
-        "capsul": "3.0",
-        "anatomist-gpl": "capsul3",
-        "morphologist": "capsul3",
+main()phologist": "capsul3",
         "morphologist-gpl": "capsul3",
         "morpho-deepsulci": "capsul3",
     }
