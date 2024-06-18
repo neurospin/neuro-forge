@@ -19,9 +19,19 @@ from rich.pretty import Pretty
 import rich.traceback
 
 rich.traceback.install()
-from . import main
 
-main()phologist": "capsul3",
+default_qt = "5"
+default_capsul = "2"
+default_python = "3.11"
+
+# Git branches to select for brainvisa-cmake components given
+# Capsul version (when different from defautl branch)
+components_branch = {
+    "3": {
+        "soma-base": "6.0",
+        "capsul": "3.0",
+        "anatomist-gpl": "capsul3",
+        "morphologist": "capsul3",
         "morphologist-gpl": "capsul3",
         "morpho-deepsulci": "capsul3",
     }
@@ -785,7 +795,3 @@ def main():
     kwargs = vars(args).copy()
     del kwargs["func"]
     sys.exit(args.func(**kwargs))
-
-
-if __name__ == "__main__":
-    cli()
