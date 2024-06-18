@@ -18,7 +18,15 @@ classifiers = [
     "Natural Language :: English",
 ]
 
-dependencies = ["fire", "click", "rich", "toml", "pyaml", "gitpython"]
+dependencies = [
+    "fire", 
+    "click", 
+    "rich", 
+    "toml", 
+    "pyaml", 
+    "gitpython",
+]
+
 
 [project.urls]
 repository = "https://github.com/neurospin/neuro-forge"
@@ -32,8 +40,10 @@ neuro-forge = "neuro_forge:main"
 soma-forge = "neuro_forge.soma_forge:cli"
 
 [tool.setuptools]
-packages = ["neuro_forge"]
 include-package-data = true
+
+[tool.setuptools.packages.find]
+exclude = ["recipes"]
 
 [tool.pixi.project]
 channels = ["conda-forge"]
@@ -50,5 +60,3 @@ conda-build = "*"
 rattler-build = "*"
 git = "*"
 pip = "*"
-datalad = "*"
-ipython = "*"
