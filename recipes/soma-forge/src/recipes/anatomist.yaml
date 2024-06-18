@@ -1,20 +1,17 @@
 package:
   name: anatomist
 
-components:
-  - anatomist-free
-  - anatomist-gpl
+soma-forge:
+  components:
+    - anatomist-free
+    - anatomist-gpl
 
-internal-dependencies:
-  - soma
+  internal-dependencies:
+    - soma
+  
+  type: compiled
 
 requirements:
-  build:
-    - ${{ compiler('cxx') }}
-    - libstdcxx-devel_linux-64
-    - cmake
-    - make
-
   run:
     - qwt
     - matplotlib

@@ -1,13 +1,12 @@
 package:
   name: cati-sacha
 
-components:
-  - sacha-nonfree sacha-gpl
+soma-forge:
+  components:
+    - sacha-nonfree sacha-gpl
 
-internal-dependencies:
-  - soma
-  - anatomist
+  internal-dependencies:
+    - soma
+    - anatomist
 
-requirements:
-  build:
-    - ${{ compiler('cxx') }}
+  type: compiled

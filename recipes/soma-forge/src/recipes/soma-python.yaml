@@ -1,12 +1,15 @@
 package:
   name: soma-python
 
-components:
-  - soma-base
-  - soma-workflow
+soma-forge:
+  components:
+    - soma-base
+    - soma-workflow
 
-internal-dependencies:
-  - populse-db
+  internal-dependencies:
+    - populse-db
+
+  type: interpreted
 
 requirements:
   run:

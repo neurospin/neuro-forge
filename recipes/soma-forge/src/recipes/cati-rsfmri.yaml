@@ -1,9 +1,12 @@
 package:
   name: cati-rsfmri
 
-components:
-  - rsfmri
+soma-forge:
+  components:
+    - rsfmri
 
-internal-dependencies:
-  - soma
-  - anatomist
+  internal-dependencies:
+    - soma
+    - anatomist
+
+  type: interpreted

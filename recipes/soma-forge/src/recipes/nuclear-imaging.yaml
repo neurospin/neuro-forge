@@ -1,14 +1,13 @@
 package:
   name: nuclear-imaging
 
-components:
-  - nuclear_imaging-nonfree
-  - nuclear_imaging-gpl
+soma-forge:
+  components:
+    - nuclear_imaging-nonfree
+    - nuclear_imaging-gpl
 
-internal-dependencies:
-    - soma
-    - anatomist
+  internal-dependencies:
+      - soma
+      - anatomist
 
-requirements:
-  build:
-    - ${{ compiler('cxx') }}
+  type: compiled

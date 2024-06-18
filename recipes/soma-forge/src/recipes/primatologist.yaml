@@ -1,14 +1,13 @@
 package:
   name: primatologist
 
-components:
-  - primatologist-gpl
+soma-forge:
+  components:
+    - primatologist-gpl
 
-internal-dependencies:
-  - soma
-  - anatomist
-  - soma-freesurfer
+  internal-dependencies:
+    - soma
+    - anatomist
+    - soma-freesurfer
 
-requirements:
-  build:
-    - ${{ compiler('cxx') }}
+  type: compiled

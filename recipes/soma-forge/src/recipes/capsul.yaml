@@ -1,11 +1,14 @@
 package:
   name: capsul
 
-components:
-  - capsul
+soma-forge:
+  components:
+    - capsul
 
-internal-dependencies:
-  - soma-python
+  internal-dependencies:
+    - soma-python
+
+  type: interpreted
 
 requirements:
   run:

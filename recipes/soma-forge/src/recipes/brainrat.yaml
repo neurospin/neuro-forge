@@ -1,14 +1,13 @@
 package:
   name: brainrat
 
-components:
-  - brainrat-private
-  - brainrat-gpl
+soma-forge:
+  components:
+    - brainrat-private
+    - brainrat-gpl
 
-internal-dependencies:
-  - soma
-  - anatomist
+  internal-dependencies:
+    - soma
+    - anatomist
 
-requirements:
-  build:
-    - ${{ compiler('cxx') }}
+  type: compiled

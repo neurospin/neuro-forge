@@ -1,13 +1,12 @@
 package:
   name: highres-cortex
 
-components:
-  - highres-cortex
+soma-forge:
+  components:
+    - highres-cortex
 
-internal-dependencies:
-  - soma
-  - anatomist
+  internal-dependencies:
+    - soma
+    - anatomist
 
-requirements:
-  build:
-    - ${{ compiler('cxx') }}
+  type: compiled

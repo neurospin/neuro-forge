@@ -1,13 +1,12 @@
 package:
   name: cati-longitudinal
 
-components:
-  - longitudinal_pipelines
+soma-forge:
+  components:
+    - longitudinal_pipelines
 
-internal-dependencies:
-  - soma
-  - anatomist
+  internal-dependencies:
+    - soma
+    - anatomist
 
-requirements:
-  build:
-    - ${{ compiler('cxx') }}
+  type: compiled

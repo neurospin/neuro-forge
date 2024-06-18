@@ -92,11 +92,8 @@ def cli():
 @click.argument("packages", type=str, nargs=-1)
 def init(directory, packages, python, capsul, qt, force):
     """Create or reconfigure a full BrainVISA development directory"""
-    if not packages:
-        packages = ["all"]
-
     neuro_forge_url = "https://brainvisa.info/neuro-forge"
-    pixi_root = pathlib.Path(directory)
+    pixi_root = pathlib.Path(directory).absolute()
     if not (pixi_root / "pixi.toml").exists():
         pixi_root.mkdir(exist_ok=True)
         subprocess.check_call(
@@ -119,48 +116,56 @@ def init(directory, packages, python, capsul, qt, force):
     conf_dir = pixi_root / "conf"
     conf_dir.mkdir(exist_ok=True)
 
-    build_options_file = conf_dir / "build_options.json"
-    build_options = {
-        "packages": packages,
+    build_info_file = conf_dir / "build_info.json"
+    build_info = {
+        "packages": packages or ["all"],
+        "options": {
+            "python": default_python,
+            "qt": default_qt,
+            "capsul": default_capsul,
+        },
     }
-    if build_options_file.exists():
-        with open(build_options_file) as f:
-            current_build_options = json.load(f)
-        build_options = current_build_options.copy()
-    for name, default in (
-        ("python", default_python),
-        ("capsul", default_capsul),
-        ("qt", default_qt),
+    if build_info_file.exists() and not force:
+        with open(build_info_file) as f:
+            current_build_info = json.load(f)
+        build_info = current_build_info.copy()
+    for name in (
+        "python",
+        "capsul",
+        "qt",
     ):
-        build_options[name] = locals()[name] or default
+        v = locals().get(name)
+        if v:
+            build_info["options"][name] = v
 
-    if force or not build_options_file.exists():
-        with open(build_options_file, "w") as f:
-            json.dump(build_options, f, indent=4)
+    if force or not build_info_file.exists():
+        with open(build_info_file, "w") as f:
+            json.dump(build_info, f, indent=4)
     else:
-        with open(build_options_file) as f:
-            current_build_options = json.load(f)
-        if current_build_options != build_options and build_dir.exists():
+        with open(build_info_file) as f:
+            current_build_info = json.load(f)
+        if current_build_info != build_info and build_dir.exists():
             console.print(
-                f"[red]Existing build options in [bold]{build_options_file}[/bold] differs from the selected ones[/red]"
+                f"[red]Existing build options in [bold]{build_info_file}[/bold] differs from the selected ones[/red]"
             )
             table = Table()
             table.add_column("existing options")
             table.add_column("selected options")
-            table.add_row(Pretty(current_build_options), Pretty(build_options))
+            table.add_row(Pretty(current_build_info), Pretty(build_info))
             console.print(table)
             console.print(
                 "Either remove the directory [code]{build_dir}[/code] or use [code]--force[/code] option."
             )
             sys.exit(1)
-        with open(build_options_file, "w") as f:
-            json.dump(build_options, f, indent=4)
+        with open(build_info_file, "w") as f:
+            json.dump(build_info, f, indent=4)
 
+    packages = build_info["packages"]
     pixi_config = read_pixi_config(pixi_root)
     pixi_project_name = (
-        f"{'-'.join(packages)}-py{build_options['python']}"
-        f"-cap{build_options['capsul']}"
-        f"-qt{build_options['qt']}"
+        f"{'-'.join(packages)}-py{build_info['options']['python']}"
+        f"-cap{build_info['options']['capsul']}"
+        f"-qt{build_info['options']['qt']}"
     )
     modified = False
     if pixi_config["project"]["name"] != pixi_project_name:
@@ -178,9 +183,10 @@ def init(directory, packages, python, capsul, qt, force):
     components = {}
     for recipe in selected_recipes(packages or ["all"]):
         package = recipe["package"]["name"]
+        print(package)
         print(package, recipe["soma-forge"]["type"])
-        for component in recipe.get("components", []):
-            branch = components_branch.get(build_options["capsul"], {}).get(
+        for component in recipe["soma-forge"].get("components", []):
+            branch = components_branch.get(build_info["options"]["capsul"], {}).get(
                 component, "master"
             )
             components.setdefault(package, {})[component] = branch
@@ -225,11 +231,13 @@ def init(directory, packages, python, capsul, qt, force):
             )
         )
     soma_forge_dependencies = {
-        "python": {f"={build_options['python']}"},
-        "cmake": "*",
+        "python": {f"={build_info['options']['python']}"},
         "gcc": "*",
-        "git": "*",
         "gxx": "*",
+        "libstdcxx-devel_linux-64": "*",
+        "cmake": "*",
+        "make": "*",
+        "git": "*",
         "pytest": "*",
         "pip": "*",
         "pyaml": "*",
@@ -291,6 +299,16 @@ def init(directory, packages, python, capsul, qt, force):
         )
 
 
+def read_recipe(package):
+    """
+    Read a single recip given its package name
+    """
+    recipe_file = Pathlib.Path(__file__).parent / "recipes" / f"{package}.yaml"
+    with open(recipe_file) as f:
+        recipe = yaml.safe_load(f)
+    return recipe
+
+
 def read_recipes():
     """
     Iterate over all recipes files defined in soma-forge.
@@ -307,19 +325,6 @@ def selected_recipes(selection=None):
     """
     # Read recipes
     recipes = {r["package"]["name"]: r for r in read_recipes()}
-
-    # Parse direct dependencies
-    for package, recipe in recipes.items():
-        if recipe.get("components"):
-            build_requirements = recipe.get("requirements", {}).get("build", [])
-            if any(
-                i for i in build_requirements if i.startswith("${{") and "compiler" in i
-            ):
-                recipe["soma-forge"] = {"type": "compiled"}
-            else:
-                recipe["soma-forge"] = {"type": "interpreted"}
-        else:
-            recipe["soma-forge"] = {"type": "virtual"}
 
     all_packages = set(recipes)
 
@@ -355,7 +360,7 @@ def selected_recipes(selection=None):
         recipe = recipes[package]
         yield recipe
         done.add(package)
-        dependencies = recipe.get("internal-dependencies", [])
+        dependencies = recipe["soma-forge"].get("internal-dependencies", [])
         stack.extend(i for i in dependencies if i not in done)
 
 
@@ -368,14 +373,7 @@ def sorted_recipies():
     ready = set()
     inverted_dependencies = {}
     for package, recipe in recipes.items():
-        dependencies = (
-            recipe["soma-forge"]
-            .get("requirements", {})
-            .get("brainvisa-cmake", set())
-            .union(
-                recipe["soma-forge"].get("requirements", {}).get("soma-forge", set())
-            )
-        )
+        dependencies = recipe["soma-forge"].get("internal-dependencies", [])
         if not dependencies:
             ready.add(package)
         for dependency in dependencies:
@@ -387,21 +385,12 @@ def sorted_recipies():
         yield recipes[package]
         done.add(package)
         for dependent in inverted_dependencies.get(package, []):
-            dependencies = (
-                recipes[dependent]["soma-forge"]
-                .get("requirements", {})
-                .get("brainvisa-cmake", set())
-                .union(
-                    recipes[dependent]["soma-forge"]
-                    .get("requirements", {})
-                    .get("soma-forge", set())
-                )
-            )
+            dependencies = recipe.get("internal-dependencies", [])
             if all(d in done for d in dependencies):
                 ready.add(dependent)
 
 
-def forged_packages(name_re):
+def forged_packages(pixi_root, name_re):
     """
     Iterate over name of packages that exists in local forge
     """
@@ -498,77 +487,169 @@ def get_test_commands(log_lines=None):
     return tests
 
 
-def build():
-    (pixi_root / "build" / "success").unlink(missing_ok=True)
-    # Do not take into account failure on bv_maker sources as long as
-    # unstandard branches are used.
-    bv_maker = str(pixi_root / "src" / "brainvisa-cmake" / "bin" / "bv_maker")
-    subprocess.call([bv_maker, "sources"])
-    subprocess.check_call([bv_maker, "configure", "build", "doc"])
-    with open(pixi_root / "build" / "success", "w"):
-        pass
+def brainvisa_cmake_component_version(src):
+    # Check pyproject.toml
+    pyproject_toml = src / "pyproject.toml"
+    if pyproject_toml.exists():
+        with open(pyproject_toml) as f:
+            p = toml.load(f)
+        version = p.get("project", {}).get("version")
+        if version is None:
+            raise ValueError(f"Cannot find version in {pyproject_toml}")
+
+    # Check info.py
+    info_py = list(
+        itertools.chain(
+            src.glob("info.py"), src.glob("*/info.py"), src.glob("python/*/info.py")
+        )
+    )
+    if info_py:
+        if len(info_py) > 1:
+            raise ValueError(
+                f"Cannot choose info.py among: {', '.join(str(i) for i in info_py)}"
+            )
+
+        info_py = info_py[0]
+        d = {}
+        with open(info_py) as f:
+            exec(compile(f.read(), info_py, "exec"), d, d)
+        return f"{d['version_major']}.{d['version_minor']}.{d['version_micro']}"
+
+    # Check project_info.cmake
+    project_info = src / "project_info.cmake"
+    if not project_info.exists():
+        project_info = src / "cmake" / "project_info.cmake"
+    if project_info.exists():
+        v = [None, None, None]
+        with open(project_info) as f:
+            p = re.compile(r"\s*set\(\s*([^ \t]*)\s*(.*[^ \t])\s*\)")
+            for line in f:
+                match = p.match(line)
+                if match:
+                    variable, value = match.groups()
+                    if variable == "BRAINVISA_PACKAGE_VERSION_MAJOR":
+                        v[0] = value
+                    elif variable == "BRAINVISA_PACKAGE_VERSION_MINOR":
+                        v[1] = value
+                    elif variable == "BRAINVISA_PACKAGE_VERSION_PATCH":
+                        v[2] = value
+        return ".".join(v)
+
+    raise ValueError(f"Cannot find brainvisa-cmake component version in {pyproject_toml}")
 
 
-def forge(packages, force, show, test=True, check_build=True, verbose=None):
+@cli.command()
+@click.argument("directory", type=click.Path())
+def debug(directory):
+    pixi_root = pathlib.Path(directory)
+    for src in (pixi_root / "src").iterdir():
+        if src.is_dir():
+            print(src.name, "==", brainvisa_cmake_component_version(src))
+
+
+@cli.command()
+@click.option("-v", "--verbose", is_flag=True)
+@click.option("--show", is_flag=True)
+@click.option("--force", is_flag=True)
+@click.option("--test", type=bool, default=True)
+@click.argument("directory", type=click.Path())
+@click.argument("packages", type=str, nargs=-1)
+def release_dev(directory, packages, force, show, test=True, verbose=None):
     if show and verbose is None:
         verbose = True
     if verbose is True:
         verbose = sys.stdout
     if not packages:
         packages = ["*"]
+    pixi_root = pathlib.Path(directory).absolute()
     selector = re.compile("|".join(f"(?:{fnmatch.translate(i)})" for i in packages))
-    if check_build and not (pixi_root / "build" / "success").exists():
-        build()
-    channels = read_pixi_config()["project"]["channels"]
+    channels = read_pixi_config(pixi_root)["project"]["channels"]
+    forge = pixi_root / "forge"
     for recipe in sorted_recipies():
         package = recipe["package"]["name"]
-        recipe_dir = recipe["soma-forge"]["recipe_dir"]
-        if selector.match(package):
-            if not force:
-                # Check for the package exsitence
-                if any(forged_packages(f"^{re.escape(package)}$")):
-                    if verbose:
-                        print(
-                            f"Skip existing package {package}",
-                            file=verbose,
-                            flush=True,
-                        )
-                    continue
-            if verbose:
-                print(
-                    f"Build {package}",
-                    file=verbose,
-                    flush=True,
-                )
-            if not show:
-                build_dir = pixi_root / "forge" / "bld" / f"rattler-build_{package}"
-                if build_dir.exists():
-                    shutil.rmtree(build_dir)
-                forge = pixi_root / "forge"
-                command = [
-                    "rattler-build",
-                    "build",
-                    "--experimental",
-                    "--no-build-id",
-                    "-r",
-                    recipe_dir,
-                    "--output-dir",
-                    str(forge),
-                ]
-                if not test:
-                    command.append("--no-test")
-                for i in channels + [f"file://{str(forge)}"]:
-                    command.extend(["-c", i])
-                try:
-                    subprocess.check_call(command)
-                except subprocess.CalledProcessError:
-                    print(
-                        "ERROR command failed:",
-                        " ".join(f"'{i}'" for i in command),
-                        file=sys.stderr,
-                        flush=True,
-                    )
-                    return 1
+        print(package)
+        if not selector.match(package):
+            continue
+        components = recipe["soma-forge"].get("components", [])
+        if components:
+            # Check that build tree is clean
+            version = None
+            for component in components:
+                src = pixi_root / "src" / component
+                if version is None:
+                    version = brainvisa_cmake_component_version(src)
+                repo = git.Repo(src)
+                if not force and repo.is_dirty():
+                    raise Exception(f"Repository {src} contains uncomited files")
+                if not force and repo.untracked_files:
+                    raise Exception(f"Repository {src} has local modifications")
+            recipe["package"]["version"] = version
+        elif recipe["soma-forge"]["type"] == "virtual":
+            #TODO
+            pass
+        else:
+            raise Exception(f"No internal dependencies defined in {package} recipe")
+
+        internal_dependencies = recipe["soma-forge"].get("internal-dependencies", [])
+        if internal_dependencies:
+            recipe.setdefault("requirements", {}).setdefault("run", []).extend(
+                internal_dependencies
+            )
+
+        # Remove soma-forge specific data
+        recipe.pop("soma-forge", None)
+
+        recipe.setdefault("build", {})["script"] = "\n".join(
+            (
+                'cd "$PIXI_PROJECT_ROOT"',
+                "pixi run bash << END",
+                'cd "$CASA_BUILD"',
+                'export BRAINVISA_INSTALL_PREFIX="$PREFIX"',
+                f"for component in {' '.join(components)}; do",
+                "  make install-\${component}",
+                "  make install-\${component}-dev",
+                "  make install-\${component}-usrdoc",
+                "  make install-\${component}-devdoc",
+                "done",
+                "END",
+            )
+        )
+        
+        (forge / "recipes" / package).mkdir(exist_ok=True, parents=True)
+        
+        with open(forge / "recipes" / package / "recipe.yaml", "w") as f:
+            yaml.safe_dump(recipe, f)
+
+        # if not show:
+        #     build_dir = forge / "bld" / f"rattler-build_{package}"
+        #     if build_dir.exists():
+        #         shutil.rmtree(build_dir)
+        #     internal_recipe = read_recipe(package)
+        #     internal_recipe.pop("internal-dependencies", None)
+        #     command = [
+        #         "rattler-build",
+        #         "build",
+        #         "--experimental",
+        #         "--no-build-id",
+        #         "-r",
+        #         recipe_dir,
+        #         "--output-dir",
+        #         str(forge),
+        #     ]
+        #     if not test:
+        #         command.append("--no-test")
+        #     for i in channels + [f"file://{str(forge)}"]:
+        #         command.extend(["-c", i])
+        #     try:
+        #         subprocess.check_call(command)
+        #     except subprocess.CalledProcessError:
+        #         print(
+        #             "ERROR command failed:",
+        #             " ".join(f"'{i}'" for i in command),
+        #             file=sys.stderr,
+        #             flush=True,
+        #         )
+        #         return 1
 
 
 def test_ref():

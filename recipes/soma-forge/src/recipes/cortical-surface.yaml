@@ -1,14 +1,13 @@
 package:
   name: cortical-surface
 
-components:
-  - cortical_surface-gpl
-  - cortical_surface-nonfree
+soma-forge:
+  components:
+    - cortical_surface-gpl
+    - cortical_surface-nonfree
 
-internal-dependencies:
-  - morphologist
-  - soma-freesurfer
+  internal-dependencies:
+    - morphologist
+    - soma-freesurfer
 
-requirements:
-  build:
-    - ${{ compiler('cxx') }}
+  type: compiled

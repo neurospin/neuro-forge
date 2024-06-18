@@ -1,12 +1,11 @@
 package:
   name: morphologist-baby
 
-components:
-  - morphologist-baby
+soma-forge:
+  components:
+    - morphologist-baby
 
-internal-dependencies:
-  - morphologist
+  internal-dependencies:
+    - morphologist
 
-requirements:
-  build:
-    - ${{ compiler('cxx') }}
+  type: compiled

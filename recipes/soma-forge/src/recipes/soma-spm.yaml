@@ -1,8 +1,11 @@
 package:
   name: soma-spm
 
-components:
-  - brainvisa-spm
+soma-forge:
+  components:
+    - brainvisa-spm
+
+  type: interpreted
 
 internal-dependencies:
   - soma

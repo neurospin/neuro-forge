@@ -1,14 +1,13 @@
 package:
   name: cati-whasa
 
-components:
-  - whasa-nonfree
-  - whasa-gpl
+soma-forge:
+  components:
+    - whasa-nonfree
+    - whasa-gpl
 
-internal-dependencies:
-  - soma
-  - anatomist
+  internal-dependencies:
+    - soma
+    - anatomist
 
-requirements:
-  build:
-    - ${{ compiler('cxx') }}
+  type: compiled

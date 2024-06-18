@@ -1,16 +1,16 @@
 package:
   name: bioprocessing
 
-components:
-  - bioprocessing
+soma-forge:
+  components:
+    - bioprocessing
 
-internal-dependencies:
-  - soma
-  - anatomist
+  internal-dependencies:
+    - soma
+    - anatomist
+
+  type: compiled
 
 requirements:
-  build:
-    - ${{ compiler('cxx') }}
-
   run:
     - scikit-learn

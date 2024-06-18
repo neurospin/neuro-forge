@@ -1,9 +1,12 @@
 package:
   name: cati-deidentification
 
-components:
-  - deidentification
+soma-forge:
+  components:
+    - deidentification
 
-internal-dependencies:
-  - soma
-  - anatomist
+  type: interpreted
+
+  internal-dependencies:
+    - soma
+    - anatomist

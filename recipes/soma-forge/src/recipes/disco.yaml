@@ -1,14 +1,13 @@
 package:
   name: disco
 
-components:
-  - disco
+soma-forge:
+  components:
+    - disco
 
-internal-dependencies:
-  - soma
-  - anatomist
-  - soma-spm
+  internal-dependencies:
+    - soma
+    - anatomist
+    - soma-spm
 
-requirements:
-  build:
-    - ${{ compiler('cxx') }}
+  type: compiled

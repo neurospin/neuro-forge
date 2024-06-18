@@ -1,17 +1,17 @@
 package:
   name: qualicati
 
-components:
-  - qualicati
+soma-forge:
+  components:
+    - qualicati
 
-internal-dependencies:
-  - soma
-  - anatomist
+  internal-dependencies:
+    - soma
+    - anatomist
+
+  type: compiled
 
 requirements:
-  build:
-    - ${{ compiler('cxx') }}
-
   run:
     - nibabel
     - pydicom
