@@ -17,7 +17,8 @@ classifiers = [
     "Programming Language :: Python :: 3.12",
     "Natural Language :: English",
 ]
-dependencies = ["fire", "pyaml", "toml"]
+
+dependencies = ["fire", "click", "rich", "toml", "pyaml", "gitpython"]
 
 [project.urls]
 repository = "https://github.com/neurospin/neuro-forge"
@@ -27,12 +28,12 @@ requires = ["setuptools >= 61.0"]
 build-backend = "setuptools.build_meta"
 
 [tool.setuptools.packages.find]
-where = ["soma-forge/python"]
+where = ["neuro-forge"]
 include = ["soma_forge"]
 
 [project.scripts]
-soma-forge = "soma_forge:main"
+neuro-forge = "neuro_forge:main"
+soma-forge = "neuro_forge.soma_forge:main"
 
 [tool.setuptools]
 include-package-data = true
-script-files=["neuro-forge"]

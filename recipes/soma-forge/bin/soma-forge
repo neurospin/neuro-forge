@@ -1,3 +1,0 @@
-#!/usr/bin/env bash
-export PYTHONPATH="$$(dirname $(dirname $0)):PYTHONPATH"
-exec python -m soma_forge "$@"
