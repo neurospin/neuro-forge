@@ -5,15 +5,15 @@ soma-forge:
   components:
     - populse-db
 
-  requirements:
-    run:
-      - python >3.9
-      - lark-parser >0.7.0
-      - python-dateutil
-      - requests
-      - cryptography
-
   type: interpreted
+
+requirements:
+  run:
+    - python >3.9
+    - lark-parser >0.7.0
+    - python-dateutil
+    - requests
+    - cryptography
 
 tests:
   - script: "python -m populse_db.test"
