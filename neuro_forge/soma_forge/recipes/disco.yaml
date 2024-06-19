@@ -1,0 +1,13 @@
+package:
+  name: disco
+
+soma-forge:
+  components:
+    - disco
+
+  internal-dependencies:
+    - soma
+    - anatomist
+    - soma-spm
+
+  type: compiled

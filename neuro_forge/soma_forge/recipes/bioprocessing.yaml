@@ -1,0 +1,16 @@
+package:
+  name: bioprocessing
+
+soma-forge:
+  components:
+    - bioprocessing
+
+  internal-dependencies:
+    - soma
+    - anatomist
+
+  type: compiled
+
+requirements:
+  run:
+    - scikit-learn

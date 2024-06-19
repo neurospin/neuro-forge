@@ -9,7 +9,8 @@ package:
 build:
   number: 0
   script: |
-    python "$RECIPE_DIR/download_package.py" mesalib '${{ version }}' "$PREFIX"
+    mkdir "$PREFIX/mesalib"
+    python "$RECIPE_DIR/download_package.py" mesalib '${{ version }}' "$PREFIX/mesalib"
 
 requirements:
   build:

@@ -1,0 +1,13 @@
+package:
+  name: brainrat
+
+soma-forge:
+  components:
+    - brainrat-private
+    - brainrat-gpl
+
+  internal-dependencies:
+    - soma
+    - anatomist
+
+  type: compiled

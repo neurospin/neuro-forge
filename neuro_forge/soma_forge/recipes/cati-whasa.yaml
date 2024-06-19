@@ -1,0 +1,13 @@
+package:
+  name: cati-whasa
+
+soma-forge:
+  components:
+    - whasa-nonfree
+    - whasa-gpl
+
+  internal-dependencies:
+    - soma
+    - anatomist
+
+  type: compiled

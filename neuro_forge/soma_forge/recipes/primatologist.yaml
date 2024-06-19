@@ -1,0 +1,13 @@
+package:
+  name: primatologist
+
+soma-forge:
+  components:
+    - primatologist-gpl
+
+  internal-dependencies:
+    - soma
+    - anatomist
+    - soma-freesurfer
+
+  type: compiled

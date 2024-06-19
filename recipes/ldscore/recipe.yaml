@@ -1,0 +1,45 @@
+context:
+  git_repo_url: "https://github.com/brainvisa/ldscore"
+  latest_tag: ${{ git.latest_tag( git_repo_url ) }}
+
+
+package:
+  name: "ldscore"
+  version: ${{ latest_tag }}
+
+
+
+source:
+  git: ${{ git_repo_url }}
+  tag: ${{ latest_tag }}
+
+
+build:
+  noarch: python
+
+requirements:
+  build:
+    - python
+    - pip
+    - tree
+
+  run: 
+    - bitarray >=2.6.0
+    - nose >=1.3.7
+    - pybedtools >=0.9.0
+    - scipy >=1.9.2
+    - numpy >=1.23.3
+    - pandas >=1.5.0
+
+tests:
+  - python:
+      imports:
+        - ldscore
+  - script:
+     - ldsc -h
+     - make_annot -h
+     - munge_sumstats -h
+
+about:
+  homepage: https://github.com/brainvisa/ldscore
+  summary: ldscore project ported to Conda

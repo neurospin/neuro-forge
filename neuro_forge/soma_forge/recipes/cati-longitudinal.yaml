@@ -1,0 +1,12 @@
+package:
+  name: cati-longitudinal
+
+soma-forge:
+  components:
+    - longitudinal_pipelines
+
+  internal-dependencies:
+    - soma
+    - anatomist
+
+  type: compiled

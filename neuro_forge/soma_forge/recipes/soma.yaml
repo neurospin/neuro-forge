@@ -1,0 +1,46 @@
+package:
+  name: soma
+
+soma-forge:
+  components:
+    - soma-io
+    - aims-free
+    - aims-gpl
+    - brainvisa-share
+    - axon
+
+  internal-dependencies:
+    - soma-python
+
+  type: compiled
+
+requirements:
+  build:
+    - libsigcpp <3
+    - libblitz
+    - boost-cpp
+    - gfortran
+    - graphviz
+    - dcmtk
+    - doxygen
+    - pkgconfig
+    - numpy
+    - pyyaml
+    - libminc
+    - openjpeg
+
+  run:
+    - libblitz
+    - boost-cpp
+    - dcmtk
+    - numpy
+    - pyyaml
+    - libminc
+    - openjpeg
+    - pywebp
+
+tests:
+  - script: |
+      python -m soma_forge test soma
+      python -m soma_forge test aims
+      python -m soma_forge test axon

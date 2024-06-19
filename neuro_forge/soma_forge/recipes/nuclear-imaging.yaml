@@ -1,0 +1,13 @@
+package:
+  name: nuclear-imaging
+
+soma-forge:
+  components:
+    - nuclear_imaging-nonfree
+    - nuclear_imaging-gpl
+
+  internal-dependencies:
+      - soma
+      - anatomist
+
+  type: compiled

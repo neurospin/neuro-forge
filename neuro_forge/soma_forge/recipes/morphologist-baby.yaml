@@ -1,0 +1,11 @@
+package:
+  name: morphologist-baby
+
+soma-forge:
+  components:
+    - morphologist-baby
+
+  internal-dependencies:
+    - morphologist
+
+  type: compiled

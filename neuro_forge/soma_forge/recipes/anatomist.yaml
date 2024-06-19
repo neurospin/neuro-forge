@@ -1,0 +1,23 @@
+package:
+  name: anatomist
+
+soma-forge:
+  components:
+    - anatomist-free
+    - anatomist-gpl
+
+  internal-dependencies:
+    - soma
+  
+  type: compiled
+
+requirements:
+  run:
+    - qwt
+    - matplotlib
+    - virtualgl
+    - qtconsole
+    - ipycanvas
+    - ipywidgets
+    - ipyevents
+    - notebook

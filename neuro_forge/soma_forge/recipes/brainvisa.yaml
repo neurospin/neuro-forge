@@ -1,0 +1,12 @@
+package:
+  name: brainvisa
+
+soma-forge:
+  internal-dependencies:
+    - brainrat
+    - disco
+    - highres-cortex
+    - morphologist
+    - primatologist
+
+  type: virtual
