@@ -62,6 +62,9 @@ def build(channel_dir, packages):
         variants = recipe_dir / "variants.yaml"
         if variants.exists():
             command.extend(["-m", str(variants)])
+        print("#----------------- calling ------------------------------")
+        print(' '.join(f"'{i}'" for i in command))
+        print("#--------------------------------------------------------")
         check_call(command)
         
 
