@@ -183,7 +183,6 @@ def init(directory, packages, python, capsul, qt, force):
     components = {}
     for recipe in selected_recipes(packages or ["all"]):
         package = recipe["package"]["name"]
-        print(package)
         print(package, recipe["soma-forge"]["type"])
         for component in recipe["soma-forge"].get("components", []):
             branch = components_branch.get(build_info["options"]["capsul"], {}).get(
@@ -191,9 +190,13 @@ def init(directory, packages, python, capsul, qt, force):
             )
             components.setdefault(package, {})[component] = branch
             print("   ", component, branch)
-        for requirement in recipe.get("requirements", {}).get("run", []) + recipe.get(
+        requirements = recipe.get("requirements", {}).get("run", []) + recipe.get(
             "requirements", {}
-        ).get("build", []):
+        ).get("build", [])
+        if requirements:
+            print("   ", "\n    ".join(f"-> {i}" for i in requirements))
+        print()
+        for requirement in requirements:
             if (
                 not isinstance(requirement, str)
                 or requirement.startswith("$")
@@ -231,7 +234,7 @@ def init(directory, packages, python, capsul, qt, force):
             )
         )
     soma_forge_dependencies = {
-        "python": {f"={build_info['options']['python']}"},
+        "python": {f"=={build_info['options']['python']}"},
         "gcc": "*",
         "gxx": "*",
         "libstdcxx-devel_linux-64": "*",
@@ -535,7 +538,9 @@ def brainvisa_cmake_component_version(src):
                         v[2] = value
         return ".".join(v)
 
-    raise ValueError(f"Cannot find brainvisa-cmake component version in {pyproject_toml}")
+    raise ValueError(
+        f"Cannot find brainvisa-cmake component version in {pyproject_toml}"
+    )
 
 
 @cli.command()
@@ -585,7 +590,7 @@ def release_dev(directory, packages, force, show, test=True, verbose=None):
                     raise Exception(f"Repository {src} has local modifications")
             recipe["package"]["version"] = version
         elif recipe["soma-forge"]["type"] == "virtual":
-            #TODO
+            # TODO
             pass
         else:
             raise Exception(f"No internal dependencies defined in {package} recipe")
@@ -614,9 +619,9 @@ def release_dev(directory, packages, force, show, test=True, verbose=None):
                 "END",
             )
         )
-        
+
         (forge / "recipes" / package).mkdir(exist_ok=True, parents=True)
-        
+
         with open(forge / "recipes" / package / "recipe.yaml", "w") as f:
             yaml.safe_dump(recipe, f)
 
