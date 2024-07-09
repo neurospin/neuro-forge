@@ -1,32 +1,36 @@
 context:
-  version: "0.0.1"
+  version: "0.1.0"
 
 package:
   name: "mlukb"
-  version: ${{ version}}
+  version: ${{ version }}
 
 
-
-source:
-  path: /tmp/whatsup
-  tag: ${{ latest_tag }}
+#
+#source:
+#  path: /tmp/whatsup/dist/whatsup-0.1.0.tar.gz 
 
 
 build:
   noarch: python
 
 requirements:
-  build:
-    - python
-    - pip
+#  build:
+#    - python
+#    - pip
 
   run: 
-    - colorama
+    - scikit-learn
+    - nilearn
+    - r-base
 
 tests:
   - python:
       imports:
-        - whatsup
+        - nilearn
+  - script:
+    - R --version
+
 
 
 about:
