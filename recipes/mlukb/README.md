@@ -35,7 +35,7 @@ rattler-build build --recipe recipe.yaml
 tree output            # see the package
 
 # copy to the main channel
-export CHANNEL=file:///neurospin/brainomics/ig_channel
+export CHANNEL=/neurospin/brainomics/ig_channel
 cp output/noarch/mlukb-*.conda $CHANNEL/noarch
 
 # re-index the main repo
