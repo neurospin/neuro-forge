@@ -35,7 +35,7 @@ rattler-build build --recipe recipe.yaml
 tree output            # see the package
 
 # copy to the main channel
-export CHANNEL=/neurospin/brainomics/ig_channel
+export CHANNEL=file:///neurospin/brainomics/ig_channel
 cp output/noarch/mlukb-*.conda $CHANNEL/noarch
 
 # re-index the main repo
@@ -48,7 +48,7 @@ Use pixi to create MYENV
 ```bash
 export MYENV=myenv
 cd /tmp
-pixi init -c $CHANNEL -c bioconda -c conda-forge $MYENV
+pixi init -c file:///tmp/$CHANNEL -c bioconda -c conda-forge $MYENV
 cd /tmp/$MYENV
 pixi shell
 pixi add mlukb
