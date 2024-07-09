@@ -46,11 +46,50 @@ pixi add conda-build # to get the conda-index cmd
 ### Install the MLUKB env on a fresh host/system
 Use pixi to create MYENV
 ```bash
-export MYENV=myenv
 cd /tmp
+export MYENV=myenv
 pixi init -c $CHANNEL -c conda-forge -c bioconda $MYENV
 cd /tmp/$MYENV
 pixi shell
 pixi add mlukb
 ```
 
+## Build a movable env
+
+A two step process.
+
+### Use the conda-pack 
+```bash
+cd /tmp
+export MYENV=myenv
+cd /tmp/$MYENV
+pixi shell
+pixi add conda-pack
+# pack the (base) env of pixi
+conda-pack --output $MYENV.tar.gz
+```
+
+### Get from the non connceted HCP system/host
+
+```bash
+cd /tmp/$MYENV
+scp $MYENV.tar.gz USER@irene-fr.ccc.cea.fr:/XX/commons/xportenv/
+mkdir $MYENV
+tar -xzf $MYENV.tar.gz -C $MYENV
+
+# step1
+cd $MYENV
+source bin/activate
+conda-unpack
+source bin/deactivate
+
+# step2 use module
+cd ..
+mkdir -p /XX/Modules/modulefiles/myenv
+module sh-to-mod bash /XX/commons/xportenv/myenv/bin/activate > /XX/Modules/modulefiles/myenv/0.1
+
+# try it
+# boot a fresh shell
+module avail my*
+module load myenv
+```
