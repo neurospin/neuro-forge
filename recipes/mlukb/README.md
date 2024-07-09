@@ -1,4 +1,4 @@
-# MLUKB an environment to reproduce Kamalaker's paper
+# MLUKB an environment to reproduce UKB ML paper
 
 This description is for rattler-build / pixi / conda / logics.
 
@@ -22,8 +22,35 @@ pip install -e .
 ```
 
 ### Now build the mlukb environement
+
+The conda package is created in ./output. 
+ - Suppose the channel is CHANNEL. 
+ - copy the locally produced conda package in it
+ - refresh (re-index) the channel CHANNEL
+
 ```bash
+# create the package
 cd recipes/mlukb
 rattler-build build --recipe recipe.yaml
+tree output            # see the package
 
+# copy to the main channel
+export CHANNEL=/neurospin/brainomics/ig_channel
+cp output/noarch/mlukb-*.conda $CHANNEL/noarch
+
+# re-index the main repo
+pixi add conda-build # to get the conda-index cmd
+/usr/bin/env conda index $CHANNEL
 ```
+
+### Install the MLUKB env on a fresh host/system
+Use pixi to create MYENV
+```bash
+export MYENV=myenv
+cd /tmp
+pixi init -c $CHANNEL -c bioconda -c conda-forge $MYENV
+cd /tmp/$MYENV
+pixi shell
+pixi add mlukb
+```
+
