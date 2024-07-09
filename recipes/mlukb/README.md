@@ -48,7 +48,7 @@ Use pixi to create MYENV
 ```bash
 export MYENV=myenv
 cd /tmp
-pixi init -c file://$CHANNEL -c bioconda -c conda-forge $MYENV
+pixi init -c $CHANNEL -c conda-forge -c bioconda $MYENV
 cd /tmp/$MYENV
 pixi shell
 pixi add mlukb
