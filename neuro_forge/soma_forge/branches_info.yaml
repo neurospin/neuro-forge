@@ -1,0 +1,129 @@
+dev:
+  components:
+    3dns-private:
+      url: https://bioproj.extra.cea.fr/git/3dns-private
+    aims-free:
+      url: https://github.com/brainvisa/aims-free.git
+    aims-gpl:
+      url: https://github.com/brainvisa/aims-gpl.git
+    anatomist-free:
+      url: https://github.com/brainvisa/anatomist-free.git
+    anatomist-gpl:
+      url: https://github.com/brainvisa/anatomist-gpl.git
+    axon:
+      url: https://github.com/brainvisa/axon.git
+    bioprocessing:
+      url: https://bioproj.extra.cea.fr/git/bioprocessing
+    brainrat-gpl:
+      url: https://bioproj.extra.cea.fr/git/brainrat-gpl
+    brainrat-private:
+      url: https://bioproj.extra.cea.fr/git/brainrat-private
+    brainvisa-cmake:
+      url: https://github.com/brainvisa/brainvisa-cmake.git
+    brainvisa-share:
+      url: https://github.com/brainvisa/brainvisa-share.git
+    brainvisa-spm:
+      url: https://github.com/brainvisa/brainvisa-spm.git
+    brainvisa_freesurfer:
+      url: https://github.com/brainvisa/brainvisa_freesurfer.git
+    capsul:
+      url: https://github.com/populse/capsul.git
+    casa-distro:
+      url: https://github.com/brainvisa/casa-distro.git
+    catidb-client:
+      url: https://github.com/cati-neuroimaging/catidb-client.git
+    constellation-gpl:
+      url: https://github.com/brainvisa/constellation-gpl.git
+    constellation-nonfree:
+      url: https://github.com/brainvisa/constellation-nonfree.git
+    cortical_surface-gpl:
+      url: https://github.com/brainvisa/cortical_surface-gpl.git
+    cortical_surface-nonfree:
+      url: https://github.com/brainvisa/cortical_surface-nonfree.git
+    deidentification:
+      url: https://github.com/cati-neuroimaging/deidentification.git
+    disco:
+      url: https://bioproj.extra.cea.fr/git/brainvisa-disco
+    highres-cortex:
+      url: https://github.com/neurospin/highres-cortex.git
+    longitudinal_pipelines:
+      url: https://github.com/cati-neuroimaging/longitudinal_pipelines.git
+    morpho-deepsulci:
+      url: https://github.com/brainvisa/morpho-deepsulci.git
+    morphologist-baby:
+      url: https://bioproj.extra.cea.fr/git/brainvisa-t1mri/morphologist-baby.git
+    morphologist-gpl:
+      url: https://github.com/brainvisa/morphologist-gpl.git
+    morphologist-nonfree:
+      url: https://github.com/brainvisa/morphologist-nonfree.git
+    morphologist-ui:
+      url: https://github.com/brainvisa/morphologist.git
+    nuclear_imaging-gpl:
+      url: https://github.com/cati-neuroimaging/nuclear_imaging-gpl.git
+    nuclear_imaging-nonfree:
+      url: https://github.com/cati-neuroimaging/nuclear_imaging-nonfree.git
+    populse-db:
+      url: https://github.com/populse/populse_db.git
+    primatologist-gpl:
+      url: https://bioproj.extra.cea.fr/git/primatologist-gpl
+    qualicati:
+      url: https://github.com/cati-neuroimaging/qualicati.git
+    rsfmri:
+      url: https://github.com/cati-neuroimaging/rsfmri.git
+    sacha-gpl:
+      url: https://github.com/cati-neuroimaging/sacha-gpl.git
+    sacha-nonfree:
+      url: https://github.com/cati-neuroimaging/sacha-nonfree.git
+    soma-base:
+      url: https://github.com/populse/soma-base.git
+    soma-io:
+      url: https://github.com/brainvisa/soma-io.git
+    soma-workflow:
+      url: https://github.com/populse/soma-workflow.git
+    sulci-nonfree:
+      url: https://github.com/brainvisa/sulci-nonfree.git
+    whasa-gpl:
+      url: https://github.com/cati-neuroimaging/whasa-gpl.git
+    whasa-nonfree:
+      url: https://github.com/cati-neuroimaging/whasa-nonfree.git
+  build-dependencies:
+    cmake: '*'
+    gcc: '*'
+    git: '*'
+    gxx: '*'
+    libglu: '*'
+    libglvnd-devel-cos7-x86_64: '*'
+    libstdcxx-devel_linux-64: '*'
+    make: '*'
+    mesa-libgl-devel-cos7-x86_64: '*'
+    mesalib-devel-only: '*'
+    pip: '*'
+    pyaml: '*'
+    pytest: '*'
+    rattler-build: '>=0.13'
+    six: '*'
+    sphinx: '*'
+    toml: '*'
+    virtualgl: '*'
+'6.0':
+  base: dev
+  branch: soma-forge-6.0
+'6.1':
+  base: dev
+  components:
+    anatomist-gpl:
+      branch: capsul3
+    axon:
+      branch: capsul3
+    capsul:
+      branch: '3.0'
+    morpho-deepsulci:
+      branch: capsul3
+    morphologist:
+      branch: capsul3
+    morphologist-gpl:
+      branch: capsul3
+    populse-db:
+      branch: '3.0'
+    soma-base:
+      branch: '6.0'

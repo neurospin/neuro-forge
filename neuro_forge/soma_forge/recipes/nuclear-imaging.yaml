@@ -11,3 +11,8 @@ soma-forge:
       - anatomist
 
   type: compiled
+
+requirements:
+  run:
+    - pydicom
+ 
