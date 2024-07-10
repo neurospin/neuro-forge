@@ -1,16 +1,18 @@
 import click
+import git
 import itertools
 import json
 import pathlib
+import shutil
 import subprocess
 
 from rich.table import Table
 from rich.pretty import Pretty
 
-from . import cli
+from . import cli, console
 from ..pixi import read_pixi_config, write_pixi_config
 from ..recipes import selected_recipes
-from ..branches import branches_info
+from ..branches import component_source, branch_info
 
 default_python = "3.11"
 bv_maker_cfg_template = """[ source $CASA_SRC ]
@@ -35,7 +37,6 @@ bv_maker_cfg_template = """[ source $CASA_SRC ]
 
 
 @cli.command()
-@click.pass_context
 @click.option(
     "-p",
     "--python",
@@ -47,8 +48,9 @@ bv_maker_cfg_template = """[ source $CASA_SRC ]
 @click.argument("directory", type=click.Path())
 @click.argument("soma_forge_branch", type=str)
 @click.argument("packages", type=str, nargs=-1)
-def init(context, directory, soma_forge_branch, packages, python, force):
+def init(directory, soma_forge_branch, packages, python, force):
     """Create or reconfigure a full BrainVISA development directory"""
+    soma_forge_branch_info = branch_info(soma_forge_branch)
     neuro_forge_url = "https://brainvisa.info/neuro-forge"
     pixi_root = pathlib.Path(directory).absolute()
     if not (pixi_root / "pixi.toml").exists():
@@ -74,9 +76,10 @@ def init(context, directory, soma_forge_branch, packages, python, force):
     conf_dir.mkdir(exist_ok=True)
 
     build_info_file = conf_dir / "build_info.json"
+    packages = packages or soma_forge_branch_info.get("default_packages") or "all"
     build_info = {
         "branch": soma_forge_branch,
-        "packages": packages or ["all"],
+        "packages": packages,
         "options": {
             "python": default_python,
         },
@@ -94,9 +97,7 @@ def init(context, directory, soma_forge_branch, packages, python, force):
         if v:
             build_info["options"][name] = v
 
-    build_info["build_string"] = (
-        f"py{build_info['options']['python'].replace('.', '')}"
-    )
+    build_info["build_string"] = f"py{build_info['options']['python'].replace('.', '')}"
 
     if force or not build_info_file.exists():
         with open(build_info_file, "w") as f:
@@ -105,15 +106,15 @@ def init(context, directory, soma_forge_branch, packages, python, force):
         with open(build_info_file) as f:
             current_build_info = json.load(f)
         if current_build_info != build_info and build_dir.exists():
-            context.console.print(
+            console.print(
                 f"[red]Existing build options in [bold]{build_info_file}[/bold] differs from the selected ones[/red]"
             )
             table = Table()
             table.add_column("existing options")
             table.add_column("selected options")
-            tabl-e.add_row(Pretty(current_build_info), Pretty(build_info))
-            context.console.print(table)
-            context.console.print(
+            table.add_row(Pretty(current_build_info), Pretty(build_info))
+            console.print(table)
+            console.print(
                 f"Either remove the directory [code]{build_dir}[/code] or use [code]--force[/code] option."
             )
             sys.exit(1)
@@ -123,8 +124,8 @@ def init(context, directory, soma_forge_branch, packages, python, force):
     packages = build_info["packages"]
     pixi_config = read_pixi_config(pixi_root)
     pixi_project_name = (
-        f"soma-forge-{soma_forge_branch}-py{build_info['options']['python']}"
-        )
+        f"soma-build-{soma_forge_branch}-{build_info['build_string']}"
+    )
     modified = False
     if pixi_config["project"]["name"] != pixi_project_name:
         pixi_config["project"]["name"] = pixi_project_name
@@ -143,11 +144,13 @@ def init(context, directory, soma_forge_branch, packages, python, force):
         package = recipe["package"]["name"]
         print(package, recipe["soma-forge"]["type"])
         for component in recipe["soma-forge"].get("components", []):
-            branch = branches_info()[soma_forge_branch].get(
-                component, "master"
-            )
-            components.setdefault(package, {})[component] = branch
-            print("   ", component, branch)
+            source = component_source(component, soma_forge_branch)
+            if not source:
+                raise ValueError(
+                    f"Cannot find source for component {component} in soma-forge branch {soma_forge_branch}"
+                )
+            components.setdefault(package, {})[component] = source
+            print("   ", component, source[0], source[1])
         requirements = recipe.get("requirements", {}).get("run", []) + recipe.get(
             "requirements", {}
         ).get("build", [])
@@ -176,13 +179,13 @@ def init(context, directory, soma_forge_branch, packages, python, force):
     for package, cb in components.items():
         components_source.append(f"# Components of package {package}")
         components_build.append(f"# Components of package {package}")
-        for component, branch in cb.items():
-            components_source.append(f"brainvisa {component} {branch}")
+        for component, source in cb.items():
+            url, branch = source
+            components_source.append(f"git {url} {branch} {component}")
             components_build.append(f"brainvisa {component} * $CASA_SRC")
     bv_maker_cfg = pixi_root / "conf" / "bv_maker.cfg"
     if bv_maker_cfg.exists() and not force:
-        print("!!!!!!!!!!!!!", context)
-        context.console.print(
+        console.print(
             f"[red]File [code]{bv_maker_cfg}[/code] exist, remove it or use [code]--force[/code] option."
         )
     with open(bv_maker_cfg, "w") as f:
@@ -192,6 +195,7 @@ def init(context, directory, soma_forge_branch, packages, python, force):
                 components_build="    " + "\n    ".join(components_build),
             )
         )
+
     soma_forge_dependencies = {
         "python": {f"=={build_info['options']['python']}"},
         "gcc": "*",
@@ -238,7 +242,7 @@ def init(context, directory, soma_forge_branch, packages, python, force):
             pixi_config.setdefault("dependencies", {})[package] = "*"
 
     shutil.copy(
-        pathlib.Path(__file__).parent / "activate.sh",
+        pathlib.Path(__file__).parent.parent / "activate.sh",
         pixi_root / "activate.sh",
     )
     activation_script = "activate.sh"

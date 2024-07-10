@@ -14,7 +14,6 @@
 # import yaml
 
 
-
 # def test_ref():
 #     test_ref_data_dir = os.environ.get("BRAINVISA_TEST_REF_DATA_DIR")
 #     if not test_ref_data_dir:

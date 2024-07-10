@@ -5,14 +5,13 @@ import rich.traceback
 
 rich.traceback.install()
 
-@click.group(context_settings={"help_option_names": ["-h", "--help"]})
-@click.pass_context
-def cli(context):
-    global console
+console = Console()
 
-    print("!!!!!!!!!!!!!!!!!!!!!!!!!", context)
-    context.console = Console()
-    context.console.print("hello")
+
+@click.group(context_settings={"help_option_names": ["-h", "--help"]})
+def cli():
+    pass
+
 
 from . import init
 from . import dev_packages_plan

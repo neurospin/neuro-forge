@@ -1,5 +1,6 @@
 import toml
 
+
 def read_pixi_config(pixi_root):
     """
     Read pixi.toml file

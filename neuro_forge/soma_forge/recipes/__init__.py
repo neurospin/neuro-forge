@@ -1,6 +1,7 @@
 import pathlib
 import yaml
 
+
 def read_recipe(package):
     """
     Read a single recip given its package name

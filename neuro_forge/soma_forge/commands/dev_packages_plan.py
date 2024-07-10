@@ -1,4 +1,3 @@
-
 import click
 from . import cli
 from ..pixi import read_pixi_config, write_pixi_config
@@ -235,7 +234,9 @@ def dev_packages_plan(directory, packages, force, show, test=True, verbose=None)
             raise Exception(f"No components defined in {package} recipe")
 
         recipe.setdefault("build", {})["number"] = build_number
-        recipe["build"]["string"] = f"{build_info['build_string']}_{build_info['build_number']}"
+        recipe["build"][
+            "string"
+        ] = f"{build_info['build_string']}_{build_info['build_number']}"
         recipe["build"]["script"] = "\n".join(
             (
                 'cd "$PIXI_PROJECT_ROOT"',

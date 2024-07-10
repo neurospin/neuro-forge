@@ -3,7 +3,8 @@ package:
 
 soma-forge:
   components:
-    - sacha-nonfree sacha-gpl
+    - sacha-nonfree
+    - sacha-gpl
 
   internal-dependencies:
     - soma
