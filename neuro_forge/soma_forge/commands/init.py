@@ -123,9 +123,7 @@ def init(directory, soma_forge_branch, packages, python, force):
 
     packages = build_info["packages"]
     pixi_config = read_pixi_config(pixi_root)
-    pixi_project_name = (
-        f"soma-build-{soma_forge_branch}-{build_info['build_string']}"
-    )
+    pixi_project_name = f"soma-build-{soma_forge_branch}-{build_info['build_string']}"
     modified = False
     if pixi_config["project"]["name"] != pixi_project_name:
         pixi_config["project"]["name"] = pixi_project_name
@@ -140,9 +138,11 @@ def init(directory, soma_forge_branch, packages, python, force):
     # Compute all packages build and run dependencies
     dependencies = {}
     components = {}
+    all_packages = {}
     for recipe in selected_recipes(packages or ["all"]):
         package = recipe["package"]["name"]
         print(package, recipe["soma-forge"]["type"])
+        all_packages[package] = {"type": recipe["soma-forge"]["type"]}
         for component in recipe["soma-forge"].get("components", []):
             source = component_source(component, soma_forge_branch)
             if not source:
@@ -172,6 +172,13 @@ def init(directory, soma_forge_branch, packages, python, force):
                 if constraint not in existing_constraint:
                     existing_constraint.add(constraint)
                     dependencies[package] = existing_constraint
+
+    # Store all_packages in build_info.json
+    with open(build_info_file) as f:
+        bi = json.load(f)
+    bi["all_packages"] = all_packages
+    with open(build_info_file, "w") as f:
+        json.dump(bi, f, indent=4)
 
     # Generate bv_maker.cfg
     components_source = ["brainvisa brainvisa-cmake master"]

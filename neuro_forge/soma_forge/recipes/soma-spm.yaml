@@ -7,6 +7,6 @@ soma-forge:
 
   type: interpreted
 
-internal-dependencies:
-  - soma
-  - anatomist
+  internal-dependencies:
+    - soma
+    - anatomist

@@ -1,7 +1,19 @@
+import fnmatch
+import git
+import itertools
+import json
+import os
+import pathlib
+import re
+import shlex
+import subprocess
+import sys
+import toml
+import yaml
+
 import click
 from . import cli
-from ..pixi import read_pixi_config, write_pixi_config
-from ..recipes import selected_recipes
+from ..recipes import sorted_recipies
 
 
 def forged_packages(pixi_root, name_re):
@@ -148,17 +160,11 @@ def debug(directory):
 
 
 @cli.command()
-@click.option("-v", "--verbose", is_flag=True)
-@click.option("--show", is_flag=True)
 @click.option("--force", is_flag=True)
 @click.option("--test", type=bool, default=True)
 @click.argument("directory", type=click.Path())
 @click.argument("packages", type=str, nargs=-1)
-def dev_packages_plan(directory, packages, force, show, test=True, verbose=None):
-    if show and verbose is None:
-        verbose = True
-    if verbose is True:
-        verbose = sys.stdout
+def dev_packages_plan(directory, packages, force, test=True):
     pixi_root = pathlib.Path(directory).absolute()
     if not packages:
         packages = ["*"]
@@ -205,17 +211,19 @@ def dev_packages_plan(directory, packages, force, show, test=True, verbose=None)
     with open(build_info_file, "w") as f:
         json.dump(build_info, f, indent=4)
 
-    channels = read_pixi_config(pixi_root)["project"]["channels"]
-    forge = pixi_root / "forge"
+    plan = pixi_root / "plan"
     recipes = {}
+    all_packages = build_info["all_packages"]
     for recipe in sorted_recipies():
         package = recipe["package"]["name"]
+        if package not in all_packages:
+            continue
         print(package)
         if not selector.match(package):
             continue
         components = recipe["soma-forge"].get("components", [])
         if components:
-            # Check that build tree is clean
+            # Get first component version and check that build tree is clean
             version = None
             for component in components:
                 src = pixi_root / "src" / component
@@ -239,9 +247,9 @@ def dev_packages_plan(directory, packages, force, show, test=True, verbose=None)
         ] = f"{build_info['build_string']}_{build_info['build_number']}"
         recipe["build"]["script"] = "\n".join(
             (
-                'cd "$PIXI_PROJECT_ROOT"',
-                "pixi run bash << END",
-                'cd "$CASA_BUILD"',
+                f"cd '{pixi_root}'",
+                f"pixi run --manifest-path='{pixi_root}/pixi.toml' bash << END",
+                'cd "\\$CASA_BUILD"',
                 'export BRAINVISA_INSTALL_PREFIX="$PREFIX"',
                 f"for component in {' '.join(components)}; do",
                 "  make install-\\${component}",
@@ -252,51 +260,31 @@ def dev_packages_plan(directory, packages, force, show, test=True, verbose=None)
                 "END",
             )
         )
-
         recipes[package] = recipe
 
     for package, recipe in recipes.items():
         internal_dependencies = recipe["soma-forge"].get("internal-dependencies", [])
         if internal_dependencies:
-            recipe.setdefault("requirements", {}).setdefault("run", []).extend(
-                internal_dependencies
-            )
+            for dpackage in internal_dependencies:
+                if all_packages[dpackage]["type"] == "compiled":
+                    d = f"{dpackage}=={recipes[dpackage]['package']['version']}={recipes[dpackage]['build']['string']}"
+                else:
+                    d = f"{dpackage}=={recipes[dpackage]['package']['version']}"
+                recipe.setdefault("requirements", {}).setdefault("run", []).append(d)
 
         # Remove soma-forge specific data
         recipe.pop("soma-forge", None)
 
-        (forge / "recipes" / package).mkdir(exist_ok=True, parents=True)
+        (plan / "recipes" / package).mkdir(exist_ok=True, parents=True)
 
-        with open(forge / "recipes" / package / "recipe.yaml", "w") as f:
+        with open(plan / "recipes" / package / "recipe.yaml", "w") as f:
             yaml.safe_dump(recipe, f)
 
-        # if not show:
-        #     build_dir = forge / "bld" / f"rattler-build_{package}"
-        #     if build_dir.exists():
-        #         shutil.rmtree(build_dir)
-        #     internal_recipe = read_recipe(package)
-        #     internal_recipe.pop("internal-dependencies", None)
-        #     command = [
-        #         "rattler-build",
-        #         "build",
-        #         "--experimental",
-        #         "--no-build-id",
-        #         "-r",
-        #         recipe_dir,
-        #         "--output-dir",
-        #         str(forge),
-        #     ]
-        #     if not test:
-        #         command.append("--no-test")
-        #     for i in channels + [f"file://{str(forge)}"]:
-        #         command.extend(["-c", i])
-        #     try:
-        #         subprocess.check_call(command)
-        #     except subprocess.CalledProcessError:
-        #         print(
-        #             "ERROR command failed:",
-        #             " ".join(f"'{i}'" for i in command),
-        #             file=sys.stderr,
-        #             flush=True,
-        #         )
-        #         return 1
+    with open(plan / "actions.yaml", "w") as f:
+        yaml.safe_dump(
+            [
+                {"action": "create_package", "args": [i], "kwargs": {"test": test}}
+                for i in recipes
+            ],
+            f,
+        )
