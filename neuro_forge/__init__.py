@@ -91,7 +91,7 @@ def build(channel_dir, packages):
 def publish(channel_dir):
     """Run conda index if necessary and publish channel_dir to
     https://brainvisa.info/neuro-forge"""
-    
+
     if os.path.basename(channel_dir) != "public":
         raise ValueError(f"Invalid source directory: {channel_dir}")
 
@@ -101,15 +101,11 @@ def publish(channel_dir):
         for file in files:
             ff = os.path.join(root, file)
             to_sort.append((os.stat(ff).st_mtime, ff))
-    recent = sorted(to_sort)[-1][1]
+    recents = [os.path.basename(i[1]) for i in sorted(to_sort)[-2:]]
 
     # If the most recent is not an index.html file, then run conda index
-    if os.path.basename(recent) != "index.html":
-        command = [
-                "conda",
-            "index",
-            channel_dir
-        ]
+    if "index.html" not in recents:
+        command = ["conda", "index", channel_dir]
         print(" ".join(f"'{i}'" for i in command))
         check_call(command)
 
