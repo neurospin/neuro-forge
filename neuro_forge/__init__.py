@@ -2,6 +2,7 @@
 
 import click
 from itertools import chain
+import os
 from pathlib import Path
 import shutil
 from subprocess import check_call
@@ -23,7 +24,7 @@ def build(channel_dir, packages):
 
     CHANNEL_DIR directory where packages are going to be created
 
-    PACKAGES    list of packages to generate (by default all the ones 
+    PACKAGES    list of packages to generate (by default all the ones
                 that are not already in the channel)
     """
     # Create an empty channel
@@ -38,13 +39,20 @@ def build(channel_dir, packages):
     # Select packages
     neuro_forge = Path(__file__).parent.parent
     if not packages:
-        packages = [i.name for i in (neuro_forge / "recipes").iterdir() if (i / "recipe.yaml").exists() and not any(channel_dir.glob(f"*/{i.name}-*.conda"))]
-    
+        packages = [
+            i.name
+            for i in (neuro_forge / "recipes").iterdir()
+            if (i / "recipe.yaml").exists()
+            and not any(channel_dir.glob(f"*/{i.name}-*.conda"))
+        ]
+
     # Create selected packages
     for package in packages:
         recipe_file = neuro_forge / "recipes" / package / "recipe.yaml"
         if not recipe_file.exists():
-            raise ValueError(f'Wrong package name "{package}": file {recipe_file} does not exist')
+            raise ValueError(
+                f'Wrong package name "{package}": file {recipe_file} does not exist'
+            )
         recipe_dir = recipe_file.parent
         command = [
             "env",
@@ -56,17 +64,18 @@ def build(channel_dir, packages):
             "--output-dir",
             str(channel_dir),
             "--experimental",
-            "-c", "conda-forge",
-            "-c", "bioconda"
+            "-c",
+            "conda-forge",
+            "-c",
+            "bioconda",
         ]
         variants = recipe_dir / "variants.yaml"
         if variants.exists():
             command.extend(["-m", str(variants)])
         print("#----------------- calling ------------------------------")
-        print(' '.join(f"'{i}'" for i in command))
+        print(" ".join(f"'{i}'" for i in command))
         print("#--------------------------------------------------------")
         check_call(command)
-        
 
     # Cleanup and create channel index
     check_call(["conda", "index", channel_dir])
@@ -75,3 +84,46 @@ def build(channel_dir, packages):
     for i in to_delete:
         if i.exists():
             shutil.rmtree(i)
+
+
+@main.command()
+@click.argument("channel_dir", type=click.Path(), default="/drf/neuro-forge/public")
+def publish(channel_dir):
+    """Run conda index if necessary and publish channel_dir to
+    https://brainvisa.info/neuro-forge"""
+    
+    if os.path.basename(channel_dir) != "public":
+        raise ValueError(f"Invalid source directory: {channel_dir}")
+
+    # Sort all files by modification date and get the most recent
+    to_sort = []
+    for root, subFolders, files in os.walk(channel_dir):
+        for file in files:
+            ff = os.path.join(root, file)
+            to_sort.append((os.stat(ff).st_mtime, ff))
+    recent = sorted(to_sort)[-1][1]
+
+    # If the most recent is not an index.html file, then run conda index
+    if os.path.basename(recent) != "index.html":
+        command = [
+                "conda",
+            "index",
+            channel_dir
+        ]
+        print(" ".join(f"'{i}'" for i in command))
+        check_call(command)
+
+    channel_dir = os.path.normpath(os.path.abspath(channel_dir))
+    command = [
+        "rsync",
+        "-r",
+        "--progress",
+        "--delete",
+        "--no-perms",
+        "--chmod=a+rx",
+        "--exclude=.cache",
+        channel_dir + "/",
+        "neuroforge@brainvisa.info:/var/www/html/neuro-forge/",
+    ]
+    print(" ".join(f"'{i}'" for i in command))
+    check_call(command)
