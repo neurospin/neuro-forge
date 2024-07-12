@@ -44,6 +44,7 @@ dev:
       url: https://github.com/brainvisa/cortical_surface-nonfree.git
     deidentification:
       url: https://github.com/cati-neuroimaging/deidentification.git
+      default_branch: devel
     disco:
       url: https://bioproj.extra.cea.fr/git/brainvisa-disco
     highres-cortex:
@@ -118,6 +119,9 @@ dev:
 '6.0':
   base: dev
   branch: soma-forge-6.0
+  components:
+    deidentification:
+      default_branch: main
 '6.1':
   base: dev
   components:
