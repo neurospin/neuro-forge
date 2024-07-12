@@ -214,55 +214,113 @@ def dev_packages_plan(directory, packages, force, test=True):
     plan = pixi_root / "plan"
     recipes = {}
     all_packages = build_info["all_packages"]
+    selected_packages = set()
+    # Get ordered selection of recipes according to
+    # user selection and modification since last
+    # packaging
     for recipe in sorted_recipies():
         package = recipe["package"]["name"]
         if package not in all_packages:
+            print(f"Skip package {package} (not in soma-build tree)")
             continue
-        print(package)
         if not selector.match(package):
+            print(f"Ignore package {package} (excluded by parameters)")
             continue
         components = recipe["soma-forge"].get("components", [])
         if components:
-            # Get first component version and check that build tree is clean
-            version = None
+            # Parse components and do the following:
+            #  - get version of first component in package_version
+            #  - put error messages in src_errors if source trees are not clean
+            #  - Get current git changeset of each component source tree in
+            #    changesets
+            package_version = None
+            src_errors = []
+            changesets = {}
             for component in components:
                 src = pixi_root / "src" / component
-                if version is None:
-                    version = brainvisa_cmake_component_version(src)
+                if package_version is None:
+                    package_version = brainvisa_cmake_component_version(src)
                 repo = git.Repo(src)
-                if not force and repo.is_dirty():
-                    raise Exception(f"Repository {src} contains uncomited files")
-                if not force and repo.untracked_files:
-                    raise Exception(f"Repository {src} has local modifications")
-            recipe["package"]["version"] = version
+                if repo.is_dirty():
+                    src_errors.append(f"repository {src} contains uncomited files")
+                elif repo.untracked_files:
+                    src_errors.append(f"repository {src} has local modifications")
+                changesets[component] = str(repo.head.commit)
+            if changesets != build_info.get("packages_changesets", {}).get(package):
+                print(
+                    f"Select {package} for building beacause detected changes in source"
+                )
+                selected_packages.add(package)
+
+            # Set build section in recipe
+            recipe.setdefault("build", {})["number"] = build_number
+            recipe["build"][
+                "string"
+            ] = f"{build_info['build_string']}_{build_info['build_number']}"
+            recipe["build"]["script"] = "\n".join(
+                (
+                    f"cd '{pixi_root}'",
+                    f"pixi run --manifest-path='{pixi_root}/pixi.toml' bash << END",
+                    'cd "\\$CASA_BUILD"',
+                    'export BRAINVISA_INSTALL_PREFIX="$PREFIX"',
+                    f"for component in {' '.join(components)}; do",
+                    "  make install-\\${component}",
+                    "  make install-\\${component}-dev",
+                    "  make install-\\${component}-usrdoc",
+                    "  make install-\\${component}-devdoc",
+                    "done",
+                    "END",
+                )
+            )
+
+            # Set package version in recipe
+            recipe["package"]["version"] = package_version
+            # Save information in recipe because we do not know yet
+            # if package is selected for building (known later via
+            # dependencies).
+            recipe["soma-forge"]["src_errors"] = src_errors
+            recipe["soma-forge"]["changesets"] = changesets
         elif recipe["soma-forge"]["type"] == "virtual":
             # TODO
             continue
+            # Set package version in recipe
+            # recipe["package"]["version"] = ???
         else:
-            raise Exception(f"No components defined in {package} recipe")
-
-        recipe.setdefault("build", {})["number"] = build_number
-        recipe["build"][
-            "string"
-        ] = f"{build_info['build_string']}_{build_info['build_number']}"
-        recipe["build"]["script"] = "\n".join(
-            (
-                f"cd '{pixi_root}'",
-                f"pixi run --manifest-path='{pixi_root}/pixi.toml' bash << END",
-                'cd "\\$CASA_BUILD"',
-                'export BRAINVISA_INSTALL_PREFIX="$PREFIX"',
-                f"for component in {' '.join(components)}; do",
-                "  make install-\\${component}",
-                "  make install-\\${component}-dev",
-                "  make install-\\${component}-usrdoc",
-                "  make install-\\${component}-devdoc",
-                "done",
-                "END",
+            raise Exception(
+                f"Invalid recipe for {package} (bad type or no component defined)"
             )
-        )
         recipes[package] = recipe
 
+    # Select new packages that are compiled and depend on a selected package
+    selection_modified = True
+    while selection_modified:
+        selection_modified = False
+        for package, recipe in recipes.items():
+            if package in selected_packages:
+                continue
+            if recipe["soma-forge"]["type"] == "compiled":
+                for other_package in recipe["soma-forge"].get(
+                    "internal-dependencies", []
+                ):
+                    if other_package in selected_packages:
+                        print(
+                            f"Select {package} for building because {other_package} is selected"
+                        )
+                        selected_packages.add(package)
+                        selection_modified = True
+
+    # Generate rattler-build recipe and actions for selected packages
+    actions = []
     for package, recipe in recipes.items():
+        if package not in selected_packages:
+            continue
+        print(f"Generate recipe for {package}")
+        if not force:
+            src_errors = recipe["soma-forge"].get("src_errors")
+            if src_errors:
+                raise Exception(
+                    f"Cannot build {package} because {', '.join(src_errors)}."
+                )
         internal_dependencies = recipe["soma-forge"].get("internal-dependencies", [])
         if internal_dependencies:
             for dpackage in internal_dependencies:
@@ -272,6 +330,14 @@ def dev_packages_plan(directory, packages, force, test=True):
                     d = f"{dpackage}=={recipes[dpackage]['package']['version']}"
                 recipe.setdefault("requirements", {}).setdefault("run", []).append(d)
 
+        changesets = src_errors = recipe["soma-forge"].get("changesets")
+
+        # Force python version for soma package and interpreted packages
+        if package == "soma" or recipe["soma-forge"].get("type") == "interpreted":
+            recipe["requirements"]["run"].append(
+                f"python=={build_info['options']['python']}"
+            )
+
         # Remove soma-forge specific data
         recipe.pop("soma-forge", None)
 
@@ -280,11 +346,13 @@ def dev_packages_plan(directory, packages, force, test=True):
         with open(plan / "recipes" / package / "recipe.yaml", "w") as f:
             yaml.safe_dump(recipe, f)
 
+        actions.append(
+            {"action": "create_package", "args": [package], "kwargs": {"test": test}}
+        )
+        if changesets:
+            actions.append({"action": "set_changesets", "args": [package, changesets]})
     with open(plan / "actions.yaml", "w") as f:
         yaml.safe_dump(
-            [
-                {"action": "create_package", "args": [i], "kwargs": {"test": test}}
-                for i in recipes
-            ],
+            actions,
             f,
         )
