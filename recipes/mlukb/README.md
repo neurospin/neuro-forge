@@ -39,7 +39,6 @@ export CHANNEL=/neurospin/brainomics/ig_channel
 cp output/noarch/mlukb-*.conda $CHANNEL/noarch
 
 # re-index the main repo
-pixi add conda-build # to get the conda-index cmd
 /usr/bin/env conda index $CHANNEL
 ```
 
@@ -48,7 +47,7 @@ Use pixi to create MYENV
 ```bash
 cd /tmp
 export MYENV=myenv
-pixi init -c $CHANNEL -c conda-forge -c bioconda $MYENV
+pixi init -c file://$CHANNEL -c conda-forge -c bioconda $MYENV
 cd /tmp/$MYENV
 pixi shell
 pixi add mlukb
