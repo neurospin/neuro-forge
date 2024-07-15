@@ -218,6 +218,12 @@ def dev_packages_plan(directory, packages, force, test=True):
     # Get ordered selection of recipes according to
     # user selection and modification since last
     # packaging
+    history_file = plan / "history.json"
+    if history_file.exists():
+        with open(history_file) as f:
+            history = json.load(f)
+    else:
+        history = {}
     for recipe in sorted_recipies():
         package = recipe["package"]["name"]
         if package not in all_packages:
@@ -246,7 +252,7 @@ def dev_packages_plan(directory, packages, force, test=True):
                 elif repo.untracked_files:
                     src_errors.append(f"repository {src} has local modifications")
                 changesets[component] = str(repo.head.commit)
-            if changesets != build_info.get("packages_changesets", {}).get(package):
+            if changesets != history.get("changesets", {}).get(package):
                 print(
                     f"Select {package} for building beacause detected changes in source"
                 )

@@ -48,12 +48,15 @@ def create_package(context, package, test):
 
 
 def set_changesets(context, package, changesets):
-    build_info_file = context.pixi_root / "conf" / "build_info.json"
-    with open(build_info_file) as f:
-        build_info = json.load(f)
-    build_info.setdefault("packages_changesets", {})[package] = changesets
-    with open(build_info_file, "w") as f:
-        build_info = json.dump(build_info, f, indent=4)
+    history_file = context.pixi_root / "plan" / "history.json"
+    if history_file.exists():
+        with open(history_file) as f:
+            history = json.load(f)
+    else:
+        history = {}
+    history.setdefault("changesets", {})[package] = changesets
+    with open(history_file, "w") as f:
+        json.dump(history, f, indent=4)
 
 
 @cli.command()
