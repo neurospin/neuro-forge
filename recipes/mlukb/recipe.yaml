@@ -1,0 +1,39 @@
+context:
+  version: "0.3.0"
+
+package:
+  name: "mlukb"
+  version: ${{ version }}
+
+
+
+#source:
+#  path: 
+
+
+build:
+  noarch: python
+
+requirements:
+#  build:
+#    - python
+#    - pip
+
+  run: 
+    - scikit-learn
+    - nilearn
+    - ipython
+    - r-base
+
+tests:
+  - python:
+      imports:
+        - nilearn
+  - script:
+    - R --version
+
+
+
+about:
+  summary: Kamalaker D., GigaScience 2021
+
