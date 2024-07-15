@@ -251,6 +251,8 @@ def dev_packages_plan(directory, packages, force, test=True):
                     f"Select {package} for building beacause detected changes in source"
                 )
                 selected_packages.add(package)
+            else:
+                print(f"No change detected in package {package}")
 
             # Set build section in recipe
             recipe.setdefault("build", {})["number"] = build_number

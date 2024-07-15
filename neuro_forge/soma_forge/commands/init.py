@@ -12,7 +12,7 @@ from rich.pretty import Pretty
 from . import cli, console
 from ..pixi import read_pixi_config, write_pixi_config
 from ..recipes import selected_recipes
-from ..branches import component_source, branch_info
+from ..environments import component_source, get_environment_info
 
 default_python = "3.11"
 bv_maker_cfg_template = """[ source $CASA_SRC ]
@@ -46,11 +46,11 @@ bv_maker_cfg_template = """[ source $CASA_SRC ]
 )
 @click.option("--force", is_flag=True)
 @click.argument("directory", type=click.Path())
-@click.argument("soma_forge_branch", type=str)
+@click.argument("environment", type=str)
 @click.argument("packages", type=str, nargs=-1)
-def init(directory, soma_forge_branch, packages, python, force):
+def init(directory, environment, packages, python, force):
     """Create or reconfigure a full BrainVISA development directory"""
-    soma_forge_branch_info = branch_info(soma_forge_branch)
+    environment_info = get_environment_info(environment)
     neuro_forge_url = "https://brainvisa.info/neuro-forge"
     pixi_root = pathlib.Path(directory).absolute()
     if not (pixi_root / "pixi.toml").exists():
@@ -76,9 +76,9 @@ def init(directory, soma_forge_branch, packages, python, force):
     conf_dir.mkdir(exist_ok=True)
 
     build_info_file = conf_dir / "build_info.json"
-    packages = packages or soma_forge_branch_info.get("default_packages") or "all"
+    packages = packages or environment_info.get("default_packages") or "all"
     build_info = {
-        "branch": soma_forge_branch,
+        "environment": environment,
         "packages": packages,
         "options": {
             "python": default_python,
@@ -123,7 +123,7 @@ def init(directory, soma_forge_branch, packages, python, force):
 
     packages = build_info["packages"]
     pixi_config = read_pixi_config(pixi_root)
-    pixi_project_name = f"soma-build-{soma_forge_branch}-{build_info['build_string']}"
+    pixi_project_name = f"soma-build-{environment}-{build_info['build_string']}"
     modified = False
     if pixi_config["project"]["name"] != pixi_project_name:
         pixi_config["project"]["name"] = pixi_project_name
@@ -144,10 +144,10 @@ def init(directory, soma_forge_branch, packages, python, force):
         print(package, recipe["soma-forge"]["type"])
         all_packages[package] = {"type": recipe["soma-forge"]["type"]}
         for component in recipe["soma-forge"].get("components", []):
-            source = component_source(component, soma_forge_branch)
+            source = component_source(component, environment)
             if not source:
                 raise ValueError(
-                    f"Cannot find source for component {component} in soma-forge branch {soma_forge_branch}"
+                    f"Cannot find source for component {component} in environment {environment}"
                 )
             components.setdefault(package, {})[component] = source
             print("   ", component, source[0], source[1])
@@ -203,31 +203,12 @@ def init(directory, soma_forge_branch, packages, python, force):
             )
         )
 
-    soma_forge_dependencies = {
-        "python": {f"=={build_info['options']['python']}"},
-        "gcc": "*",
-        "gxx": "*",
-        "libstdcxx-devel_linux-64": "*",
-        "cmake": "*",
-        "make": "*",
-        "git": "*",
-        "pytest": "*",
-        "pip": "*",
-        "pyaml": "*",
-        "rattler-build": {">=0.13"},
-        "six": "*",
-        "sphinx": "*",
-        "toml": "*",
-        "libglu": "*",
-        "mesalib-devel-only": "*",
-        "mesa-libgl-devel-cos7-x86_64": "*",
-        "virtualgl": "*",
-        "libglvnd-devel-cos7-x86_64": "*",
-    }
+    environment_dependencies = environment_info["build-dependencies"].copy()
+    environment_dependencies["python"] = f"== {build_info['options']['python']}"
 
     # Add dependencies to pixi.toml
     for package, constraint in itertools.chain(
-        soma_forge_dependencies.items(), dependencies.items()
+        environment_dependencies.items(), dependencies.items()
     ):
         pixi_constraint = pixi_config.get("dependencies", {}).get(package)
         if pixi_constraint is not None:
@@ -244,6 +225,8 @@ def init(directory, soma_forge_branch, packages, python, force):
             else:
                 continue
         if constraint:
+            if isinstance(constraint, str):
+                constraint = constraint.split(",")
             pixi_config.setdefault("dependencies", {})[package] = ",".join(constraint)
         else:
             pixi_config.setdefault("dependencies", {})[package] = "*"

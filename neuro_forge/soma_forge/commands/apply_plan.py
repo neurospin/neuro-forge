@@ -1,3 +1,4 @@
+import json
 import pathlib
 import shutil
 import subprocess
@@ -46,6 +47,15 @@ def create_package(context, package, test):
         raise
 
 
+def set_changesets(context, package, changesets):
+    build_info_file = context.pixi_root / "conf" / "build_info.json"
+    with open(build_info_file) as f:
+        build_info = json.load(f)
+    build_info.setdefault("packages_changesets", {})[package] = changesets
+    with open(build_info_file, "w") as f:
+        build_info = json.dump(build_info, f, indent=4)
+
+
 @cli.command()
 @click.argument("directory", type=click.Path())
 def apply_plan(directory):
@@ -56,7 +66,7 @@ def apply_plan(directory):
     context.pixi_root = pixi_root
     for action in actions:
         if action.get("status") != "success":
-            globals()[action["action"]](context, *action["args"], **action["kwargs"])
+            globals()[action["action"]](context, *action.get("args", []), **action.get("kwargs", {}))
             action["status"] = "success"
             with open(pixi_root / "plan" / "actions.yaml", "w") as f:
                 yaml.safe_dump(actions, f)
