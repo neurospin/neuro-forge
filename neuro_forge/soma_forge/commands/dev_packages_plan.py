@@ -252,7 +252,8 @@ def dev_packages_plan(directory, packages, force, test=True):
                 elif repo.untracked_files:
                     src_errors.append(f"repository {src} has local modifications")
                 changesets[component] = str(repo.head.commit)
-            if changesets != history.get("changesets", {}).get(package):
+            if changesets != history.get(package, {}).get("changesets"):
+                from pprint import pprint
                 print(
                     f"Select {package} for building beacause detected changes in source"
                 )
@@ -289,17 +290,25 @@ def dev_packages_plan(directory, packages, force, test=True):
             recipe["soma-forge"]["src_errors"] = src_errors
             recipe["soma-forge"]["changesets"] = changesets
         elif recipe["soma-forge"]["type"] == "virtual":
-            # TODO
-            continue
-            # Set package version in recipe
-            # recipe["package"]["version"] = ???
+            version = history.get("package", {}).get("version")
+            if version is None:
+                version = f"{build_info['environment']}.0"
+            else:
+                version = version.split(".")
+                version[2] = str(int(version[2]) + 1)
+                version = ".".join(version)
+            recipe["package"]["version"] = version
+            print(
+                f"Select virtual package {package} {version} for building"
+            )
+            selected_packages.add(package)
         else:
             raise Exception(
                 f"Invalid recipe for {package} (bad type or no component defined)"
             )
         recipes[package] = recipe
 
-    # Select new packages that are compiled and depend on a selected package
+    # Select new packages that are compiled and depend on a selected compiled package
     selection_modified = True
     while selection_modified:
         selection_modified = False
@@ -310,6 +319,8 @@ def dev_packages_plan(directory, packages, force, test=True):
                 for other_package in recipe["soma-forge"].get(
                     "internal-dependencies", []
                 ):
+                    if recipes[other_package]["soma-forge"]["type"] != "compiled":
+                        continue
                     if other_package in selected_packages:
                         print(
                             f"Select {package} for building because {other_package} is selected"
@@ -332,7 +343,7 @@ def dev_packages_plan(directory, packages, force, test=True):
         internal_dependencies = recipe["soma-forge"].get("internal-dependencies", [])
         if internal_dependencies:
             for dpackage in internal_dependencies:
-                if all_packages[dpackage]["type"] == "compiled":
+                if all_packages[package]["type"] == "compiled" and all_packages[dpackage]["type"] == "compiled":
                     d = f"{dpackage}=={recipes[dpackage]['package']['version']}={recipes[dpackage]['build']['string']}"
                 else:
                     d = f"{dpackage}=={recipes[dpackage]['package']['version']}"

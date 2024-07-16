@@ -45,6 +45,19 @@ def create_package(context, package, test):
             flush=True,
         )
         raise
+    with open(context.pixi_root / "plan" / "recipes" / package / "recipe.yaml") as f:
+        recipe = yaml.safe_load(f)
+    version = recipe["package"]["version"]
+
+    history_file = context.pixi_root / "plan" / "history.json"
+    if history_file.exists():
+        with open(history_file) as f:
+            history = json.load(f)
+    else:
+        history = {}
+    history.setdefault(package, {})["version"] = version
+    with open(history_file, "w") as f:
+        json.dump(history, f, indent=4)
 
 
 def set_changesets(context, package, changesets):
@@ -54,7 +67,7 @@ def set_changesets(context, package, changesets):
             history = json.load(f)
     else:
         history = {}
-    history.setdefault("changesets", {})[package] = changesets
+    history.setdefault(package, {})["changesets"] = changesets
     with open(history_file, "w") as f:
         json.dump(history, f, indent=4)
 
@@ -69,7 +82,9 @@ def apply_plan(directory):
     context.pixi_root = pixi_root
     for action in actions:
         if action.get("status") != "success":
-            globals()[action["action"]](context, *action.get("args", []), **action.get("kwargs", {}))
+            globals()[action["action"]](
+                context, *action.get("args", []), **action.get("kwargs", {})
+            )
             action["status"] = "success"
             with open(pixi_root / "plan" / "actions.yaml", "w") as f:
                 yaml.safe_dump(actions, f)
