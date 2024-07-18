@@ -227,8 +227,6 @@ def init(directory, environment, packages, python, force):
             else:
                 continue
         if constraint:
-            if isinstance(constraint, str):
-                constraint = constraint.split(",")
             pixi_config.setdefault("dependencies", {})[package] = ",".join(constraint)
         else:
             pixi_config.setdefault("dependencies", {})[package] = "*"

@@ -161,7 +161,7 @@ def debug(directory):
 
 @cli.command()
 @click.option("--force", is_flag=True)
-@click.option("--test", type=bool, default=True)
+@click.option("--test", type=bool, default=False)
 @click.argument("directory", type=click.Path())
 @click.argument("packages", type=str, nargs=-1)
 def dev_packages_plan(directory, packages, force, test=True):
@@ -344,7 +344,13 @@ def dev_packages_plan(directory, packages, force, test=True):
         if internal_dependencies:
             for dpackage in internal_dependencies:
                 if all_packages[package]["type"] == "compiled" and all_packages[dpackage]["type"] == "compiled":
-                    d = f"{dpackage}=={recipes[dpackage]['package']['version']}={recipes[dpackage]['build']['string']}"
+                    last_build_string = history.get(dpackage, {}).get("build_string")
+                    if last_build_string and dpackage not in selected_packages:
+                        build_string = last_build_string
+                    else:
+                        build_string = recipes[dpackage]['build']['string']
+                    history
+                    d = f"{dpackage}=={recipes[dpackage]['package']['version']}={build_string}"
                 else:
                     d = f"{dpackage}=={recipes[dpackage]['package']['version']}"
                 recipe.setdefault("requirements", {}).setdefault("run", []).append(d)

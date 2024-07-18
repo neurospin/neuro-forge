@@ -55,7 +55,11 @@ def create_package(context, package, test):
             history = json.load(f)
     else:
         history = {}
-    history.setdefault(package, {})["version"] = version
+    package_history = history.setdefault(package, {})
+    package_history["version"] = version
+    build_string = recipe.get("build", {}).get("string")
+    if build_string:
+        package_history["build_string"] = build_string
     with open(history_file, "w") as f:
         json.dump(history, f, indent=4)
 
