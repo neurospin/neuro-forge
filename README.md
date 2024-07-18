@@ -66,6 +66,7 @@ First install soma-forge command that is located in neuro-forge project.
 ```
 git clone https://github.com/neurospin/neuro-forge
 cd neuro-forge
+pixi run python -m pip install -e recipes/soma-forge
 ```
 
 Then create the BrainVISA development directory by giving its location and the target branch, plus optionally a list of target packages. Target branch is 6.0 or 6.1.
