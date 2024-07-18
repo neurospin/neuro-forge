@@ -90,7 +90,6 @@ def publish(channel_dir):
     """Run conda index if necessary and publish channel_dir to
     https://brainvisa.info/neuro-forge"""
 
-    
     if os.path.basename(channel_dir) != "public":
         raise ValueError(f"Invalid source directory: {channel_dir}")
 
@@ -109,11 +108,7 @@ def publish(channel_dir):
 
     # If the most recent is not an index.html file, then run conda index
     if os.path.basename(recent) != "index.html":
-        command = [
-                "conda",
-            "index",
-            channel_dir
-        ]
+        command = ["conda", "index", channel_dir]
         print(" ".join(f"'{i}'" for i in command))
         check_call(command)
 
@@ -124,10 +119,22 @@ def publish(channel_dir):
         "--progress",
         "--delete",
         "--no-perms",
-        "--chmod=a+rx",
+        "--times",
+        "--no-owner",
+        "--no-group",
         "--exclude=.cache",
         channel_dir + "/",
         "neuroforge@brainvisa.info:/var/www/html/neuro-forge/",
+    ]
+    print(" ".join(f"'{i}'" for i in command))
+    check_call(command)
+    command = [
+        "ssh",
+        "neuroforge@brainvisa.info",
+        "chmod",
+        "-R",
+        "a+r",
+        "/var/www/html/neuro-forge",
     ]
     print(" ".join(f"'{i}'" for i in command))
     check_call(command)
