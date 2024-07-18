@@ -75,10 +75,10 @@ class BBIDaily:
     def update_casa_distro(self):
         start = time.time()
         result, log = self.call_output(['git',
-                                        '-C', self.casa_distro_src,
+                                        '-C', self.neuro_forge_src,
                                         'pull'])
         duration = int(1000 * (time.time() - start))
-        self.log(self.bbe_name, 'update casa_distro',
+        self.log(self.bbe_name, 'update neuro-forge',
                  result, log,
                  duration=duration)
         return result == 0
