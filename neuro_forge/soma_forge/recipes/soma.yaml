@@ -33,7 +33,7 @@ requirements:
     - libblitz
     - boost-cpp
     - dcmtk
-    - numpy
+    - numpy < 2
     - pyyaml
     - libminc
     - openjpeg

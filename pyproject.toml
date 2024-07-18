@@ -37,7 +37,7 @@ build-backend = "setuptools.build_meta"
 
 [project.scripts]
 neuro-forge = "neuro_forge:main"
-soma-forge = "neuro_forge.soma_forge:cli"
+soma-forge = "neuro_forge.soma_forge.commands:cli"
 
 [tool.setuptools]
 include-package-data = true
@@ -60,3 +60,4 @@ conda-build = "*"
 rattler-build = "*"
 git = "*"
 pip = "*"
+rsync = "*"

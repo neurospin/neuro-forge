@@ -1,3 +1,3 @@
-from . import cli
+from .commands import cli
 
 cli()

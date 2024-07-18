@@ -21,6 +21,7 @@ requirements:
     - ipykernel
     - six
     - pycryptodome
+    - pandas
 
 tests:
   - script: "python -m soma.tests"

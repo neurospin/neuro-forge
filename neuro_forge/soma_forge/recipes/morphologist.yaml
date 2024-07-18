@@ -30,3 +30,5 @@ requirements:
     - pyqtwebkit
     - scipy
     - traits
+    - spm12
+    - reportlab

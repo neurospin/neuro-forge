@@ -1,5 +1,3 @@
-#!/usr/bin/env python
-
 import click
 from itertools import chain
 import os
@@ -106,6 +104,11 @@ def publish(channel_dir):
     # If the most recent is not an index.html file, then run conda index
     if "index.html" not in recents:
         command = ["conda", "index", channel_dir]
+    recent = sorted(to_sort)[-1][1]
+
+    # If the most recent is not an index.html file, then run conda index
+    if os.path.basename(recent) != "index.html":
+        command = ["conda", "index", channel_dir]
         print(" ".join(f"'{i}'" for i in command))
         check_call(command)
 
@@ -116,10 +119,22 @@ def publish(channel_dir):
         "--progress",
         "--delete",
         "--no-perms",
-        "--chmod=a+rx",
+        "--times",
+        "--no-owner",
+        "--no-group",
         "--exclude=.cache",
         channel_dir + "/",
         "neuroforge@brainvisa.info:/var/www/html/neuro-forge/",
+    ]
+    print(" ".join(f"'{i}'" for i in command))
+    check_call(command)
+    command = [
+        "ssh",
+        "neuroforge@brainvisa.info",
+        "chmod",
+        "-R",
+        "a+r",
+        "/var/www/html/neuro-forge",
     ]
     print(" ".join(f"'{i}'" for i in command))
     check_call(command)
