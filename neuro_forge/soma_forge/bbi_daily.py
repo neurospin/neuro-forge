@@ -341,9 +341,10 @@ if __name__ == '__main__':
                         'perform on dev environments. May be empty to do '
                         'nothing. default: sources,configure,build,doc',
                         default='sources,configure,build,doc')
-    parser.add_argument('-t', '--dev_tests',
-                        help=f'Jenkins auth file. default: {jenkins_auth}',
-                        default=jenkins_auth)
+    parser.add_argument('--dev_tests',
+                        action=argparse.BooleanOptionalAction,
+                        help='Perform dev build tree tests. default: true',
+                        default=True)
 
     args = parser.parse_args(sys.argv[1:])
 
@@ -352,13 +353,15 @@ if __name__ == '__main__':
     jenkins_auth = args.jenkins_auth
     environments = args.environment
     bv_maker_steps = args.bv_maker_steps
+    dev_tests = args.dev_tests
     if len(environments) == 0:
         environments = [osp.basename(os.getcwd())]
         base_directory = osp.dirname(os.getcwd())
-    print('base:', base_directory)
-    print('jenkins:', jenkins_server)
-    print('auth:', jenkins_auth)
-    print('envs:', environments)
+    # print('base:', base_directory)
+    # print('jenkins:', jenkins_server)
+    # print('auth:', jenkins_auth)
+    # print('envs:', environments)
+    # print('dev tests:', dev_tests)
 
     # Ensure that all recursively called instances of casa_distro will use
     # the correct base_directory.
