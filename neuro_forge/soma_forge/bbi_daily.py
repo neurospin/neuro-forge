@@ -10,6 +10,7 @@ import shlex
 import time
 import re
 import json
+import traceback
 
 
 def ensure_str(arg, encoding='utf-8', errors='stric'):
@@ -19,6 +20,9 @@ def ensure_str(arg, encoding='utf-8', errors='stric'):
 
 
 class BBIDaily:
+    NONFATAL_BV_MAKER_STEPS = {'doc', 'test'}
+    """bv_maker steps whose failure still allows to proceed to further testing."""
+
     def __init__(self, base_directory, jenkins=None):
         # This environment variable must be set by the caller of BBIDaily, to
         # ensure that all recursively called instances of casa_distro will use
@@ -28,12 +32,15 @@ class BBIDaily:
                                              socket.gethostname())
         self.neuro_forge_src = osp.dirname(osp.dirname(
             osp.dirname(__file__)))
-        self.casa_distro_cmd = ['pixi', 'run']
+        self.casa_distro_cmd = [
+            sys.executable,
+            osp.join(osp.dirname(__file__), 'run_pixi_env.py')]
         self.casa_distro_cmd_env = {'cwd': base_directory}
         self.jenkins = jenkins
         if self.jenkins:
             if not self.jenkins.job_exists(self.bbe_name):
                 self.jenkins.create_job(self.bbe_name)
+        self.env_prefix = '{environment_dir}'
 
     def log(self, environment, task_name, result, log,
             duration=None):
@@ -120,7 +127,9 @@ class BBIDaily:
                                        log_config_name=test_config['name'])
         successful_tests = []
         failed_tests = []
-        srccmdre = re.compile('/casa/host/src/.*/bin/')
+        env_dir = self.env_prefix.format(
+            environment_dir=test_config['directory'])
+        srccmdre = re.compile(f'{env_dir}/src/.*/bin/')
         for test, commands in tests.items():
             log = []
             start = time.time()
@@ -128,15 +137,15 @@ class BBIDaily:
             for command in commands:
                 if test_config['type'] in ('run', 'user'):
                     # replace paths in build dir with install ones
-                    command = command.replace('/casa/host/build',
+                    command = command.replace(f'{env_dir}/build',
                                               '/casa/install')
                     # replace paths in sources with install ones
                     command = srccmdre.sub('/casa/install/bin/', command)
                 result, output = self.call_output(self.casa_distro_cmd + [
                     'run',
                     'name={0}'.format(test_config['name']),
-                    'env=BRAINVISA_TEST_RUN_DATA_DIR=/casa/host/tests/test,'
-                    'BRAINVISA_TEST_REF_DATA_DIR=/casa/host/tests/ref',
+                    f'env=BRAINVISA_TEST_RUN_DATA_DIR={env_dir}/tests/test,'
+                    f'BRAINVISA_TEST_REF_DATA_DIR={env_dir}/tests/ref',
                     '--',
                     'sh', '-c', command
                 ])
@@ -171,10 +180,12 @@ class BBIDaily:
         whose keys are name of a test (i.e. 'axon', 'soma', etc.) and
         values are a list of commands to run to perform the test.
         '''
+        env_dir = self.env_prefix.format(
+            environment_dir=config['directory'])
         cmd = self.casa_distro_cmd + [
             'run',
             'name={0}'.format(config['name']),
-            'cwd=/casa/host/build',
+            f'cwd={env_dir}/build',
             '--',
             'ctest', '--print-labels'
         ]
@@ -189,7 +200,7 @@ class BBIDaily:
             cmd = self.casa_distro_cmd + [
                 'run',
                 'name={0}'.format(config['name']),
-                'cwd=/casa/host/build',
+                f'cwd={env_dir}/build',
                 'env=BRAINVISA_TEST_REMOTE_COMMAND=echo',
                 '--',
                 'ctest', '-V', '-L',
@@ -219,19 +230,27 @@ class BBIDaily:
             o = o.split('\n')
             # Extract the third line that follows each line containing ': Test
             # command:'
-            commands = [o[i+2][o[i+2].find(':')+2:].strip()
-                        for i in range(len(o))
-                        if ': Test command:' in o[i]]
-            timeouts = [o[i+1][o[i+1].find(':')+2:].strip()
-                        for i in range(len(o))
-                        if ': Test command:' in o[i]]
-            timeouts = [x[x.find(':')+2:] for x in timeouts]
+            commands = []
+            cis = [i for i in range(len(o)) if ': Test command:' in o[i]]
+            for i, ci in enumerate(cis):
+                if i < len(cis) - 1:
+                    cinext = cis[i+1]
+                else:
+                    cinext = len(o)
+                command = o[ci][o[ci].find(':')+2:].strip()
+                command = command[command.find(':')+2:].strip()
+                timeout = None
+                for j in range(ci+1, cinext):
+                    if 'Test timeout' in o[j]:
+                        timeout = o[j][o[j].find(':')+2:].strip()
+                        timeout = timeout[timeout.find(':')+2:]
+                        timeout = float(timeout)
+                        break
+                if timeout is not None and timeout < 9.999e+06:
+                    command = 'timeout -k 10 %s %s' % (timeout, command)
+                commands.append(command)
+
             if commands:  # skip empty command lists
-                for i, command in enumerate(commands):
-                    if float(timeouts[i]) < 9.999e+06:
-                        command = 'timeout -k 10 %s %s' % (timeouts[i],
-                                                           command)
-                        commands[i] = command
                 tests[label] = commands
         log_lines += ['Final test dictionary:',
                       json.dumps(tests, indent=4, separators=(',', ': '))]
@@ -240,3 +259,132 @@ class BBIDaily:
             log_config_name = config['name']
         self.log(log_config_name, 'get test commands', 0, '\n'.join(log_lines))
         return tests
+
+    def run_bbi(self, dev_configs,
+                bv_maker_steps='sources,configure,build,doc',
+                dev_tests=True):
+        successful_tasks = []
+        failed_tasks = []
+        try:
+            if bv_maker_steps:
+                bv_maker_steps = bv_maker_steps.split(',')
+
+            for dev_config in dev_configs:
+                doc_build_success = False
+                if bv_maker_steps:
+                    successful, failed = self.bv_maker(dev_config,
+                                                       bv_maker_steps)
+                    successful_tasks.extend(
+                        '{0}: {1}'.format(dev_config['name'], i)
+                        for i in successful)
+                    failed_tasks.extend(
+                        '{0}: {1}'.format(dev_config['name'], i)
+                        for i in failed)
+                    if set(failed) - self.NONFATAL_BV_MAKER_STEPS:
+                        # There is no point in running tests
+                        # if compilation failed.
+                        continue
+                    doc_build_success = ('doc' in successful)
+                if dev_tests:
+                    successful, failed = self.tests(dev_config, dev_config)
+                    successful_tasks.extend(
+                        '{0}: {1}'.format(dev_config['name'], i)
+                        for i in successful)
+                    failed_tasks.extend('{0}: {1}'.format(dev_config['name'],
+                                                          i)
+                                        for i in failed)
+
+        except Exception:
+            log = ['Successful tasks']
+            log.extend('  - {0}'.format(i) for i in successful_tasks)
+            if failed_tasks:
+                log .append('Failed tasks')
+                log.extend('  - {0}'.format(i) for i in failed_tasks)
+            log += ['', 'ERROR:', '', traceback.format_exc()]
+            self.log(self.bbe_name, 'error', 1, '\n'.join(log))
+        else:
+            log = ['Successful tasks']
+            log.extend('  - {0}'.format(i) for i in successful_tasks)
+            if failed_tasks:
+                log .append('Failed tasks')
+                log.extend('  - {0}'.format(i) for i in failed_tasks)
+            self.log(self.bbe_name, 'finished',
+                     (1 if failed_tasks else 0), '\n'.join(log))
+
+
+if __name__ == '__main__':
+
+    import argparse
+
+    base_directory = os.getcwd()
+    jenkins_server = None
+    jenkins_auth = '{base_directory}/jenkins_auth'
+
+    parser = argparse.ArgumentParser(
+        description='run tests for a Conda-based build of BrainVisa, and log '
+        'to a Jenkins server. Can also test installed packages.')
+    parser.add_argument('-b', '--base_directory',
+                        help='environment directory. default: '
+                        f'{base_directory}',
+                        default=base_directory)
+    parser.add_argument('-e', '--environment', action='append',
+                        help='environment dirs to run BBI on. '
+                        'default: [<current_dir>]', default=[])
+    parser.add_argument('-j', '--jenkins_server',
+                        help='Jenkins server URL.',
+                        default=jenkins_server)
+    parser.add_argument('-a', '--jenkins_auth',
+                        help=f'Jenkins auth file. default: {jenkins_auth}',
+                        default=jenkins_auth)
+    parser.add_argument('--bv_maker_steps',
+                        help='Coma separated list of bv_maker commands to '
+                        'perform on dev environments. May be empty to do '
+                        'nothing. default: sources,configure,build,doc',
+                        default='sources,configure,build,doc')
+    parser.add_argument('-t', '--dev_tests',
+                        help=f'Jenkins auth file. default: {jenkins_auth}',
+                        default=jenkins_auth)
+
+    args = parser.parse_args(sys.argv[1:])
+
+    base_directory = args.base_directory
+    jenkins_server = args.jenkins_server
+    jenkins_auth = args.jenkins_auth
+    environments = args.environment
+    bv_maker_steps = args.bv_maker_steps
+    if len(environments) == 0:
+        environments = [osp.basename(os.getcwd())]
+        base_directory = osp.dirname(os.getcwd())
+    print('base:', base_directory)
+    print('jenkins:', jenkins_server)
+    print('auth:', jenkins_auth)
+    print('envs:', environments)
+
+    # Ensure that all recursively called instances of casa_distro will use
+    # the correct base_directory.
+    os.environ['CASA_BASE_DIRECTORY'] = base_directory
+
+    if jenkins_server:
+        # Import jenkins only if necessary to avoid dependency
+        # on requests module
+        try:
+            from .jenkins import BrainVISAJenkins
+        except ImportError:
+            sys.path.append(osp.dirname(osp.dirname(osp.dirname(__file__))))
+            from neuro_forge.soma_forge.jenkins import BrainVISAJenkins
+
+        jenkins_auth = jenkins_auth.format(base_directory=base_directory)
+        with open(jenkins_auth) as f:
+            jenkins_login, jenkins_password = [i.strip() for i in
+                                               f.readlines()[:2]]
+        jenkins = BrainVISAJenkins(jenkins_server, jenkins_login,
+                                   jenkins_password)
+    else:
+        jenkins = None
+
+    dev_configs = [{'name': osp.basename(e), 'directory': e,
+                    'type': 'dev'}
+                   for e in environments]
+
+    bbi_daily = BBIDaily(base_directory, jenkins=jenkins)
+    bbi_daily.run_bbi(dev_configs, bv_maker_steps)
