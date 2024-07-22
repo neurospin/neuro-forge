@@ -129,7 +129,7 @@ class BBIDaily:
         failed_tests = []
         env_dir = self.env_prefix.format(
             environment_dir=test_config['directory'])
-        srccmdre = re.compile(f'{env_dir}/src/.*/bin/')
+        srccmdre = re.compile('/casa/host/src/.*/bin/')
         for test, commands in tests.items():
             log = []
             start = time.time()
@@ -137,7 +137,7 @@ class BBIDaily:
             for command in commands:
                 if test_config['type'] in ('run', 'user'):
                     # replace paths in build dir with install ones
-                    command = command.replace(f'{env_dir}/build',
+                    command = command.replace('/casa/host/build',
                                               '/casa/install')
                     # replace paths in sources with install ones
                     command = srccmdre.sub('/casa/install/bin/', command)
