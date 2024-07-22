@@ -210,16 +210,16 @@ def init(directory, environment, packages, python, force):
     for package, constraint in itertools.chain(
         environment_dependencies.items(), dependencies.items()
     ):
+        if constraint == "*":
+            constraint = set()
+        elif isinstance(constraint, str):
+            constraint = set(constraint.split(","))
         pixi_constraint = pixi_config.get("dependencies", {}).get(package)
         if pixi_constraint is not None:
             if pixi_constraint == "*":
                 pixi_constraint = set()
             else:
                 pixi_constraint = set(pixi_constraint.split(","))
-            if constraint == "*":
-                constraint = set()
-            elif isinstance(constraint, str):
-                constraint = set(constraint.split(","))
             constraint.update(pixi_constraint)
             if pixi_constraint != constraint:
                 del pixi_config["dependencies"][package]
