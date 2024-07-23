@@ -4,7 +4,7 @@ package:
 soma-forge:
   internal-dependencies:
     - brainrat
-    - disco
+    - cortical-surface
     - highres-cortex
     - morphologist
     - primatologist
