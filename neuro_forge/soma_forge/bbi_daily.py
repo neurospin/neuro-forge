@@ -11,6 +11,7 @@ import time
 import re
 import json
 import traceback
+import shutil
 
 
 def ensure_str(arg, encoding='utf-8', errors='stric'):
@@ -279,8 +280,7 @@ class BBIDaily:
             if result in (124, 128+9):
                 log.append('TIMED OUT (exit code {0})'.format(result))
             else:
-                log.append('FAILED with exit code {0}'
-                           .format(result))
+                log.append('FAILED with exit code {0}'.format(result))
         else:
             log.append('SUCCESS (exit code {0})'.format(result))
 
@@ -289,7 +289,7 @@ class BBIDaily:
                  '\n'.join(log), duration=duration)
         if not success:
             self.log(environment, 'packaging failed', 1,
-                     'The following tests failed: {0}')
+                     'The packaging plan failed.')
 
         if success:
             # pack
@@ -318,20 +318,100 @@ class BBIDaily:
                      '\n'.join(log), duration=duration)
             if not success:
                 self.log(environment, 'packaging failed', 1,
-                         'The following tests failed: {0}')
+                         'The packaging failed.')
 
         return success
 
-    def run_bbi(self, dev_configs,
+    def read_packages_list(self, dev_config):
+        with open(osp.join(dev_config['directory'], 'conf',
+                           'build_info.json')) \
+                as f:
+            binfo = json.load(f)
+        return sorted(binfo['packages'])
+
+    def recreate_user_env(self, user_config, dev_config):
+        environment = user_config['name']
+        if self.jenkins:
+            if not self.jenkins.job_exists(environment):
+                self.jenkins.create_job(environment,
+                                        **user_config)
+        start = time.time()
+        env_dir = user_config['directory']
+        dev_env_dir = osp.abspath(dev_config['directory'])
+        if os.path.exists(env_dir):
+            shutil.rmtree(env_dir)
+        os.makedirs(env_dir)
+        cmd = ['pixi', 'init', '-c', f'file://{dev_env_dir}/packages',
+               '-c', 'nvidia', '-c', 'pytorch', '-c', 'conda-forge']
+        log = ['create user environment', 'command:', ' '.join(cmd),
+               'from dir:', env_dir]
+        self.log(environment, 'create user environment', 1,
+                 '\n'.join(log), duration=0)
+        result, output = self.call_output(cmd, cwd=env_dir)
+        log = []
+        log.append('=' * 80)
+        log.append(output)
+        log.append('=' * 80)
+        success = True
+        if result:
+            success = False
+            if result in (124, 128+9):
+                log.append('TIMED OUT (exit code {0})'.format(result))
+            else:
+                log.append('FAILED with exit code {0}'.format(result))
+        else:
+            log.append('SUCCESS (exit code {0})'.format(result))
+
+        duration = int(1000 * (time.time() - start))
+        self.log(environment, 'create user environment',
+                 (0 if success else 1),
+                 '\n'.join(log), duration=duration)
+        if not success:
+            self.log(environment, 'create user environment failed', 1,
+                     'The enviroment init failed.')
+
+        if success:
+            start = time.time()
+            packages = self.read_packages_list(dev_config)
+            cmd = ['pixi', 'add'] + packages
+            log = ['install packages', 'command:', ' '.join(cmd),
+                   'from dir:', env_dir]
+            self.log(environment, 'install packages', 1,
+                     '\n'.join(log), duration=0)
+            result, output = self.call_output(cmd, cwd=env_dir)
+            log = []
+            log.append('=' * 80)
+            log.append(output)
+            log.append('=' * 80)
+            if result:
+                success = False
+                if result in (124, 128+9):
+                    log.append('TIMED OUT (exit code {0})'.format(result))
+                else:
+                    log.append('FAILED with exit code {0}'.format(result))
+            else:
+                log.append('SUCCESS (exit code {0})'.format(result))
+
+            duration = int(1000 * (time.time() - start))
+            self.log(environment, 'install packages',
+                     (0 if success else 1),
+                     '\n'.join(log), duration=duration)
+            if not success:
+                self.log(environment, 'create user environment failed', 1,
+                         'The packages installation failed.')
+
+        return success
+
+    def run_bbi(self, dev_configs, user_configs,
                 bv_maker_steps='sources,configure,build,doc',
-                dev_tests=True, pack=True):
+                dev_tests=True, pack=True, install_packages=True):
         successful_tasks = []
         failed_tasks = []
         try:
             if bv_maker_steps:
                 bv_maker_steps = bv_maker_steps.split(',')
 
-            for dev_config in dev_configs:
+            for dev_config, user_config in zip(dev_configs, user_configs):
                 doc_build_success = False
                 if bv_maker_steps:
                     successful, failed = self.bv_maker(dev_config,
@@ -365,6 +445,9 @@ class BBIDaily:
                     else:
                         failed_tasks.append(
                             '{0}: build_packages'.format(dev_config['name']))
+
+                if install_packages:
+                    success = self.recreate_user_env(user_config, dev_config)
 
         except Exception:
             log = ['Successful tasks']
@@ -421,6 +504,10 @@ if __name__ == '__main__':
                         action=argparse.BooleanOptionalAction,
                         help='Perform dev build tree packaging. '
                         'default: true', default=True)
+    parser.add_argument('--install_packages',
+                        action=argparse.BooleanOptionalAction,
+                        help='Install packages in a user environment. '
+                        'default: true', default=True)
 
     args = parser.parse_args(sys.argv[1:])
 
@@ -431,6 +518,7 @@ if __name__ == '__main__':
     bv_maker_steps = args.bv_maker_steps
     dev_tests = args.dev_tests
     pack = args.pack
+    install_packages = args.install_packages
     if len(environments) == 0:
         environments = [osp.basename(os.getcwd())]
         base_directory = osp.dirname(os.getcwd())
@@ -466,6 +554,11 @@ if __name__ == '__main__':
     dev_configs = [{'name': osp.basename(e), 'directory': e,
                     'type': 'dev'}
                    for e in environments]
+    user_configs = [{'name': e['name'] + '_user',
+                     'directory': e['directory'] + '_user',
+                     'type': 'user'}
+                    for e in dev_configs]
 
     bbi_daily = BBIDaily(base_directory, jenkins=jenkins)
-    bbi_daily.run_bbi(dev_configs, bv_maker_steps, dev_tests, pack)
+    bbi_daily.run_bbi(dev_configs, user_configs, bv_maker_steps, dev_tests,
+                      pack, install_packages)
