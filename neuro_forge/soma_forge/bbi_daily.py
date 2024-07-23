@@ -260,9 +260,41 @@ class BBIDaily:
         self.log(log_config_name, 'get test commands', 0, '\n'.join(log_lines))
         return tests
 
+    def build_packages(self, config):
+        env_dir = self.env_prefix.format(
+            environment_dir=config['directory'])
+        cmd = ['pixi', 'run', 'soma-forge', 'dev-packages-plan',
+               env_dir]
+        log = ['buid packages', 'command:', ' '.join(cmd), '', 'from dir:',
+               self.neuro_forge_src]
+        start = time.time()
+        result, output = self.call_output(cmd, cwd=self.neuro_forge_src)
+        log.append('=' * 80)
+        log.append(output)
+        log.append('=' * 80)
+        environment = config['name']
+        success = True
+        if result:
+            success = False
+            if result in (124, 128+9):
+                log.append('TIMED OUT (exit code {0})'.format(result))
+            else:
+                log.append('FAILED with exit code {0}'
+                           .format(result))
+        else:
+            log.append('SUCCESS (exit code {0})'.format(result))
+
+        duration = int(1000 * (time.time() - start))
+        self.log(environment, 'packaging', (0 if success else 1),
+                 '\n'.join(log), duration=duration)
+        if not success:
+            self.log(environment, 'packaging failed', 1,
+                     'The following tests failed: {0}')
+        return success
+
     def run_bbi(self, dev_configs,
                 bv_maker_steps='sources,configure,build,doc',
-                dev_tests=True):
+                dev_tests=True, pack=True):
         successful_tasks = []
         failed_tasks = []
         try:
@@ -285,6 +317,7 @@ class BBIDaily:
                         # if compilation failed.
                         continue
                     doc_build_success = ('doc' in successful)
+
                 if dev_tests:
                     successful, failed = self.tests(dev_config, dev_config)
                     successful_tasks.extend(
@@ -293,6 +326,15 @@ class BBIDaily:
                     failed_tasks.extend('{0}: {1}'.format(dev_config['name'],
                                                           i)
                                         for i in failed)
+
+                if pack:
+                    success = self.build_packages(dev_config)
+                    if success:
+                        successful_tasks.append(
+                            '{0}: build_packages'.format(dev_config['name']))
+                    else:
+                        failed_tasks.append(
+                            '{0}: build_packages'.format(dev_config['name']))
 
         except Exception:
             log = ['Successful tasks']
@@ -345,6 +387,10 @@ if __name__ == '__main__':
                         action=argparse.BooleanOptionalAction,
                         help='Perform dev build tree tests. default: true',
                         default=True)
+    parser.add_argument('--pack',
+                        action=argparse.BooleanOptionalAction,
+                        help='Perform dev build tree packaging. '
+                        'default: true', default=True)
 
     args = parser.parse_args(sys.argv[1:])
 
@@ -354,6 +400,7 @@ if __name__ == '__main__':
     environments = args.environment
     bv_maker_steps = args.bv_maker_steps
     dev_tests = args.dev_tests
+    pack = args.pack
     if len(environments) == 0:
         environments = [osp.basename(os.getcwd())]
         base_directory = osp.dirname(os.getcwd())
@@ -362,6 +409,7 @@ if __name__ == '__main__':
     # print('auth:', jenkins_auth)
     # print('envs:', environments)
     # print('dev tests:', dev_tests)
+    # print('pack:', dev_tests)
 
     # Ensure that all recursively called instances of casa_distro will use
     # the correct base_directory.
@@ -390,4 +438,4 @@ if __name__ == '__main__':
                    for e in environments]
 
     bbi_daily = BBIDaily(base_directory, jenkins=jenkins)
-    bbi_daily.run_bbi(dev_configs, bv_maker_steps)
+    bbi_daily.run_bbi(dev_configs, bv_maker_steps, dev_tests, pack)
