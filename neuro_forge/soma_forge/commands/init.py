@@ -5,6 +5,7 @@ import json
 import pathlib
 import shutil
 import subprocess
+import sys
 
 from rich.table import Table
 from rich.pretty import Pretty
@@ -218,6 +219,8 @@ def init(directory, environment, packages, python, force):
                 pixi_constraint = set(pixi_constraint.split(","))
             if constraint == "*":
                 constraint = set()
+            elif isinstance(constraint, str):
+                constraint = {constraint}
             constraint.update(pixi_constraint)
             if pixi_constraint != constraint:
                 del pixi_config["dependencies"][package]
