@@ -263,9 +263,9 @@ class BBIDaily:
     def build_packages(self, config):
         env_dir = self.env_prefix.format(
             environment_dir=config['directory'])
-        cmd = ['pixi', 'run', 'soma-forge', 'dev-packages-plan',
-               env_dir]
-        log = ['buid packages', 'command:', ' '.join(cmd), '', 'from dir:',
+        cmd = ['pixi', 'run', 'soma-forge', 'dev-packages-plan', '--test',
+               '0', env_dir]
+        log = ['buid packages plan', 'command:', ' '.join(cmd), 'from dir:',
                self.neuro_forge_src]
         start = time.time()
         result, output = self.call_output(cmd, cwd=self.neuro_forge_src)
@@ -290,6 +290,36 @@ class BBIDaily:
         if not success:
             self.log(environment, 'packaging failed', 1,
                      'The following tests failed: {0}')
+
+        if success:
+            # pack
+            cmd = ['pixi', 'run', 'soma-forge', 'apply-plan',
+                   env_dir]
+            log = ['buid packages plan', 'command:', ' '.join(cmd),
+                   'from dir:', self.neuro_forge_src]
+            start = time.time()
+            result, output = self.call_output(cmd, cwd=self.neuro_forge_src)
+            log.append('=' * 80)
+            log.append(output)
+            log.append('=' * 80)
+            success = True
+            if result:
+                success = False
+                if result in (124, 128+9):
+                    log.append('TIMED OUT (exit code {0})'.format(result))
+                else:
+                    log.append('FAILED with exit code {0}'
+                               .format(result))
+            else:
+                log.append('SUCCESS (exit code {0})'.format(result))
+
+            duration = int(1000 * (time.time() - start))
+            self.log(environment, 'packaging', (0 if success else 1),
+                     '\n'.join(log), duration=duration)
+            if not success:
+                self.log(environment, 'packaging failed', 1,
+                         'The following tests failed: {0}')
+
         return success
 
     def run_bbi(self, dev_configs,
