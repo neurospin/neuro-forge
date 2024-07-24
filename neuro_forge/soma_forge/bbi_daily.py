@@ -326,6 +326,41 @@ class BBIDaily:
                 self.log(environment, 'packaging failed', 1,
                          'The packaging failed.')
 
+            else:
+
+                # index
+                cmd = ['pixi', 'run', 'conda', 'index',
+                       osp.join(env_dir, 'packages')]
+                log = ['buid packages index', 'command:', ' '.join(cmd),
+                       'from dir:', self.neuro_forge_src]
+                self.log(environment, 'buid packages index', 1,
+                         '\n'.join(log), duration=0)
+                start = time.time()
+                result, output = self.call_output(cmd,
+                                                  cwd=self.neuro_forge_src)
+                log = []
+                log.append('=' * 80)
+                log.append(output)
+                log.append('=' * 80)
+                success = True
+                if result:
+                    success = False
+                    if result in (124, 128+9):
+                        log.append('TIMED OUT (exit code {0})'.format(result))
+                    else:
+                        log.append('FAILED with exit code {0}'
+                                   .format(result))
+                else:
+                    log.append('SUCCESS (exit code {0})'.format(result))
+
+                duration = int(1000 * (time.time() - start))
+                self.log(environment, 'packaging index',
+                         (0 if success else 1),
+                         '\n'.join(log), duration=duration)
+                if not success:
+                    self.log(environment, 'packaging failed', 1,
+                             'The packaging failed.')
+
         return success
 
     def read_packages_list(self, dev_config):
@@ -343,7 +378,7 @@ class BBIDaily:
         if history:
             for p, d in packages.items():
                 ver = history.get(p)['version']
-                d['version'] = ver  # f'{ver}={d["build"]}'
+                d['version'] = f'{ver}={d["build"]}'
         return packages
 
     def recreate_user_env(self, user_config, dev_config):
@@ -391,8 +426,6 @@ class BBIDaily:
         if success:
             start = time.time()
             packages = self.read_packages_list(dev_config)
-            # TODO: I cannot find out how to specify build in
-            # install constraints
             packages_list = [f'{p}={packages[p]["version"]}'
                              for p in sorted(packages)]
             cmd = ['pixi', 'add'] + packages_list
