@@ -327,7 +327,18 @@ class BBIDaily:
                            'build_info.json')) \
                 as f:
             binfo = json.load(f)
-        return sorted(binfo['packages'])
+        history_f = osp.join(dev_config['directory'], 'plan', 'history.json')
+        history = {}
+        if osp.exists(history_f):
+            with open(history_f) as f:
+                history = json.load(f)
+        build_str = f'{binfo["build_string"]}_{binfo["build_number"]}'
+        packages = {p: {'build': f'{build_str}'} for p in binfo['packages']}
+        if history:
+            for p, d in packages.items():
+                ver = history.get(p)['version']
+                d['version'] = f'{ver}={d["build"]}'
+        return packages
 
     def recreate_user_env(self, user_config, dev_config):
         environment = user_config['name']
@@ -342,6 +353,7 @@ class BBIDaily:
             shutil.rmtree(env_dir)
         os.makedirs(env_dir)
         cmd = ['pixi', 'init', '-c', f'file://{dev_env_dir}/packages',
+               '-c', 'https://brainvisa.info/neuro-forge',
                '-c', 'nvidia', '-c', 'pytorch', '-c', 'conda-forge']
         log = ['create user environment', 'command:', ' '.join(cmd),
                'from dir:', env_dir]
@@ -373,7 +385,9 @@ class BBIDaily:
         if success:
             start = time.time()
             packages = self.read_packages_list(dev_config)
-            cmd = ['pixi', 'add'] + packages
+            packages_list = [f'{p}={packages[p]["version"]}'
+                             for p in sorted(packages)]
+            cmd = ['pixi', 'add'] + packages_list
             log = ['install packages', 'command:', ' '.join(cmd),
                    'from dir:', env_dir]
             self.log(environment, 'install packages', 1,
@@ -522,6 +536,7 @@ if __name__ == '__main__':
     if len(environments) == 0:
         environments = [osp.basename(os.getcwd())]
         base_directory = osp.dirname(os.getcwd())
+    base_directory = osp.abspath(base_directory)
     # print('base:', base_directory)
     # print('jenkins:', jenkins_server)
     # print('auth:', jenkins_auth)
@@ -551,7 +566,8 @@ if __name__ == '__main__':
     else:
         jenkins = None
 
-    dev_configs = [{'name': osp.basename(e), 'directory': e,
+    dev_configs = [{'name': osp.basename(e),
+                    'directory': osp.join(base_directory, e),
                     'type': 'dev'}
                    for e in environments]
     user_configs = [{'name': e['name'] + '_user',
