@@ -40,7 +40,8 @@ if __name__ == '__main__':
     for arg in sys.argv[1:argmax]:
         if arg.startswith('name='):
             env_name = arg[5:]
-            wd = osp.join(os.getcwd(), env_name)
+            b = os.environ.get('CASA_BASE_DIRECTORY', os.getcwd())
+            wd = osp.join(b, env_name)
             continue
         if arg.startswith('cwd='):
             cd = arg[4:]
