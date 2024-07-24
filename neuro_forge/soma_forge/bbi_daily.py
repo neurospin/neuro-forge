@@ -268,12 +268,15 @@ class BBIDaily:
                '0', env_dir]
         log = ['buid packages plan', 'command:', ' '.join(cmd), 'from dir:',
                self.neuro_forge_src]
+        environment = config['name']
+        self.log(environment, 'buid packages plan', 1,
+                 '\n'.join(log), duration=0)
         start = time.time()
         result, output = self.call_output(cmd, cwd=self.neuro_forge_src)
+        log = []
         log.append('=' * 80)
         log.append(output)
         log.append('=' * 80)
-        environment = config['name']
         success = True
         if result:
             success = False
@@ -297,8 +300,11 @@ class BBIDaily:
                    env_dir]
             log = ['buid packages plan', 'command:', ' '.join(cmd),
                    'from dir:', self.neuro_forge_src]
+            self.log(environment, 'buid packages', 1,
+                     '\n'.join(log), duration=0)
             start = time.time()
             result, output = self.call_output(cmd, cwd=self.neuro_forge_src)
+            log = []
             log.append('=' * 80)
             log.append(output)
             log.append('=' * 80)
@@ -337,7 +343,7 @@ class BBIDaily:
         if history:
             for p, d in packages.items():
                 ver = history.get(p)['version']
-                d['version'] = f'{ver}={d["build"]}'
+                d['version'] = ver  # f'{ver}={d["build"]}'
         return packages
 
     def recreate_user_env(self, user_config, dev_config):
@@ -385,6 +391,8 @@ class BBIDaily:
         if success:
             start = time.time()
             packages = self.read_packages_list(dev_config)
+            # TODO: I cannot find out how to specify build in
+            # install constraints
             packages_list = [f'{p}={packages[p]["version"]}'
                              for p in sorted(packages)]
             cmd = ['pixi', 'add'] + packages_list
@@ -418,7 +426,8 @@ class BBIDaily:
 
     def run_bbi(self, dev_configs, user_configs,
                 bv_maker_steps='sources,configure,build,doc',
-                dev_tests=True, pack=True, install_packages=True):
+                dev_tests=True, pack=True, install_packages=True,
+                user_tests=True):
         successful_tasks = []
         failed_tasks = []
         try:
@@ -426,7 +435,7 @@ class BBIDaily:
                 bv_maker_steps = bv_maker_steps.split(',')
 
             for dev_config, user_config in zip(dev_configs, user_configs):
-                doc_build_success = False
+                # doc_build_success = False
                 if bv_maker_steps:
                     successful, failed = self.bv_maker(dev_config,
                                                        bv_maker_steps)
@@ -440,7 +449,7 @@ class BBIDaily:
                         # There is no point in running tests
                         # if compilation failed.
                         continue
-                    doc_build_success = ('doc' in successful)
+                    # doc_build_success = ('doc' in successful)
 
                 if dev_tests:
                     successful, failed = self.tests(dev_config, dev_config)
@@ -462,6 +471,15 @@ class BBIDaily:
 
                 if install_packages:
                     success = self.recreate_user_env(user_config, dev_config)
+
+                if user_tests:
+                    successful, failed = self.tests(user_config, dev_config)
+                    successful_tasks.extend(
+                        '{0}: {1}'.format(user_config['name'], i)
+                        for i in successful)
+                    failed_tasks.extend('{0}: {1}'.format(user_config['name'],
+                                                          i)
+                                        for i in failed)
 
         except Exception:
             log = ['Successful tasks']
@@ -522,6 +540,11 @@ if __name__ == '__main__':
                         action=argparse.BooleanOptionalAction,
                         help='Install packages in a user environment. '
                         'default: true', default=True)
+    parser.add_argument('--user_tests',
+                        action=argparse.BooleanOptionalAction,
+                        help='Perform installed packages tests (as a user '
+                        'install). default: true',
+                        default=True)
 
     args = parser.parse_args(sys.argv[1:])
 
@@ -531,6 +554,7 @@ if __name__ == '__main__':
     environments = args.environment
     bv_maker_steps = args.bv_maker_steps
     dev_tests = args.dev_tests
+    user_tests = args.user_tests
     pack = args.pack
     install_packages = args.install_packages
     if len(environments) == 0:
@@ -577,4 +601,4 @@ if __name__ == '__main__':
 
     bbi_daily = BBIDaily(base_directory, jenkins=jenkins)
     bbi_daily.run_bbi(dev_configs, user_configs, bv_maker_steps, dev_tests,
-                      pack, install_packages)
+                      pack, install_packages, user_tests)
