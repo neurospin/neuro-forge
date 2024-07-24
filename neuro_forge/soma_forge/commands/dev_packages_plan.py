@@ -298,6 +298,11 @@ def dev_packages_plan(directory, packages, force, test=True):
                 version[2] = str(int(version[2]) + 1)
                 version = ".".join(version)
             recipe["package"]["version"] = version
+            # Set build section in recipe
+            recipe.setdefault("build", {})["number"] = build_number
+            recipe["build"][
+                "string"
+            ] = f"{build_info['build_string']}_{build_info['build_number']}"
             print(
                 f"Select virtual package {package} {version} for building"
             )
