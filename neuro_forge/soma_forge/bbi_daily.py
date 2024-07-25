@@ -405,7 +405,7 @@ class BBIDaily:
                '-c', 'nvidia', '-c', 'pytorch', '-c', 'conda-forge']
         log = ['create user environment', 'command:', ' '.join(cmd),
                'from dir:', env_dir]
-        self.log(environment, 'create user environment', 1,
+        self.log(environment, 'create user environment', 0,
                  '\n'.join(log), duration=0)
         result, output = self.call_output(cmd, cwd=env_dir)
         log = []
@@ -431,14 +431,22 @@ class BBIDaily:
                      'The enviroment init failed.')
 
         if success:
+            # make test dir with symlink to ref data from the dev env
+            os.makedirs(osp.join(env_dir, 'tests', 'test'))
+            os.symlink(osp.join('../..', osp.basename(dev_env_dir), 'tests',
+                                'ref'),
+                       osp.join(env_dir, 'tests', 'test', 'ref'))
+
             start = time.time()
             packages = self.read_packages_list(dev_config)
             packages_list = [f'{p}={packages[p]["version"]}'
                              for p in sorted(packages)]
-            cmd = ['pixi', 'add'] + packages_list
+            # nibabel is used in a test, but is not a required dependency
+            # of any package.
+            cmd = ['pixi', 'add'] + packages_list + ['nibabel']
             log = ['install packages', 'command:', ' '.join(cmd),
                    'from dir:', env_dir]
-            self.log(environment, 'install packages', 1,
+            self.log(environment, 'install packages', 0,
                      '\n'.join(log), duration=0)
             result, output = self.call_output(cmd, cwd=env_dir)
             log = []
