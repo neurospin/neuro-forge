@@ -132,6 +132,8 @@ class BBIDaily:
             environment_dir=test_config['directory'])
         dev_env_dir = dev_config['directory']
         srccmdre = re.compile('/casa/host/src/.*/bin/')
+        dev_build = osp.join(dev_env_dir, 'build')
+        user_root = osp.join(env_dir, '.pixi', 'envs', 'default')
         for test, commands in tests.items():
             log = []
             start = time.time()
@@ -149,6 +151,7 @@ class BBIDaily:
                                                   '/casa/install')
                         # replace paths in sources with install ones
                         command = srccmdre.sub('/casa/install/bin/', command)
+                    command = command.replace(dev_build, user_root)
                     command = command.replace(osp.join(dev_env_dir, ''),
                                               osp.join(env_dir, ''))
                 result, output = self.call_output(self.casa_distro_cmd + [
