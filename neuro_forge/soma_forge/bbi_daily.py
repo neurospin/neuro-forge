@@ -149,6 +149,8 @@ class BBIDaily:
                                                   '/casa/install')
                         # replace paths in sources with install ones
                         command = srccmdre.sub('/casa/install/bin/', command)
+                    command = command.replace(osp.join(dev_env_dir, ''),
+                                              osp.join(env_dir, ''))
                 result, output = self.call_output(self.casa_distro_cmd + [
                     'run',
                     'name={0}'.format(test_config['name']),
@@ -435,7 +437,7 @@ class BBIDaily:
             os.makedirs(osp.join(env_dir, 'tests', 'test'))
             os.symlink(osp.join('../..', osp.basename(dev_env_dir), 'tests',
                                 'ref'),
-                       osp.join(env_dir, 'tests', 'test', 'ref'))
+                       osp.join(env_dir, 'tests', 'ref'))
 
             start = time.time()
             packages = self.read_packages_list(dev_config)
