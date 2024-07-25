@@ -130,6 +130,7 @@ class BBIDaily:
         failed_tests = []
         env_dir = self.env_prefix.format(
             environment_dir=test_config['directory'])
+        dev_env_dir = dev_config['directory']
         srccmdre = re.compile('/casa/host/src/.*/bin/')
         for test, commands in tests.items():
             log = []
@@ -138,10 +139,16 @@ class BBIDaily:
             for command in commands:
                 if test_config['type'] in ('run', 'user'):
                     # replace paths in build dir with install ones
-                    command = command.replace('/casa/host/build',
-                                              '/casa/install')
-                    # replace paths in sources with install ones
-                    command = srccmdre.sub('/casa/install/bin/', command)
+                    if command.startswith(osp.join(dev_env_dir, '')):
+                        # should be /path/to/env/.../bin/bv_env_test
+                        # we are not usig it in conda tests: pixi is
+                        # playing this role
+                        command = shlex.join(shlex.split(command)[1:])
+                    else:
+                        command = command.replace('/casa/host/build',
+                                                  '/casa/install')
+                        # replace paths in sources with install ones
+                        command = srccmdre.sub('/casa/install/bin/', command)
                 result, output = self.call_output(self.casa_distro_cmd + [
                     'run',
                     'name={0}'.format(test_config['name']),
@@ -269,7 +276,7 @@ class BBIDaily:
         log = ['buid packages plan', 'command:', ' '.join(cmd), 'from dir:',
                self.neuro_forge_src]
         environment = config['name']
-        self.log(environment, 'buid packages plan', 1,
+        self.log(environment, 'buid packages plan', 0,
                  '\n'.join(log), duration=0)
         start = time.time()
         result, output = self.call_output(cmd, cwd=self.neuro_forge_src)
@@ -300,7 +307,7 @@ class BBIDaily:
                    env_dir]
             log = ['buid packages plan', 'command:', ' '.join(cmd),
                    'from dir:', self.neuro_forge_src]
-            self.log(environment, 'buid packages', 1,
+            self.log(environment, 'buid packages', 0,
                      '\n'.join(log), duration=0)
             start = time.time()
             result, output = self.call_output(cmd, cwd=self.neuro_forge_src)
@@ -333,7 +340,7 @@ class BBIDaily:
                        osp.join(env_dir, 'packages')]
                 log = ['buid packages index', 'command:', ' '.join(cmd),
                        'from dir:', self.neuro_forge_src]
-                self.log(environment, 'buid packages index', 1,
+                self.log(environment, 'buid packages index', 0,
                          '\n'.join(log), duration=0)
                 start = time.time()
                 result, output = self.call_output(cmd,
