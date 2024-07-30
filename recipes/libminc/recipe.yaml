@@ -7,7 +7,7 @@ source:
   tag: libminc-2-3-00
 
 build:
-  number: 0
+  number: 1
   script: |
     # Due to a bug in rattler-build 0.13.0, it is necessary to select appropriate tag
     git -C "$SRC_DIR" checkout libminc-2-3-00
