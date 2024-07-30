@@ -21,12 +21,12 @@ requirements:
     - ${{ compiler('cxx') }}
     - cmake
     - make
-    - hdf5
+    - hdf5>=1.14.3,<1.14.4.0a0
     - zlib
     - libnetcdf
 
   run:
-    - hdf5
+    - hdf5>=1.14.3,<1.14.4.0a0
     - zlib
     - libnetcdf
 
