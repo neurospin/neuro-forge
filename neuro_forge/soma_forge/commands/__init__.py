@@ -14,5 +14,5 @@ def cli():
 
 
 from . import init
-from . import dev_packages_plan
+from . import packaging_plan
 from . import apply_plan

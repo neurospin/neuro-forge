@@ -205,7 +205,7 @@ def init(directory, environment, packages, python, force):
         )
 
     environment_dependencies = environment_info["build-dependencies"].copy()
-    environment_dependencies["python"] = f"== {build_info['options']['python']}"
+    environment_dependencies["python"] = f"=={build_info['options']['python']}"
 
     # Add dependencies to pixi.toml
     for package, constraint in itertools.chain(

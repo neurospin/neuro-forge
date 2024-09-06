@@ -4,16 +4,21 @@ import itertools
 import json
 import os
 import pathlib
+import rich
 import re
 import shlex
+import shutil
 import subprocess
 import sys
 import toml
 import yaml
 
 import click
+
 from . import cli
 from ..recipes import sorted_recipies
+
+neuro_forge_url = "https://brainvisa.info/neuro-forge"
 
 
 def forged_packages(pixi_root, name_re):
@@ -162,72 +167,83 @@ def debug(directory):
 @cli.command()
 @click.option("--force", is_flag=True)
 @click.option("--test", type=bool, default=False)
-@click.argument("directory", type=click.Path())
+@click.option(
+    "--publication-directory", type=click.Path(), default="/drf/neuro-forge/public"
+)
+@click.argument("pixi_directory", type=click.Path())
 @click.argument("packages", type=str, nargs=-1)
-def dev_packages_plan(directory, packages, force, test=True):
-    pixi_root = pathlib.Path(directory).absolute()
+def packaging_plan(pixi_directory, publication_directory, packages, force, test=True):
+    publication_directory = pathlib.Path(publication_directory).absolute()
+    if not publication_directory.exists():
+        raise RuntimeError(
+            f"Publication directory {publication_directory} does not exist"
+        )
+
     if not packages:
         packages = ["*"]
     selector = re.compile("|".join(f"(?:{fnmatch.translate(i)})" for i in packages))
 
+    # pixi_root contains the base Pixi environment used for building software from sources
+    pixi_root = pathlib.Path(pixi_directory).absolute()
+    # the plan directory contains all files to generate and apply packaging plan
+    plan_dir = pixi_root / "plan"
+
+    # Check if a plan file already exists and can be erased
+    history_file = plan_dir / "history.json"
+    if plan_dir.exists():
+        if history_file.exists() and not force:
+            raise RuntimeError(
+                f"A plan already exists in {plan_dir} and was used. Erase it or use --force option"
+            )
+        print(f"Erasing existing plan: {plan_dir}")
+        shutil.rmtree(plan_dir)
+    plan_dir.mkdir()
+
+    # Read build information
     build_info_file = pixi_root / "conf" / "build_info.json"
     with open(build_info_file) as f:
         build_info = json.load(f)
 
-    if not force:
-        # Check that bv_maker steps had been done successfully in the right order
+    # Get the release history for selected environment (e.g.
+    # environment="6.0") from the publication directory
+    release_history_file = (
+        publication_directory / f"soma-forge-{build_info['environment']}.json"
+    )
+    release_history = {}
+    if release_history_file.exists():
+        with open(release_history_file) as f:
+            release_history = json.load(f)
 
-        configure_step_info = build_info.get("brainvisa-cmake", {}).get("configure")
-        if not configure_step_info:
-            raise ValueError(
-                f"No bv_maker configuration step information in {build_info_file}"
-            )
-        status = configure_step_info.get("status")
-        if status != "succeeded":
-            raise ValueError(f"bv_maker configuration step not successful: {status}")
+    # Set the new environment full version by incrementing last published version patch
+    # number or setting it to 0
+    environment_version = release_history.get("environment_version")
+    if environment_version:
+        # Increment patch number
+        version, patch = environment_version.rsplit(".", 1)
+        patch = int(patch) + 1
+        environment_version = f"{version}.{patch}"
+    else:
+        environment_version = f"{build_info['environment']}.0"
 
-        build_step_info = build_info.get("brainvisa-cmake", {}).get("build")
-        if not build_step_info:
-            raise ValueError(f"No bv_maker build step information in {build_info_file}")
-        status = build_step_info.get("status")
-        if status != "succeeded":
-            raise ValueError(f"bv_maker build step not successful: {status}")
-        if build_step_info.get("start") <= configure_step_info.get("stop"):
-            raise ValueError(
-                "bv_maker build step started before the end of configuration."
-            )
+    # Next environment is used to build dependencies strings for components:
+    #   >={environment},<{next_environment}
+    next_environment = build_info["environment"].split(".")
+    next_environment[-1] = str(int(next_environment[-1]) + 1)
+    next_environment = ".".join(next_environment)
 
-        doc_step_info = build_info.get("brainvisa-cmake", {}).get("doc")
-        if not doc_step_info:
-            raise ValueError(f"No bv_maker doc step information in {build_info_file}")
-        status = doc_step_info.get("status")
-        if status != "succeeded":
-            raise ValueError(f"bv_maker doc step not successful: {status}")
-        if doc_step_info.get("start") <= build_step_info.get("stop"):
-            raise ValueError("bv_maker doc step started before the end of build.")
+    # List of actions stored in the plan file
+    actions = []
 
-    # Increase build number
-    build_number = build_info["build_number"] = build_info.get("build_number", 0) + 1
-    with open(build_info_file, "w") as f:
-        json.dump(build_info, f, indent=4)
-
-    plan = pixi_root / "plan"
     recipes = {}
     all_packages = build_info["all_packages"]
     selected_packages = set()
-    # Get ordered selection of recipes according to
-    # user selection and modification since last
-    # packaging
-    history_file = plan / "history.json"
-    if history_file.exists():
-        with open(history_file) as f:
-            history = json.load(f)
-    else:
-        history = {}
+    # Get ordered selection of recipes. Order is based on package
+    # dependencies. Recipes are selected according to user selection and
+    # modification since last packaging
     for recipe in sorted_recipies():
         package = recipe["package"]["name"]
         if package not in all_packages:
-            print(f"Skip package {package} (not in soma-build tree)")
+            print(f"Skip package {package} (not in build tree)")
             continue
         if not selector.match(package):
             print(f"Ignore package {package} (excluded by parameters)")
@@ -252,8 +268,7 @@ def dev_packages_plan(directory, packages, force, test=True):
                 elif repo.untracked_files:
                     src_errors.append(f"repository {src} has local modifications")
                 changesets[component] = str(repo.head.commit)
-            if changesets != history.get(package, {}).get("changesets"):
-                from pprint import pprint
+            if changesets != release_history.get(package, {}).get("changesets"):
                 print(
                     f"Select {package} for building beacause detected changes in source"
                 )
@@ -261,11 +276,8 @@ def dev_packages_plan(directory, packages, force, test=True):
             else:
                 print(f"No change detected in package {package}")
 
-            # Set build section in recipe
-            recipe.setdefault("build", {})["number"] = build_number
-            recipe["build"][
-                "string"
-            ] = f"{build_info['build_string']}_{build_info['build_number']}"
+            # Write build section in recipe
+            recipe.setdefault("build", {})["string"] = build_info["build_string"]
             recipe["build"]["script"] = "\n".join(
                 (
                     f"cd '{pixi_root}'",
@@ -285,26 +297,15 @@ def dev_packages_plan(directory, packages, force, test=True):
             # Set package version in recipe
             recipe["package"]["version"] = package_version
             # Save information in recipe because we do not know yet
-            # if package is selected for building (known later via
-            # dependencies).
+            # if package will be selected for building. It will be known
+            # later when dependencies are resolved.
             recipe["soma-forge"]["src_errors"] = src_errors
             recipe["soma-forge"]["changesets"] = changesets
         elif recipe["soma-forge"]["type"] == "virtual":
-            version = history.get("package", {}).get("version")
-            if version is None:
-                version = f"{build_info['environment']}.0"
-            else:
-                version = version.split(".")
-                version[2] = str(int(version[2]) + 1)
-                version = ".".join(version)
-            recipe["package"]["version"] = version
-            # Set build section in recipe
-            recipe.setdefault("build", {})["number"] = build_number
-            recipe["build"][
-                "string"
-            ] = f"{build_info['build_string']}_{build_info['build_number']}"
+            recipe["package"]["version"] = environment_version
+            recipe.setdefault("build", {})["string"] = build_info["build_string"]
             print(
-                f"Select virtual package {package} {version} for building"
+                f"Select virtual package {package} {environment_version} for building"
             )
             selected_packages.add(package)
         else:
@@ -313,7 +314,7 @@ def dev_packages_plan(directory, packages, force, test=True):
             )
         recipes[package] = recipe
 
-    # Select new packages that are compiled and depend on a selected compiled package
+    # Select new packages that are compiled and depend on, at least, one selected compiled package
     selection_modified = True
     while selection_modified:
         selection_modified = False
@@ -333,12 +334,27 @@ def dev_packages_plan(directory, packages, force, test=True):
                         selected_packages.add(package)
                         selection_modified = True
 
+    # Generate rattler-build recipe and action for soma-forge package
+    print(f"Generate recipe for soma-forge {environment_version}")
+    (plan_dir / "recipes" / "soma-forge").mkdir(exist_ok=True, parents=True)
+    with open(plan_dir / "recipes" / "soma-forge" / "recipe.yaml", "w") as f:
+        yaml.safe_dump(
+            {
+                "package": {"name": "soma-forge", "version": environment_version},
+                "build": {"string": build_info["build_string"]},
+                "requirements": {"run": [f"python=={build_info['options']['python']}"]},
+            },
+            f,
+        )
+
+    commit_actions = []
+
     # Generate rattler-build recipe and actions for selected packages
-    actions = []
+    package_actions = []
     for package, recipe in recipes.items():
         if package not in selected_packages:
             continue
-        print(f"Generate recipe for {package}")
+        print(f"Generate recipe for {package} {recipe["package"]["version"]}")
         if not force:
             src_errors = recipe["soma-forge"].get("src_errors")
             if src_errors:
@@ -348,41 +364,162 @@ def dev_packages_plan(directory, packages, force, test=True):
         internal_dependencies = recipe["soma-forge"].get("internal-dependencies", [])
         if internal_dependencies:
             for dpackage in internal_dependencies:
-                if all_packages[package]["type"] == "compiled" and all_packages[dpackage]["type"] == "compiled":
-                    last_build_string = history.get(dpackage, {}).get("build_string")
+                if (
+                    all_packages[package]["type"] == "compiled"
+                    and all_packages[dpackage]["type"] == "compiled"
+                ):
+                    last_build_string = release_history.get(dpackage, {}).get(
+                        "build_string"
+                    )
                     if last_build_string and dpackage not in selected_packages:
                         build_string = last_build_string
                     else:
-                        build_string = recipes[dpackage]['build']['string']
-                    history
+                        build_string = recipes[dpackage]["build"]["string"]
                     d = f"{dpackage}=={recipes[dpackage]['package']['version']}={build_string}"
                 else:
-                    d = f"{dpackage}=={recipes[dpackage]['package']['version']}"
+                    d = f"{dpackage}>={recipes[dpackage]['package']['version']}"
                 recipe.setdefault("requirements", {}).setdefault("run", []).append(d)
 
         changesets = src_errors = recipe["soma-forge"].get("changesets")
 
-        # Force python version for soma package and interpreted packages
-        if package == "soma" or recipe["soma-forge"].get("type") == "interpreted":
-            recipe["requirements"]["run"].append(
-                f"python=={build_info['options']['python']}"
+        # Add dependency to soma-forge package
+        recipe["requirements"]["run"].append(
+            f"soma-forge>={environment_version},<{next_environment}"
+        )
+
+        # Check if a version_change is necessary
+        published_version = tuple(
+            int(i) for i in release_history.get(package, {}).get("version", "0").split(".")
+        )
+        package_version = tuple(int(i) for i in recipe["package"]["version"].split("."))
+        if published_version == package_version:
+            new_version = package_version[:-1] + (package_version[-1] + 1,)
+            component = recipe["soma-forge"]["components"][0]
+            # Find file to change
+            src = pixi_root / "src" / component
+            file = src / "project_info.cmake"
+            if file.exists():
+                version_regexps = (
+                    re.compile(
+                        r"(\bset\s*\(\s*BRAINVISA_PACKAGE_VERSION_MAJOR\s*)"
+                        r"([0-9]+)(\s*\))",
+                        re.IGNORECASE,
+                    ),
+                    re.compile(
+                        r"(\bset\s*\(\s*BRAINVISA_PACKAGE_VERSION_MINOR\s*)"
+                        r"([0-9]+)(\s*\))",
+                        re.IGNORECASE,
+                    ),
+                    re.compile(
+                        r"(\bset\s*\(\s*BRAINVISA_PACKAGE_VERSION_PATCH\s*)"
+                        r"([0-9]+)(\s*\))",
+                        re.IGNORECASE,
+                    ),
+                )
+            else:
+                file_format = "python"
+                version_regexps = (
+                    re.compile(r"(\bversion_major\s*=\s*)([0-9]+)(\b)"),
+                    re.compile(r"(\bversion_minor\s*=\s*)([0-9]+)(\b)"),
+                    re.compile(r"(\bversion_micro\s*=\s*)([0-9]+)(\b)"),
+                )
+                if not file.exists():
+                    files = list(
+                        itertools.chain(
+                            src.glob("*/info.py"), src.glob("python/*/info.py")
+                        )
+                    )
+                    if not files:
+                        raise RuntimeError(
+                            f"Cannot find component version file (info.py or project_info.cmake) in {src}"
+                        )
+                    file = files[0]
+            with open(file) as f:
+                file_contents = f.read()
+            for regex, version_component in zip(version_regexps, new_version):
+                file_contents, _ = regex.subn(
+                    f"\\g<1>{version_component:d}\\g<3>", file_contents
+                )
+            actions.append(
+                {
+                    "action": "modify_file",
+                    "kwargs": {
+                        "file": str(file),
+                        "file_contents": file_contents,
+                    },
+                }
+            )
+
+            commit_actions.append(
+                {
+                    "action": "git_commit",
+                    "kwargs": {
+                        "repo": str(src),
+                        "modified": [str(file)],
+                        "message": f"Set Conda package {package} to version {'.'.join(str(i) for i in new_version)}",
+                    },
+                }
             )
 
         # Remove soma-forge specific data
         recipe.pop("soma-forge", None)
 
-        (plan / "recipes" / package).mkdir(exist_ok=True, parents=True)
+        (plan_dir / "recipes" / package).mkdir(exist_ok=True, parents=True)
 
-        with open(plan / "recipes" / package / "recipe.yaml", "w") as f:
+        with open(plan_dir / "recipes" / package / "recipe.yaml", "w") as f:
             yaml.safe_dump(recipe, f)
 
-        actions.append(
+        package_actions.append(
             {"action": "create_package", "args": [package], "kwargs": {"test": test}}
         )
-        if changesets:
-            actions.append({"action": "set_changesets", "args": [package, changesets]})
-    with open(plan / "actions.yaml", "w") as f:
+
+        release_history.setdefault(package, {})["changesets"] = changesets
+        build_string = recipe.get("build", {}).get("string")
+        release_history[package]["build_string"] = build_string
+        release_history[package]["version"] = recipe["package"]["version"]
+
+    if commit_actions:
+        actions.extend(commit_actions)
+        actions.append({"action": "rebuild"})
+    else:
+        # Add an action to assess that compilation was succesfully done
+        actions.append({"action": "check_build_status"})
+
+        actions.append(
+            {
+                "action": "create_package",
+                "args": ["soma-forge"],
+                "kwargs": {"test": False},
+            }
+        )
+
+        actions.extend(package_actions)
+        release_history["environment_version"] = environment_version
+        packages_dir = pixi_root / "plan" / "packages"
+        actions.append(
+            {
+                "action": "publish",
+                "kwargs": {
+                    "environment": build_info["environment"],
+                    "packages_dir": str(packages_dir),
+                    "packages": ["soma-forge"] + list(selected_packages),
+                    "release_history": release_history,
+                    "publication_dir": str(publication_directory),
+                },
+            }
+        )
+
+    with open(plan_dir / "actions.yaml", "w") as f:
         yaml.safe_dump(
             actions,
             f,
+        )
+
+    if commit_actions:
+        console = rich.console.Console()
+        console.print(
+            "Source code modification requires version changes. Verify the "
+            "plan and apply it to change project versions. Then build and "
+            "apply another plan for packaging.",
+            style="bold red",
         )

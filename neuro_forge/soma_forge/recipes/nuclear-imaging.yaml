@@ -15,4 +15,7 @@ soma-forge:
 requirements:
   run:
     - pydicom
+    - xlrd
+    - xlwt
+    - openpyxl
  

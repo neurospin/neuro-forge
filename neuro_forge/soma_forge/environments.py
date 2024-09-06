@@ -40,7 +40,7 @@ def environments_info():
                         break
                 else:
                     raise ValueError(
-                        f"Invalid dependencies declared in {Path(__file__).parent / "environments_info.yaml"}"
+                        f"Invalid dependencies declared in {Path(__file__).parent / 'environments_info.yaml'}"
                     )
                 del infos[environment]
     return _environments_info
