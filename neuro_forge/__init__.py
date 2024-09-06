@@ -5,6 +5,8 @@ from pathlib import Path
 import shutil
 from subprocess import check_call
 
+default_channel_dir = "/drf/neuro-forge/public"
+
 
 @click.group(context_settings={"help_option_names": ["-h", "--help"]})
 def main():
@@ -12,9 +14,10 @@ def main():
 
 
 @main.command()
+@click.option("--recipes_dir", type=click.Path(), default="/drf/neuro-forge/recipes")
 @click.argument("channel_dir", type=click.Path())
 @click.argument("packages", type=str, nargs=-1)
-def build(channel_dir, packages):
+def build(channel_dir, packages, recipes_dir):
     """Create packages with rattler-build for recipes embedded in neuro-forge
     without leaving any cache file in user environment. All temporary files are
     stored (and removed if operation is successful) in CHANNEL_DIR directory.
@@ -34,23 +37,32 @@ def build(channel_dir, packages):
     (channel_dir / "linux-64").mkdir(exist_ok=True)
     check_call(["conda", "index", channel_dir])
 
+    recipes_dir = Path(recipes_dir)
+
     # Select packages
     neuro_forge = Path(__file__).parent.parent
     if not packages:
         packages = [
             i.name
+            for i in recipes_dir.iterdir()
+            if (i / "recipe.yaml").exists()
+            and not any(channel_dir.glob(f"*/{i.name}-*.conda"))
+        ]
+        packages += [
+            i.name
             for i in (neuro_forge / "recipes").iterdir()
             if (i / "recipe.yaml").exists()
             and not any(channel_dir.glob(f"*/{i.name}-*.conda"))
         ]
-
     # Create selected packages
     for package in packages:
-        recipe_file = neuro_forge / "recipes" / package / "recipe.yaml"
+        recipe_file = recipes_dir / package / "recipe.yaml"
         if not recipe_file.exists():
-            raise ValueError(
-                f'Wrong package name "{package}": file {recipe_file} does not exist'
-            )
+            recipe_file = neuro_forge / "recipes" / package / "recipe.yaml"
+            if not recipe_file.exists():
+                raise ValueError(
+                    f'Wrong package name "{package}": file {recipe_file} does not exist'
+                )
         recipe_dir = recipe_file.parent
         command = [
             "env",
@@ -85,13 +97,23 @@ def build(channel_dir, packages):
 
 
 @main.command()
-@click.argument("channel_dir", type=click.Path(), default="/drf/neuro-forge/public")
+@click.argument("channel_dir", type=click.Path(), default=default_channel_dir)
 def publish(channel_dir):
     """Run conda index if necessary and publish channel_dir to
     https://brainvisa.info/neuro-forge"""
 
-    if os.path.basename(channel_dir) != "public":
-        raise ValueError(f"Invalid source directory: {channel_dir}")
+    if channel_dir != default_channel_dir:
+        # Double check that not using the default directory is done for a
+        # good reason
+        print(
+            f"WARNING: You are about to replace the neuro-forge public "
+            "channel with the content of {channel_dir}"
+        )
+        user_input = input("Confirm ? [Y/N] ")
+        if user_input.lower() not in ("y", "yes"):
+            print("Operation canceled")
+            return
+        channel_dir = os.path.abspath(os.path.normpath(channel_dir))
 
     # Sort all files by modification date and get the most recent
     to_sort = []
