@@ -1,0 +1,37 @@
+context:
+  git_repo_url: "git@gitlab.com:brainomics/pysolar.git"
+  latest_tag: ${{ git.latest_tag( git_repo_url ) }}
+
+
+package:
+  name: "pysolar"
+  version: ${{ latest_tag }}
+
+
+
+source:
+  git: ${{ git_repo_url }}
+  tag: ${{ latest_tag }}
+
+build:
+  noarch: python
+
+requirements:
+  build:
+    - python
+    - pip
+    - tree
+    - conda-forge::git
+
+  run: 
+    - numpy >=1.6.1
+    - pandas >=0.23.4
+    - solar  >=8.4.2,<9
+
+tests:
+  - python:
+      imports:
+        - pysolar
+  - script:
+     - pysolar_heritability_analysis -h
+     - pysolar_make_pedigree -h
