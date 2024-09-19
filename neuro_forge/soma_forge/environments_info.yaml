@@ -1,6 +1,5 @@
-'6.0':
-  type: release
-  default_branch: brainvisa-6.0
+'0.0':
+  default_branch: master
   components:
     3dns-private:
       url: https://bioproj.extra.cea.fr/git/3dns-private
@@ -34,6 +33,7 @@
       url: https://github.com/brainvisa/casa-distro.git
     catidb-client:
       url: https://github.com/cati-neuroimaging/catidb-client.git
+      default_branch: main
     constellation-gpl:
       url: https://github.com/brainvisa/constellation-gpl.git
     constellation-nonfree:
@@ -44,7 +44,7 @@
       url: https://github.com/brainvisa/cortical_surface-nonfree.git
     deidentification:
       url: https://github.com/cati-neuroimaging/deidentification.git
-      default_branch: master
+      default_branch: develop
     disco:
       url: https://bioproj.extra.cea.fr/git/brainvisa-disco
     highres-cortex:
@@ -71,6 +71,7 @@
       url: https://bioproj.extra.cea.fr/git/primatologist-gpl
     qualicati:
       url: https://github.com/cati-neuroimaging/qualicati.git
+      default_branch: main
     rsfmri:
       url: https://github.com/cati-neuroimaging/rsfmri.git
     sacha-gpl:
@@ -115,8 +116,8 @@
     - constellation
     - nuclear-imaging
 
-'6.1':
-  base: '6.0'
+'0.1':
+  base: '0.0'
   components:
     anatomist-gpl:
       default_branch: capsul3
@@ -135,15 +136,8 @@
     soma-base:
       default_branch: '6.0'
 
-'6.2':
+'6.0':
   type: dev
-  base: '6.0'
-  default_branch: master
-  components:
-    catidb-client:
-      default_branch: main
-    deidentification:
-      default_branch: develop
-    qualicati:
-      default_branch: main
+  base: '0.0'
+  default_branch: brainvisa-6.0
 

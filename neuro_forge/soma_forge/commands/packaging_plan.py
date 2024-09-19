@@ -224,6 +224,7 @@ def packaging_plan(pixi_directory, publication_directory, packages, force, test=
         environment_version = f"{version}.{patch}"
     else:
         environment_version = f"{build_info['environment']}.0"
+    development_environment = environment_version.startswith("0.")
 
     # Next environment is used to build dependencies strings for components:
     #   >={environment},<{next_environment}
@@ -392,7 +393,7 @@ def packaging_plan(pixi_directory, publication_directory, packages, force, test=
             int(i) for i in release_history.get(package, {}).get("version", "0").split(".")
         )
         package_version = tuple(int(i) for i in recipe["package"]["version"].split("."))
-        if published_version == package_version:
+        if not development_environment and published_version == package_version:
             new_version = package_version[:-1] + (package_version[-1] + 1,)
             component = recipe["soma-forge"]["components"][0]
             # Find file to change
@@ -461,7 +462,7 @@ def packaging_plan(pixi_directory, publication_directory, packages, force, test=
                 }
             )
 
-        # Remove soma-forge specific data
+        # Remove soma-forge specific data from recipe
         recipe.pop("soma-forge", None)
 
         (plan_dir / "recipes" / package).mkdir(exist_ok=True, parents=True)
