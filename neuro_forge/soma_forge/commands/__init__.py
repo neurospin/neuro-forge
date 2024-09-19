@@ -16,3 +16,4 @@ def cli():
 from . import init
 from . import packaging_plan
 from . import apply_plan
+from . import check_merge
