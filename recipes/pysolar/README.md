@@ -31,7 +31,7 @@ tree /tmp/channel/
     ├── pysolar-8.4.2-pyh4616a5c_0.conda
     ├── repodata_from_packages.json
     └── repodata.json
-
+```
 
 
 Copy to the conda repos of NeuroSpin : **https://brainvisa.info/public**
