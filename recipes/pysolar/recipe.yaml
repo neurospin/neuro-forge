@@ -26,7 +26,7 @@ requirements:
   run: 
     - numpy >=1.6.1
     - pandas >=0.23.4
-    - solar  >=8.4.2,<9
+    - solar  >=${{ latest_tag }},<9
 
 tests:
   - python:
