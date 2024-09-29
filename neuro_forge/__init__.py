@@ -1,9 +1,11 @@
 import click
-from itertools import chain
+import functools
+import operator
 import os
 from pathlib import Path
 import shutil
 from subprocess import check_call
+import yaml
 
 default_channel_dir = "/drf/neuro-forge/public"
 
@@ -42,12 +44,15 @@ def build(channel_dir, packages, recipes_dir):
     # Select packages
     neuro_forge = Path(__file__).parent.parent
     if not packages:
-        packages = [
-            i.name
-            for i in recipes_dir.iterdir()
-            if (i / "recipe.yaml").exists()
-            and not any(channel_dir.glob(f"*/{i.name}-*.conda"))
-        ]
+        if recipes_dir.exists():
+            packages = [
+                i.name
+                for i in recipes_dir.iterdir()
+                if (i / "recipe.yaml").exists()
+                and not any(channel_dir.glob(f"*/{i.name}-*.conda"))
+            ]
+        else:
+            packages = []
         packages += [
             i.name
             for i in (neuro_forge / "recipes").iterdir()
@@ -64,6 +69,13 @@ def build(channel_dir, packages, recipes_dir):
                     f'Wrong package name "{package}": file {recipe_file} does not exist'
                 )
         recipe_dir = recipe_file.parent
+        extension_file = recipe_dir / "neuro-forge.yaml"
+        channels = ["conda-forge", "bioconda"]
+        if extension_file.exists():
+            with open(extension_file) as f:
+                extension = yaml.safe_load(f)
+            channels = extension.get("channels", channels)
+
         command = [
             "env",
             f"HOME={channel_dir}",
@@ -74,11 +86,7 @@ def build(channel_dir, packages, recipes_dir):
             "--output-dir",
             str(channel_dir),
             "--experimental",
-            "-c",
-            "conda-forge",
-            "-c",
-            "bioconda",
-        ]
+        ] + functools.reduce(operator.add, (["-c", i] for i in channels))
         variants = recipe_dir / "variants.yaml"
         if variants.exists():
             command.extend(["-m", str(variants)])
