@@ -1,0 +1,126 @@
+package:
+  name: gadgetron
+  version: 4.7.2
+
+source:
+  git: https://github.com/gadgetron/gadgetron
+  rev: 905522f8adbd2cb1b4f046f5dab310c88ed5b6cd
+
+build:
+  number: 1
+  script: |
+    export PATH=$PATH:$CONDA_PREFIX/nvvm/bin
+    mkdir build
+    cd build
+    cmake -GNinja -DCMAKE_BUILD_TYPE=Release -DUSE_MKL=ON -DCMAKE_INSTALL_PREFIX=$PREFIX ..
+    ninja -j8
+    ninja install
+
+requirements:
+  build:
+    - "breathe >=4.35.0,<5"
+    - "cmake >=3.25.2,<4"
+    - "cuda-cudart-dev >=12.3.52,<13"
+    - "cuda-driver-dev >=12.3.52,<13"
+    - "cuda-libraries-dev >=12.3.0,<13"
+    - "cuda-nvcc >=12.3.52,<13"
+    - "cuda-nvrtc-dev >=12.3.52,<13"
+    - "doxygen >=1.10.0,<2"
+    - "gcc 11.*"
+    - "gmock >=1.15.2,<2"
+    - "gtest >=1.15.2,<2"
+    - "gxx 11.*"
+    - "howardhinnant_date >=3.0.1,<4"
+    # - "jupyter >=1.1.1,<2"
+    - "libcurl >=7.87.0,<8"
+    - "libxml2 >=2.10.3,<3"
+    - "make >=4.4.1,<5"
+    # - "matplotlib >=3.3.2,<4"
+    - "mkl-include >=2024.2.2,<2025"
+    - "ninja >=1.12.1,<2"
+    - "nlohmann_json >=3.11.3,<4"
+    - "pyyaml >=6.0.2,<7"
+    # - "pip >=24.2,<25"
+    - "recommonmark >=0.7.1,<0.8"
+    - "shellcheck >=0.10.0,<0.11"
+    - "sphinx >=7.1.2,<8"
+    - "sphinx_rtd_theme >=2.0.0,<3"
+    # - "valgrind >=3.23.0,<4"
+    - "bioconda::dcmtk 3.6.1.*"
+    - "armadillo >=14.0.2,<15"
+    - "boost >=1.80.0,<2"
+    - "cuda-cudart >=12.3.52,<13"
+    - "cuda-cccl >=12.3.52,<13"
+    - "cuda-libraries >=12.3.0,<13"
+    - "cuda-runtime >=12.3.0,<13"
+    - "cuda-nvrtc >=12.3.52,<13"
+    - "deepdiff >=8.0.1,<9"
+    - "eigen >=3.4.0,<4"
+    - "fftw >=3.3.9,<4"
+    - "gadgetron-python >=1.4.1,<2"
+    - "h5py >=3.3.0,<4"
+    - "hdf5 >=1.10.6,<2"
+    - "ismrmrd >=1.14.1,<2"
+    - "ismrmrd-python >=1.14.1,<2"
+    - "junitparser >=3.2.0,<4"
+    - "jq >=1.7.1,<2"
+    - "libblas >=3.9.0,<4"
+    - "mkl >=2024.1.0,<2025"
+    - "mrd-storage-server >=0.0.12,<0.0.13"
+    - "numpy >=1.26.4,<2"
+    - "onnxruntime >=1.18.1,<2"
+    - "packaging >=24.1,<25"
+    - "plplot >=5.15.0,<6"
+    - "pugixml >=1.12.1,<2"
+    - "pyfftw >=0.14.0,<0.15"
+    - "python >=3.9.15,<4 "
+    - "range-v3 >=0.11.0,<0.12"
+    - "scipy >=1.13.1,<2"
+    - "siemens_to_ismrmrd >=1.2.12,<2"
+    - "sysroot_linux-64 >=2.17,<3"
+    - "xsdata >=24.9,<25"
+    - "yq >=3.4.3,<4"
+
+  run: 
+    - "bioconda::dcmtk 3.6.1.*"
+    - "armadillo >=14.0.2,<15"
+    - "boost >=1.80.0,<2"
+    - "cuda-cudart >=12.3.52,<13"
+    - "cuda-cccl >=12.3.52,<13"
+    - "cuda-libraries >=12.3.0,<13"
+    - "cuda-runtime >=12.3.0,<13"
+    - "cuda-nvrtc >=12.3.52,<13"
+    - "deepdiff >=8.0.1,<9"
+    - "eigen >=3.4.0,<4"
+    - "fftw >=3.3.9,<4"
+    - "gadgetron-python >=1.4.1,<2"
+    - "h5py >=3.3.0,<4"
+    - "hdf5 >=1.10.6,<2"
+    - "ismrmrd >=1.14.1,<2"
+    - "ismrmrd-python >=1.14.1,<2"
+    - "junitparser >=3.2.0,<4"
+    - "jq >=1.7.1,<2"
+    - "libblas >=3.9.0,<4"
+    - "mkl >=2024.1.0,<2025"
+    - "mrd-storage-server >=0.0.12,<0.0.13"
+    - "numpy >=1.26.4,<2"
+    - "onnxruntime >=1.18.1,<2"
+    - "packaging >=24.1,<25"
+    - "plplot >=5.15.0,<6"
+    - "pugixml >=1.12.1,<2"
+    - "pyfftw >=0.14.0,<0.15"
+    - "python >=3.9.15,<4 "
+    - "range-v3 >=0.11.0,<0.12"
+    - "scipy >=1.13.1,<2"
+    - "siemens_to_ismrmrd >=1.2.12,<2"
+    - "sysroot_linux-64 >=2.17,<3"
+    - "xsdata >=24.9,<25"
+    - "yq >=3.4.3,<4"
+
+# tests:
+#   - python:
+#       imports:
+#         - pysolar
+#   - script:
+#      - pysolar_heritability_analysis -h
+#      - pysolar_make_pedigree -h

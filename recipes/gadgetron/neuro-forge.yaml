@@ -1,0 +1,6 @@
+channels:
+  - ismrmrd
+  - gadgetron
+  - nvidia/label/cuda-12.3.0
+  - conda-forge
+  - bioconda
