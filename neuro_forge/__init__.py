@@ -4,7 +4,7 @@ import operator
 import os
 from pathlib import Path
 import shutil
-from subprocess import check_call
+import subprocess
 import yaml
 
 default_channel_dir = "/drf/neuro-forge/public"
@@ -37,7 +37,7 @@ def build(channel_dir, packages, recipes_dir):
     channel_dir.mkdir(exist_ok=True)
     (channel_dir / "noarch").mkdir(exist_ok=True)
     (channel_dir / "linux-64").mkdir(exist_ok=True)
-    check_call(["conda", "index", channel_dir])
+    subprocess.check_call(["conda", "index", channel_dir])
 
     recipes_dir = Path(recipes_dir)
 
@@ -93,10 +93,10 @@ def build(channel_dir, packages, recipes_dir):
         print("#----------------- calling ------------------------------")
         print(" ".join(f"'{i}'" for i in command))
         print("#--------------------------------------------------------")
-        check_call(command)
+        subprocess.check_call(command)
 
     # Cleanup and create channel index
-    check_call(["conda", "index", channel_dir])
+    subprocess.check_call(["conda", "index", channel_dir])
     to_delete = [channel_dir / i for i in ("bld", "src_cache", ".rattler", ".cache")]
     to_delete.extend(channel_dir.glob("*/.cache"))
     for i in to_delete:
@@ -140,8 +140,22 @@ def publish(channel_dir):
     if os.path.basename(recent) != "index.html":
         command = ["conda", "index", channel_dir]
         print(" ".join(f"'{i}'" for i in command))
-        check_call(command)
+        subprocess.check_call(command)
 
+    # On web server, make a copy of the channel directroy using hard links
+    command = [
+        "ssh",
+        "neuroforge@brainvisa.info",
+        "cp",
+        "-ral",
+        "/var/www/html/neuro-forge",
+        "/var/www/html/neuro-forge-update",
+    ]
+    print(" ".join(f"'{i}'" for i in command))
+    subprocess.check_call(command)
+
+    # Update the copy of the channel directory. This can take a while.
+    # During the process, the published channel is untouched.
     channel_dir = os.path.normpath(os.path.abspath(channel_dir))
     command = [
         "rsync",
@@ -154,17 +168,27 @@ def publish(channel_dir):
         "--no-group",
         "--exclude=.cache",
         channel_dir + "/",
-        "neuroforge@brainvisa.info:/var/www/html/neuro-forge/",
+        "neuroforge@brainvisa.info:/var/www/html/neuro-forge-update/neuro-forge/",
     ]
     print(" ".join(f"'{i}'" for i in command))
-    check_call(command)
-    command = [
-        "ssh",
-        "neuroforge@brainvisa.info",
-        "chmod",
-        "-R",
-        "a+r",
-        "/var/www/html/neuro-forge",
-    ]
-    print(" ".join(f"'{i}'" for i in command))
-    check_call(command)
+    subprocess.check_call(command)
+
+    # Replace the remote channel by its updated copy
+    bash_script = """set -xe
+    chmod -R a+r /var/www/html/neuro-forge-update/neuro-forge
+    rm -Rf /var/www/html/neuro-forge-update/backup/*
+    mv /var/www/html/neuro-forge/* /var/www/html/neuro-forge-update/backup
+    mv /var/www/html/neuro-forge-update/neuro-forge/* /var/www/html/neuro-forge
+    """
+    print("ssh neuroforge@brainvisa.info /usr/bin/bash << EOF")
+    print(bash_script)
+    print("EOF")
+    p = subprocess.run(
+        [
+            "ssh",
+            "neuroforge@brainvisa.info",
+            "/usr/bin/bash",
+        ],
+        input=bash_script.encode(),
+        check=True,
+    )
