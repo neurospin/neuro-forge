@@ -376,7 +376,7 @@ def packaging_plan(pixi_directory, publication_directory, packages, force, test=
                         build_string = last_build_string
                     else:
                         build_string = recipes[dpackage]["build"]["string"]
-                    d = f"{dpackage}=={recipes[dpackage]['package']['version']}={build_string}"
+                    d = f"{dpackage}=={recipes[dpackage]['package']['version']}"
                 else:
                     d = f"{dpackage}>={recipes[dpackage]['package']['version']}"
                 recipe.setdefault("requirements", {}).setdefault("run", []).append(d)
