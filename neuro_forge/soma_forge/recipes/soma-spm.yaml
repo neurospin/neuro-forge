@@ -10,3 +10,8 @@ soma-forge:
   internal-dependencies:
     - soma
     - anatomist
+
+requirements:
+  run:
+    - nipype <1.9
+
