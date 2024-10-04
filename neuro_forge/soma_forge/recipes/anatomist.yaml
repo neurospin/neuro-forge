@@ -22,3 +22,4 @@ requirements:
     - ipyevents
     - notebook
     - pygltflib
+    - nodejs
