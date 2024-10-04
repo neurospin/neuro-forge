@@ -14,4 +14,7 @@ soma-forge:
 requirements:
   run:
     - nipype <1.9
+    - xlrd
+    - xlwt
+    - openpyxl
 
