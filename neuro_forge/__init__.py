@@ -142,7 +142,7 @@ def publish(channel_dir):
         print(" ".join(f"'{i}'" for i in command))
         subprocess.check_call(command)
 
-    # On web server, make a copy of the channel directroy using hard links
+    # On web server, make a copy of the channel directory using hard links
     command = [
         "ssh",
         "neuroforge@brainvisa.info",

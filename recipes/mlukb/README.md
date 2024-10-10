@@ -6,7 +6,7 @@ This description is for rattler-build / pixi / conda / logics.
 Population modeling with machine learning can enhancemeasures of mental health. (2021). Kamalaker Dadi, Gaël Varoquaux, Josselin Houenou, Danilo Bzdok, Bertrand Thirion, Denis Engemann.
 
 
-## How to generate the environement.
+## How to generate the environment.
 
 ### Clone the neuro-forge repos
 
@@ -21,7 +21,7 @@ pixi shell
 pip install -e . 
 ```
 
-### Now build the mlukb environement
+### Now build the mlukb environment
 
 The conda package is created in ./output. 
  - Suppose the channel is CHANNEL. 
@@ -68,7 +68,7 @@ pixi add conda-pack
 conda-pack --output $MYENV.tar.gz
 ```
 
-### Get from the non connceted HCP system/host
+### Get from the non connected HCP system/host
 
 ```bash
 cd /tmp/$MYENV

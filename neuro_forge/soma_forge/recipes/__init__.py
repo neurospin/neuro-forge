@@ -69,7 +69,7 @@ def selected_recipes(selection=None):
 
 def sorted_recipies():
     """
-    Iterate over recipes sorted according to their depencencies starting with a
+    Iterate over recipes sorted according to their dependencies starting with a
     package without dependency.
     """
     recipes = {r["package"]["name"]: r for r in selected_recipes()}

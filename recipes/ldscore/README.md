@@ -37,6 +37,6 @@ Copy to the conda repos of NeuroSpin : **https://brainvisa.info/public**
 ```
 # copy to the intermediate NS local repository
 cp /tmp/channel/noarch/ldscore-2.0.1-pyh4616a5c_0.conda /drf/neuro-forge/public/noarch
-# Public key to be registered before to run succesfully this command
+# Public key to be registered before to run successfully this command
 neuro-forge publish
 ```

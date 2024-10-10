@@ -271,7 +271,7 @@ def packaging_plan(pixi_directory, publication_directory, packages, force, test=
                 changesets[component] = str(repo.head.commit)
             if changesets != release_history.get(package, {}).get("changesets"):
                 print(
-                    f"Select {package} for building beacause detected changes in source"
+                    f"Select {package} for building because detected changes in source"
                 )
                 selected_packages.add(package)
             else:
@@ -483,7 +483,7 @@ def packaging_plan(pixi_directory, publication_directory, packages, force, test=
         actions.extend(commit_actions)
         actions.append({"action": "rebuild"})
     else:
-        # Add an action to assess that compilation was succesfully done
+        # Add an action to assess that compilation was successfully done
         actions.append({"action": "check_build_status"})
 
         actions.append(
