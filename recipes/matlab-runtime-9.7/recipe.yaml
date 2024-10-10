@@ -1,0 +1,25 @@
+package:
+  name: matlab-runtime-9.7
+  version: 9
+
+source:
+  url: https://ssd.mathworks.com/supportfiles/downloads/R2019b/Release/9/deployment_files/installer/complete/glnxa64/MATLAB_Runtime_R2019b_Update_9_glnxa64.zip
+  sha256: d213e2960a20332f121ec4addf81469b2a2aab2ad8b4ed4226875da6e8af7c65
+
+build:
+  number: 0
+  script:
+    - ./install -mode silent -agreeToLicense yes -outputFile install_log.txt -destinationFolder $PREFIX/MATLAB/MATLAB_Runtime
+  dynamic_linking:
+    binary_relocation: false
+
+about:
+  homepage: https://mathworks.com/help/compiler/install-the-matlab-runtime.html
+  license_file: MCR_license.txt
+  summary: |
+    Run packaged MATLAB applications on computers without MATLAB
+  description: |
+    MATLAB Runtime (MCR) is a freely-available set of shared libraries,
+    MATLAB code, and other files that enables the execution of MATLAB files
+    on computers without an installed version of MATLAB.
+  documentation: https://mathworks.com/help/compiler/matlab-runtime.html
