@@ -9,7 +9,7 @@ Most action with neuro-forge requires to [install Pixi](https://pixi.sh). Pixi i
 
 # How to create a workspace directory and install neuro-forge packages
 
-neuro-forge packages are contained in a Conda channel located in https://brainvisa.info/neuro-forge. They can be installed using [Pixi](https://pixi.sh), [Mamba](https://mamba.readthedocs.io) or [Conda](https://docs.conda.io). We recommand the use of pixi. For instance, once pixi is installed, one can use the following script to setup a workspace containing anatomist:
+neuro-forge packages are contained in a Conda channel located in https://brainvisa.info/neuro-forge. They can be installed using [Pixi](https://pixi.sh), [Mamba](https://mamba.readthedocs.io) or [Conda](https://docs.conda.io). We recommend the use of pixi. For instance, once pixi is installed, one can use the following script to setup a workspace containing anatomist:
 
 ```
 # Create a workspace directory
@@ -41,7 +41,7 @@ The creation of packages for neuro-forge is based on the use of [rattler-build](
 
 - [Standard recipes](https://github.com/neurospin/neuro-forge/tree/main/recipes) that are standard rattler-build recipes that are git compatible (i.e. composed of, at most, a few text file) and can be built independently using only dependencies from standard channels such as conda-forge and bioconda.
 - Internal recipes that are located in the neuro-forge directory in Neurospin. Packages are put here either because they are too big (some packages requires several giga bytes of data) or because the recipe is not public.
-- [soma-forge recipes](https://github.com/neurospin/neuro-forge/tree/main/soma-forge) that are used to create packages for the [BrainVISA](https://brainvisa.info) project. Most of these packages are compiled ; that adds a binary dependency between them. Therefore their compilation and packaging requires a soma-forge development environement.
+- [soma-forge recipes](https://github.com/neurospin/neuro-forge/tree/main/soma-forge) that are used to create packages for the [BrainVISA](https://brainvisa.info) project. Most of these packages are compiled ; that adds a binary dependency between them. Therefore their compilation and packaging requires a soma-forge development environment.
 - Internal recipes are located in a directory in Neurospin and are not directly accessible. These recipes require either too many data to be put on git or are subject to a software licence and cannot be distributed.
 
 
@@ -75,7 +75,7 @@ cd neuro-forge
 pixi run python -m pip install -e .
 ```
 
-Then create the BrainVISA development directory by giving its location and the environment version, plus optionally a list of target packages. Environment version is `0.0` for standard development using default git branches, `0.1` for development with Capsul 3 or `6.0` for the compilation of `brainvisa-6.0` branches. Target packages are the name of soma-forge packages. It will select all corresponding brainvisa-cmake components (taking into account pakages dependencies) and put them in `bv_maker.cfg` file. By default, a selection of packages defined specifically for the environment will be included.
+Then create the BrainVISA development directory by giving its location and the environment version, plus optionally a list of target packages. Environment version is `0.0` for standard development using default git branches, `0.1` for development with Capsul 3 or `6.0` for the compilation of `brainvisa-6.0` branches. Target packages are the name of soma-forge packages. It will select all corresponding brainvisa-cmake components (taking into account packages dependencies) and put them in `bv_maker.cfg` file. By default, a selection of packages defined specifically for the environment will be included.
 ```
 pixi run soma-forge init /somewhere/soma-forge-0.0 0.0
 ```

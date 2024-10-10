@@ -67,7 +67,7 @@ def iter_components():
 
 def component_source(component, environment):
     """Return a git source location given component and environment name.
-    The result is a dictionary containing the followign items:
+    The result is a dictionary containing the following items:
         - "url": Git URL containing the sources
         - "branch" (optional): git branch
     """

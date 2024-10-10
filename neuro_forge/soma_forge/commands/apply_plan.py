@@ -136,10 +136,10 @@ def publish(
         ]
         if len(candidates) > 1:
             raise ValueError(
-                f"Several pacakges files found for {package}: {', '.join(str(i) for i in candidates)}"
+                f"Several packages files found for {package}: {', '.join(str(i) for i in candidates)}"
             )
         if not candidates:
-            raise ValueError(f"No pacakge file found for {package} in {packages_dir}")
+            raise ValueError(f"No package file found for {package} in {packages_dir}")
         packages_files.append(candidates[0])
     copied = []
     release_history_file_backup = None

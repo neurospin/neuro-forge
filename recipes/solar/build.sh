@@ -4,8 +4,8 @@
 cd solar842
 
 # use solar842 dir as temporary
-#    - fix LANG to avoid instaltion error message
-#    - fix LANG to avoid run time error related tot LANG
+#    - fix LANG to avoid installation error message
+#    - fix LANG to avoid run time error related to LANG
 #    - no worry about messages: install_solar: 83: [: -a: unexpected operator
 
 mkdir $PREFIX/solar-8.4.2 $PREFIX/bin

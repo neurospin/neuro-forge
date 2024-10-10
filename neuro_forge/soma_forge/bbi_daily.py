@@ -143,7 +143,7 @@ class BBIDaily:
                     # replace paths in build dir with install ones
                     if command.startswith(osp.join(dev_env_dir, '')):
                         # should be /path/to/env/.../bin/bv_env_test
-                        # we are not usig it in conda tests: pixi is
+                        # we are not using it in conda tests: pixi is
                         # playing this role
                         command = shlex.join(shlex.split(command)[1:])
                     else:
@@ -433,7 +433,7 @@ class BBIDaily:
                  '\n'.join(log), duration=duration)
         if not success:
             self.log(environment, 'create user environment failed', 1,
-                     'The enviroment init failed.')
+                     'The environment init failed.')
 
         if success:
             # make test dir with symlink to ref data from the dev env
