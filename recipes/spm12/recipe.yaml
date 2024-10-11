@@ -1,0 +1,56 @@
+package:
+  name: spm12
+  version: 7771
+
+source:
+  #url: https://www.fil.ion.ucl.ac.uk/spm/download/restricted/utopia/spm12/spm12_r${{version}}_Linux_R2019b.zip
+  url: file:///drf/src/spm/standalone/spm12_r{{version}}_Linux_R2019b.zip
+  sha256: 1e0000c8c035edce5513bcf89324672595a534c387bedcc8d24b4aff040acb08
+
+requirements:
+  run:
+    - matlab-runtime = 9.7
+
+  build:
+    - unzip
+
+build:
+  number: 0
+  script: |
+    mkdir "$PREFIX/bin"
+    
+    cat > "$PREFIX/bin/spm12" <<EOF
+    #!/bin/sh
+    #
+    # https://github.com/spm/spm-docker/blob/main/matlab/singularity.def
+    #
+    export MCR_INHIBIT_CTF_LOCK=1
+    export SPM_HTML_BROWSER=0
+    #
+    # Start a new interactive shell for SPM12
+    #
+    exec "\${CONDA_PREFIX}/spm12/run_spm12.sh" "\${CONDA_PREFIX}/MATLAB/MATLAB_Runtime/v97" \${1+"\$@"}
+    EOF
+    
+    chmod +x "$PREFIX/bin/spm12"
+    
+    unzip spm12_r${{version}}_Linux_R2019b.zip -d "$PREFIX"
+    
+    "\${CONDA_PREFIX}/spm12/run_spm12.sh" "\${CONDA_PREFIX}/MATLAB/MATLAB_Runtime/v97" quit
+
+about:
+  homepage: https://www.fil.ion.ucl.ac.uk/spm/software/spm12/
+  license: "GPL-2.0-or-later"
+  summary: |
+    Analysis of brain imaging data sequences
+  description: |
+    The SPM software package has been designed for the analysis of brain
+    imaging data sequences. The sequences can be a series of images from
+    different cohorts, or time-series from the same subject.
+    
+    A standalone SPM is a version of SPM that has been compiled using
+    the MATLAB Compiler so that it does not require the availability
+    of a MATLAB licence (you might want to check first here whether
+    you have access to a MATLAB campus license).
+  documentation: https://www.fil.ion.ucl.ac.uk/spm/docs/installation/standalone/
+    
