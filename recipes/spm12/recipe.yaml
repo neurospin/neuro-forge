@@ -1,0 +1,39 @@
+package:
+  name: spm12
+  version: 7771
+
+source:
+  url: https://www.fil.ion.ucl.ac.uk/spm/download/restricted/utopia/spm12/spm12_r${{version}}_Linux_R2019b.zip
+  sha256: 227271e160f85f460323105db82e4966532c52b7a8be3f6af0ed452a4b5684d9
+
+requirements:
+  host:
+    - matlab-runtime-9.7
+  run:
+    - matlab-runtime-9.7
+
+build:
+  number: 0
+  script:
+    - mkdir $PREFIX/spm12
+    - mv run_spm12.sh spm12 spm12.ctf $PREFIX/spm12/
+    - $PREFIX/spm12/run_spm12.sh $PREFIX/MATLAB/MATLAB_Runtime/v97 quit
+    - mkdir $PREFIX/bin
+    - cp $RECIPE_DIR/spm12.sh $PREFIX/bin/spm12
+  dynamic_linking:
+    binary_relocation: false
+
+about:
+  homepage: https://www.fil.ion.ucl.ac.uk/spm/software/spm12/
+  license: "GPL-2.0-or-later"
+  summary: |
+    Analysis of brain imaging data sequences
+  description: |
+    The SPM software package has been designed for the analysis of brain
+    imaging data sequences. The sequences can be a series of images from
+    different cohorts, or time-series from the same subject.
+    
+    A standalone SPM is a version of SPM that has been compiled using
+    the MATLAB Compiler so that it does not require the availability
+    of a MATLAB licence.
+  documentation: https://www.fil.ion.ucl.ac.uk/spm/docs/installation/standalone/
