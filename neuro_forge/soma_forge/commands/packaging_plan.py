@@ -365,20 +365,7 @@ def packaging_plan(pixi_directory, publication_directory, packages, force, test=
         internal_dependencies = recipe["soma-forge"].get("internal-dependencies", [])
         if internal_dependencies:
             for dpackage in internal_dependencies:
-                if (
-                    all_packages[package]["type"] == "compiled"
-                    and all_packages[dpackage]["type"] == "compiled"
-                ):
-                    last_build_string = release_history.get(dpackage, {}).get(
-                        "build_string"
-                    )
-                    if last_build_string and dpackage not in selected_packages:
-                        build_string = last_build_string
-                    else:
-                        build_string = recipes[dpackage]["build"]["string"]
-                    d = f"{dpackage}=={recipes[dpackage]['package']['version']}"
-                else:
-                    d = f"{dpackage}>={recipes[dpackage]['package']['version']}"
+                d = f"{dpackage}>={recipes[dpackage]['package']['version']}"
                 recipe.setdefault("requirements", {}).setdefault("run", []).append(d)
 
         changesets = src_errors = recipe["soma-forge"].get("changesets")
@@ -427,7 +414,9 @@ def packaging_plan(pixi_directory, publication_directory, packages, force, test=
                 if not file.exists():
                     files = list(
                         itertools.chain(
-                            src.glob("*/info.py"), src.glob("python/*/info.py")
+                            src.glob("info.py"),
+                            src.glob("*/info.py"),
+                            src.glob("python/*/info.py")
                         )
                     )
                     if not files:
