@@ -121,7 +121,7 @@ def publish(
     packages_dir,
     packages,
     release_history,
-    index=True,
+    index=False,
     force=False,
 ):
     publication_dir = pathlib.Path(publication_dir)
