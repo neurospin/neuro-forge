@@ -121,6 +121,7 @@ def publish(
     packages_dir,
     packages,
     release_history,
+    index=False,
     force=False,
 ):
     publication_dir = pathlib.Path(publication_dir)
@@ -160,7 +161,8 @@ def publish(
         with open(release_history_file, "w") as f:
             copied.append(release_history_file)
             json.dump(release_history, f, indent=4)
-        subprocess.check_call(["conda", "index", str(publication_dir)])
+        if index:
+            subprocess.check_call(["conda", "index", str(publication_dir)])
     except Exception:
         for f in copied:
             os.remove(f)
