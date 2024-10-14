@@ -90,9 +90,10 @@ bv_maker
 ## soma-forge packages
 
 The packages currently built have the following dependencies:
-- green: package containing brainvisa-cmake components ;
-- olive: empty package with dependencies ;
-- bisque: neuro-forge base package ; 
-- light blue: package from conda-forge.
+- blue: empty package with only dependencies ;
+- dark green: package containing compiled brainvisa-cmake components ;
+- light green: package containing interpreted brainvisa-cmake components ;
+- bisque: neuro-forge package ; 
+- light grey: package from public channel such as conda-forge or bioconda.
 
-![dependencies](https://github.com/brainvisa/soma-forge/assets/3062350/c34edacd-ec27-49b4-b68d-75505390d63b)
+![brainvisa](https://github.com/user-attachments/assets/6ff053d8-5959-4b9c-b181-74b2783073fe)
