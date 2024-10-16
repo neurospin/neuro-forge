@@ -42,8 +42,6 @@ The creation of packages for neuro-forge is based on the use of [rattler-build](
 - [Standard recipes](https://github.com/neurospin/neuro-forge/tree/main/recipes) that are standard rattler-build recipes that are git compatible (i.e. composed of, at most, a few text file) and can be built independently using only dependencies from standard channels such as conda-forge and bioconda.
 - Internal recipes that are located in the neuro-forge directory in Neurospin. Packages are put here either because they are too big (some packages requires several giga bytes of data) or because the recipe is not public.
 - [soma-forge recipes](https://github.com/neurospin/neuro-forge/tree/main/soma-forge) that are used to create packages for the [BrainVISA](https://brainvisa.info) project. Most of these packages are compiled ; that adds a binary dependency between them. Therefore their compilation and packaging requires a soma-forge development environment.
-- Internal recipes are located in a directory in Neurospin and are not directly accessible. These recipes require either too many data to be put on git or are subject to a software licence and cannot be distributed.
-
 
 # Use standard recipes
 
