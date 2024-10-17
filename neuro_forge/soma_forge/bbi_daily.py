@@ -276,8 +276,11 @@ class BBIDaily:
     def build_packages(self, config):
         env_dir = self.env_prefix.format(
             environment_dir=config['directory'])
-        cmd = ['pixi', 'run', 'soma-forge', 'dev-packages-plan', '--test',
-               '0', env_dir]
+        if osp.exists(osp.join(env_dir, 'plan')):
+            shutil.rmtree(osp.join(env_dir, 'plan'))
+        # packaging plan, don't test, don't publish.
+        cmd = ['pixi', 'run', 'soma-forge', 'packaging-plan', '--test',
+               '0', env_dir, '--publication-directory', '']
         log = ['buid packages plan', 'command:', ' '.join(cmd), 'from dir:',
                self.neuro_forge_src]
         environment = config['name']
@@ -338,40 +341,40 @@ class BBIDaily:
                 self.log(environment, 'packaging failed', 1,
                          'The packaging failed.')
 
-            else:
+            #else:
 
-                # index
-                cmd = ['pixi', 'run', 'conda', 'index',
-                       osp.join(env_dir, 'packages')]
-                log = ['buid packages index', 'command:', ' '.join(cmd),
-                       'from dir:', self.neuro_forge_src]
-                self.log(environment, 'buid packages index', 0,
-                         '\n'.join(log), duration=0)
-                start = time.time()
-                result, output = self.call_output(cmd,
-                                                  cwd=self.neuro_forge_src)
-                log = []
-                log.append('=' * 80)
-                log.append(output)
-                log.append('=' * 80)
-                success = True
-                if result:
-                    success = False
-                    if result in (124, 128+9):
-                        log.append('TIMED OUT (exit code {0})'.format(result))
-                    else:
-                        log.append('FAILED with exit code {0}'
-                                   .format(result))
-                else:
-                    log.append('SUCCESS (exit code {0})'.format(result))
+                # index - not needed if the repos is newly created
+                #cmd = ['pixi', 'run', 'conda', 'index',
+                       #osp.join(env_dir, 'plan', 'packages')]
+                #log = ['buid packages index', 'command:', ' '.join(cmd),
+                       #'from dir:', self.neuro_forge_src]
+                #self.log(environment, 'buid packages index', 0,
+                         #'\n'.join(log), duration=0)
+                #start = time.time()
+                #result, output = self.call_output(cmd,
+                                                  #cwd=self.neuro_forge_src)
+                #log = []
+                #log.append('=' * 80)
+                #log.append(output)
+                #log.append('=' * 80)
+                #success = True
+                #if result:
+                    #success = False
+                    #if result in (124, 128+9):
+                        #log.append('TIMED OUT (exit code {0})'.format(result))
+                    #else:
+                        #log.append('FAILED with exit code {0}'
+                                   #.format(result))
+                #else:
+                    #log.append('SUCCESS (exit code {0})'.format(result))
 
-                duration = int(1000 * (time.time() - start))
-                self.log(environment, 'packaging index',
-                         (0 if success else 1),
-                         '\n'.join(log), duration=duration)
-                if not success:
-                    self.log(environment, 'packaging failed', 1,
-                             'The packaging failed.')
+                #duration = int(1000 * (time.time() - start))
+                #self.log(environment, 'packaging index',
+                         #(0 if success else 1),
+                         #'\n'.join(log), duration=duration)
+                #if not success:
+                    #self.log(environment, 'packaging failed', 1,
+                             #'The packaging failed.')
 
         return success
 
@@ -405,7 +408,7 @@ class BBIDaily:
         if os.path.exists(env_dir):
             shutil.rmtree(env_dir)
         os.makedirs(env_dir)
-        cmd = ['pixi', 'init', '-c', f'file://{dev_env_dir}/packages',
+        cmd = ['pixi', 'init', '-c', f'file://{dev_env_dir}/plan/packages',
                '-c', 'https://brainvisa.info/neuro-forge',
                '-c', 'nvidia', '-c', 'pytorch', '-c', 'conda-forge']
         log = ['create user environment', 'command:', ' '.join(cmd),
