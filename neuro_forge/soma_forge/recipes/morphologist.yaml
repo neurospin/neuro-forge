@@ -32,3 +32,4 @@ requirements:
     - traits
     - spm12
     - reportlab
+    - libsvm
