@@ -173,8 +173,11 @@ def debug(directory):
 @click.argument("pixi_directory", type=click.Path())
 @click.argument("packages", type=str, nargs=-1)
 def packaging_plan(pixi_directory, publication_directory, packages, force, test=True):
-    publication_directory = pathlib.Path(publication_directory).absolute()
-    if not publication_directory.exists():
+    if not publication_directory or publication_directory.lower() == "none":
+        publication_directory = None
+    else:
+        publication_directory = pathlib.Path(publication_directory).absolute()
+    if publication_directory is not None and not publication_directory.exists():
         raise RuntimeError(
             f"Publication directory {publication_directory} does not exist"
         )
@@ -206,13 +209,14 @@ def packaging_plan(pixi_directory, publication_directory, packages, force, test=
 
     # Get the release history for selected environment (e.g.
     # environment="6.0") from the publication directory
-    release_history_file = (
-        publication_directory / f"soma-forge-{build_info['environment']}.json"
-    )
     release_history = {}
-    if release_history_file.exists():
-        with open(release_history_file) as f:
-            release_history = json.load(f)
+    if publication_directory is not None:
+        release_history_file = (
+            publication_directory / f"soma-env-{build_info['environment']}.json"
+        )
+        if release_history_file.exists():
+            with open(release_history_file) as f:
+                release_history = json.load(f)
 
     # Set the new environment full version by incrementing last published version patch
     # number or setting it to 0
@@ -335,14 +339,20 @@ def packaging_plan(pixi_directory, publication_directory, packages, force, test=
                         selected_packages.add(package)
                         selection_modified = True
 
-    # Generate rattler-build recipe and action for soma-forge package
-    print(f"Generate recipe for soma-forge {environment_version}")
-    (plan_dir / "recipes" / "soma-forge").mkdir(exist_ok=True, parents=True)
-    with open(plan_dir / "recipes" / "soma-forge" / "recipe.yaml", "w") as f:
+    # Generate rattler-build recipe and action for soma-env package
+    print(f"Generate recipe for soma-env {environment_version}")
+    (plan_dir / "recipes" / "soma-env").mkdir(exist_ok=True, parents=True)
+    with open(plan_dir / "recipes" / "soma-env" / "recipe.yaml", "w") as f:
         yaml.safe_dump(
             {
-                "package": {"name": "soma-forge", "version": environment_version},
-                "build": {"string": build_info["build_string"]},
+                "package": {"name": "soma-env", "version": environment_version},
+                "build": {
+                    "string": build_info["build_string"],
+                    "script": (
+                        "mkdir --parents $PREFIX/share/soma\n"
+                        f"echo '{environment_version}' > soma-env.version"
+                    ),
+                },
                 "requirements": {"run": [f"python=={build_info['options']['python']}"]},
             },
             f,
@@ -370,14 +380,15 @@ def packaging_plan(pixi_directory, publication_directory, packages, force, test=
 
         changesets = src_errors = recipe["soma-forge"].get("changesets")
 
-        # Add dependency to soma-forge package
+        # Add dependency to soma-env package
         recipe["requirements"]["run"].append(
-            f"soma-forge>={environment_version},<{next_environment}"
+            f"soma-env>={environment_version},<{next_environment}"
         )
 
         # Check if a version_change is necessary
         published_version = tuple(
-            int(i) for i in release_history.get(package, {}).get("version", "0").split(".")
+            int(i)
+            for i in release_history.get(package, {}).get("version", "0").split(".")
         )
         package_version = tuple(int(i) for i in recipe["package"]["version"].split("."))
         if not development_environment and published_version == package_version:
@@ -416,7 +427,7 @@ def packaging_plan(pixi_directory, publication_directory, packages, force, test=
                         itertools.chain(
                             src.glob("info.py"),
                             src.glob("*/info.py"),
-                            src.glob("python/*/info.py")
+                            src.glob("python/*/info.py"),
                         )
                     )
                     if not files:
@@ -478,7 +489,7 @@ def packaging_plan(pixi_directory, publication_directory, packages, force, test=
         actions.append(
             {
                 "action": "create_package",
-                "args": ["soma-forge"],
+                "args": ["soma-env"],
                 "kwargs": {"test": False},
             }
         )
@@ -486,18 +497,19 @@ def packaging_plan(pixi_directory, publication_directory, packages, force, test=
         actions.extend(package_actions)
         release_history["environment_version"] = environment_version
         packages_dir = pixi_root / "plan" / "packages"
-        actions.append(
-            {
-                "action": "publish",
-                "kwargs": {
-                    "environment": build_info["environment"],
-                    "packages_dir": str(packages_dir),
-                    "packages": ["soma-forge"] + list(selected_packages),
-                    "release_history": release_history,
-                    "publication_dir": str(publication_directory),
-                },
-            }
-        )
+        if publication_directory is not None:
+            actions.append(
+                {
+                    "action": "publish",
+                    "kwargs": {
+                        "environment": build_info["environment"],
+                        "packages_dir": str(packages_dir),
+                        "packages": ["soma-env"] + list(selected_packages),
+                        "release_history": release_history,
+                        "publication_dir": str(publication_directory),
+                    },
+                }
+            )
 
     with open(plan_dir / "actions.yaml", "w") as f:
         yaml.safe_dump(
