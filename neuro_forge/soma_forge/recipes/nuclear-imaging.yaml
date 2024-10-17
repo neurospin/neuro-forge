@@ -8,6 +8,8 @@ soma-forge:
 
   internal-dependencies:
       - soma
+      - soma-spm
+      - morphologist
       - anatomist
 
   type: compiled
