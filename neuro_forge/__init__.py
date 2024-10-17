@@ -8,6 +8,21 @@ import subprocess
 import yaml
 
 default_channel_dir = "/drf/neuro-forge/public"
+default_recipes_dir = "/drf/neuro-forge/recipes"
+
+
+def find_neuro_forge_packages(recipes_dir=default_recipes_dir):
+    neuro_forge = Path(__file__).parent.parent
+    recipes_dir = Path(recipes_dir)
+    if recipes_dir.exists():
+        yield from (
+            i.name for i in recipes_dir.iterdir() if (i / "recipe.yaml").exists()
+        )
+    yield from (
+        i.name
+        for i in (neuro_forge / "recipes").iterdir()
+        if (i / "recipe.yaml").exists()
+    )
 
 
 @click.group(context_settings={"help_option_names": ["-h", "--help"]})
@@ -16,7 +31,7 @@ def main():
 
 
 @main.command()
-@click.option("--recipes_dir", type=click.Path(), default="/drf/neuro-forge/recipes")
+@click.option("--recipes_dir", type=click.Path(), default=default_recipes_dir)
 @click.argument("channel_dir", type=click.Path())
 @click.argument("packages", type=str, nargs=-1)
 def build(channel_dir, packages, recipes_dir):
@@ -44,21 +59,12 @@ def build(channel_dir, packages, recipes_dir):
     # Select packages
     neuro_forge = Path(__file__).parent.parent
     if not packages:
-        if recipes_dir.exists():
-            packages = [
-                i.name
-                for i in recipes_dir.iterdir()
-                if (i / "recipe.yaml").exists()
-                and not any(channel_dir.glob(f"*/{i.name}-*.conda"))
-            ]
-        else:
-            packages = []
-        packages += [
-            i.name
-            for i in (neuro_forge / "recipes").iterdir()
-            if (i / "recipe.yaml").exists()
-            and not any(channel_dir.glob(f"*/{i.name}-*.conda"))
+        packages = [
+            i
+            for i in find_neuro_forge_packages()
+            if not any(channel_dir.glob(f"*/{i.name}-*.conda"))
         ]
+
     # Create selected packages
     for package in packages:
         recipe_file = recipes_dir / package / "recipe.yaml"

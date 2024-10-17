@@ -28,7 +28,7 @@ def check_merge(src, branch):
                 if i
             )
             if f"origin/{branch}" in non_merged:
-                print(f"git -C '{src}' merge origin/{branch}")
+                print(f"git -C '{src}' merge --no-edit origin/{branch}")
                 print(f"git -C '{src}' push")
         else:
             stack.extend(i for i in src.iterdir() if i.is_dir())
