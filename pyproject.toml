@@ -63,3 +63,6 @@ requests = "*"
 rich = "*"
 rsync = "*"
 toml = "*"
+
+[tool.pixi.pypi-dependencies]
+neuro_forge = { path = ".", editable = true }

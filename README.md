@@ -51,7 +51,6 @@ In order to build packages from standard recipes, the `neuro-forge build` comman
 git clone https://github.com/neurospin/neuro-forge
 cd neuro-forge
 pixi shell
-pip install -e . # necessary to have the neuro-forge command in the PATH
 ```
 
 Then, one or more packages can be built by using the following command.
@@ -70,7 +69,6 @@ First install soma-forge command that is located in neuro-forge project.
 ```
 git clone https://github.com/neurospin/neuro-forge
 cd neuro-forge
-pixi run python -m pip install -e .
 ```
 
 Then create the BrainVISA development directory by giving its location and the environment version, plus optionally a list of target packages. Environment version is `0.0` for standard development using default git branches, `0.1` for development with Capsul 3 or `6.0` for the compilation of `brainvisa-6.0` branches. Target packages are the name of soma-forge packages. It will select all corresponding brainvisa-cmake components (taking into account packages dependencies) and put them in `bv_maker.cfg` file. By default, a selection of packages defined specifically for the environment will be included.
