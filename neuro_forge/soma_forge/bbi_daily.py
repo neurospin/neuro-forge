@@ -411,6 +411,12 @@ class BBIDaily:
         cmd = ['pixi', 'init', '-c', f'file://{dev_env_dir}/plan/packages',
                '-c', 'https://brainvisa.info/neuro-forge',
                '-c', 'nvidia', '-c', 'pytorch', '-c', 'conda-forge']
+        pixi_toml = osp.join(env_dir, 'pixi.toml')
+        with open(pixi_toml) as f:
+            lines = list(f.readlines())
+        lines.insert(1, 'channel-priority = "disabled"\n')
+        with open(pixi_toml, 'w') as f:
+            f.write(''.join(lines))
         log = ['create user environment', 'command:', ' '.join(cmd),
                'from dir:', env_dir]
         self.log(environment, 'create user environment', 0,
