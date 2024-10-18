@@ -387,7 +387,7 @@ class BBIDaily:
         build_str = f'{binfo["build_string"]}'
         packages = {p: {'build': f'{build_str}'} for p in binfo['packages']}
         for p, d in packages.items():
-            recipe_f = osp.join(dev_config['directory'], 'plan', p,
+            recipe_f = osp.join(dev_config['directory'], 'plan', 'recipes', p,
                                 'recipe.yaml')
             if osp.exists(recipe_f):
                 with open(recipe_f) as f:
