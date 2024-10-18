@@ -388,7 +388,8 @@ class BBIDaily:
         if osp.exists(history_f):
             with open(history_f) as f:
                 history = json.load(f)
-        build_str = f'{binfo["build_string"]}_{binfo["build_number"]}'
+        # build_str = f'{binfo["build_string"]}_{binfo["build_number"]}'
+        build_str = f'{binfo["build_string"]}'
         packages = {p: {'build': f'{build_str}'} for p in binfo['packages']}
         if history:
             for p, d in packages.items():
