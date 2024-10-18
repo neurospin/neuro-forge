@@ -12,6 +12,7 @@ import re
 import json
 import traceback
 import shutil
+import yaml
 
 
 def ensure_str(arg, encoding='utf-8', errors='stric'):
@@ -383,18 +384,15 @@ class BBIDaily:
                            'build_info.json')) \
                 as f:
             binfo = json.load(f)
-        history_f = osp.join(dev_config['directory'], 'plan', 'history.json')
-        history = {}
-        if osp.exists(history_f):
-            with open(history_f) as f:
-                history = json.load(f)
-        # build_str = f'{binfo["build_string"]}_{binfo["build_number"]}'
         build_str = f'{binfo["build_string"]}'
         packages = {p: {'build': f'{build_str}'} for p in binfo['packages']}
-        if history:
-            for p, d in packages.items():
-                ver = history.get(p)['version']
-                d['version'] = f'{ver}={d["build"]}'
+        for p, d in packages.items():
+            recipe_f = osp.join(dev_config['directory'], 'plan', p,
+                                'recipe.yaml')
+            if osp.exists(recipe_f):
+                with open(recipe_f) as f:
+                    recipe = yaml.safe_load(f)
+                d['version'] = f'{recipe["package"]["version"]}'
         return packages
 
     def recreate_user_env(self, user_config, dev_config):
