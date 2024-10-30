@@ -5,6 +5,7 @@ import os
 from pathlib import Path
 import shutil
 import subprocess
+import sys
 import yaml
 
 default_channel_dir = "/drf/neuro-forge/public"
@@ -31,10 +32,9 @@ def main():
 
 
 @main.command()
-@click.option("--recipes_dir", type=click.Path(), default=default_recipes_dir)
 @click.argument("channel_dir", type=click.Path())
 @click.argument("packages", type=str, nargs=-1)
-def build(channel_dir, packages, recipes_dir):
+def build(channel_dir, packages):
     """Create packages with rattler-build for recipes embedded in neuro-forge
     without leaving any cache file in user environment. All temporary files are
     stored (and removed if operation is successful) in CHANNEL_DIR directory.
@@ -54,26 +54,23 @@ def build(channel_dir, packages, recipes_dir):
     (channel_dir / "linux-64").mkdir(exist_ok=True)
     subprocess.check_call(["conda", "index", channel_dir])
 
-    recipes_dir = Path(recipes_dir)
-
     # Select packages
     neuro_forge = Path(__file__).parent.parent
     if not packages:
         packages = [
-            i
-            for i in find_neuro_forge_packages()
-            if not any(channel_dir.glob(f"*/{i.name}-*.conda"))
+            i.name
+            for i in (neuro_forge / "recipes").iterdir()
+            if (i / "recipe.yaml").exists()
+            and not any(channel_dir.glob(f"*/{i.name}-*.conda"))
         ]
 
     # Create selected packages
     for package in packages:
-        recipe_file = recipes_dir / package / "recipe.yaml"
+        recipe_file = neuro_forge / "recipes" / package / "recipe.yaml"
         if not recipe_file.exists():
-            recipe_file = neuro_forge / "recipes" / package / "recipe.yaml"
-            if not recipe_file.exists():
-                raise ValueError(
-                    f'Wrong package name "{package}": file {recipe_file} does not exist'
-                )
+            raise ValueError(
+                f'Wrong package name "{package}": file {recipe_file} does not exist'
+            )
         recipe_dir = recipe_file.parent
         extension_file = recipe_dir / "neuro-forge.yaml"
         channels = ["conda-forge", "bioconda"]
@@ -99,7 +96,9 @@ def build(channel_dir, packages, recipes_dir):
         print("#----------------- calling ------------------------------")
         print(" ".join(f"'{i}'" for i in command))
         print("#--------------------------------------------------------")
-        subprocess.check_call(command)
+        if subprocess.call(command):
+            print(f"\nERROR: building of package {package} failed", file=sys.stderr)
+            sys.exit(1)
 
     # Cleanup and create channel index
     subprocess.check_call(["conda", "index", channel_dir])
