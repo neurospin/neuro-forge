@@ -30,8 +30,7 @@ class BBIDaily:
         # ensure that all recursively called instances of casa_distro will use
         # the correct base_directory.
         assert os.environ['CASA_BASE_DIRECTORY'] == base_directory
-        self.bbe_name = 'BBE-{}-{}'.format(getpass.getuser(),
-                                             socket.gethostname())
+        self.bbe_name = f'BBE-{getpass.getuser()}-{socket.gethostname()}'
         self.neuro_forge_src = osp.dirname(osp.dirname(
             osp.dirname(__file__)))
         self.casa_distro_cmd = [
@@ -53,7 +52,7 @@ class BBIDaily:
                                       log=log+'\n',
                                       duration=duration)
         else:
-            name = '{}:{}'.format(environment, task_name)
+            name = f'{environment}:{task_name}'
             print()
             print('  /-' + '-' * len(name) + '-/')
             print(' / ' + name + ' /')
@@ -169,12 +168,12 @@ class BBIDaily:
                 if result:
                     success = False
                     if result in (124, 128+9):
-                        log.append('TIMED OUT (exit code {})'.format(result))
+                        log.append(f'TIMED OUT (exit code {result})')
                     else:
-                        log.append('FAILED with exit code {}'
-                                   .format(result))
+                        log.append(f'FAILED with exit code {result}'
+                                   )
                 else:
-                    log.append('SUCCESS (exit code {})'.format(result))
+                    log.append(f'SUCCESS (exit code {result})')
             duration = int(1000 * (time.time() - start))
             self.log(environment, test, (0 if success else 1),
                      '\n'.join(log), duration=duration)
@@ -218,7 +217,7 @@ class BBIDaily:
                 'env=BRAINVISA_TEST_REMOTE_COMMAND=echo',
                 '--',
                 'ctest', '-V', '-L',
-                '^{}$'.format(label)
+                f'^{label}$'
             ] + config.get('ctest_options', [])
             p = subprocess.Popen(cmd, stdout=subprocess.PIPE,
                                  stderr=subprocess.PIPE, bufsize=-1,
@@ -261,7 +260,7 @@ class BBIDaily:
                         timeout = float(timeout)
                         break
                 if timeout is not None and timeout < 9.999e+06:
-                    command = 'timeout -k 10 {} {}'.format(timeout, command)
+                    command = f'timeout -k 10 {timeout} {command}'
                 commands.append(command)
 
             if commands:  # skip empty command lists
@@ -297,11 +296,11 @@ class BBIDaily:
         if result:
             success = False
             if result in (124, 128+9):
-                log.append('TIMED OUT (exit code {})'.format(result))
+                log.append(f'TIMED OUT (exit code {result})')
             else:
-                log.append('FAILED with exit code {}'.format(result))
+                log.append(f'FAILED with exit code {result}')
         else:
-            log.append('SUCCESS (exit code {})'.format(result))
+            log.append(f'SUCCESS (exit code {result})')
 
         duration = int(1000 * (time.time() - start))
         self.log(environment, 'packaging', (0 if success else 1),
@@ -328,12 +327,12 @@ class BBIDaily:
             if result:
                 success = False
                 if result in (124, 128+9):
-                    log.append('TIMED OUT (exit code {})'.format(result))
+                    log.append(f'TIMED OUT (exit code {result})')
                 else:
-                    log.append('FAILED with exit code {}'
-                               .format(result))
+                    log.append(f'FAILED with exit code {result}'
+                               )
             else:
-                log.append('SUCCESS (exit code {})'.format(result))
+                log.append(f'SUCCESS (exit code {result})')
 
             duration = int(1000 * (time.time() - start))
             self.log(environment, 'packaging', (0 if success else 1),
@@ -423,11 +422,11 @@ class BBIDaily:
         if result:
             success = False
             if result in (124, 128+9):
-                log.append('TIMED OUT (exit code {})'.format(result))
+                log.append(f'TIMED OUT (exit code {result})')
             else:
-                log.append('FAILED with exit code {}'.format(result))
+                log.append(f'FAILED with exit code {result}')
         else:
-            log.append('SUCCESS (exit code {})'.format(result))
+            log.append(f'SUCCESS (exit code {result})')
 
         pixi_toml = osp.join(env_dir, 'pixi.toml')
         with open(pixi_toml) as f:
@@ -470,11 +469,11 @@ class BBIDaily:
             if result:
                 success = False
                 if result in (124, 128+9):
-                    log.append('TIMED OUT (exit code {})'.format(result))
+                    log.append(f'TIMED OUT (exit code {result})')
                 else:
-                    log.append('FAILED with exit code {}'.format(result))
+                    log.append(f'FAILED with exit code {result}')
             else:
-                log.append('SUCCESS (exit code {})'.format(result))
+                log.append(f'SUCCESS (exit code {result})')
 
             duration = int(1000 * (time.time() - start))
             self.log(environment, 'install packages',
@@ -545,18 +544,18 @@ class BBIDaily:
 
         except Exception:
             log = ['Successful tasks']
-            log.extend('  - {}'.format(i) for i in successful_tasks)
+            log.extend(f'  - {i}' for i in successful_tasks)
             if failed_tasks:
                 log .append('Failed tasks')
-                log.extend('  - {}'.format(i) for i in failed_tasks)
+                log.extend(f'  - {i}' for i in failed_tasks)
             log += ['', 'ERROR:', '', traceback.format_exc()]
             self.log(self.bbe_name, 'error', 1, '\n'.join(log))
         else:
             log = ['Successful tasks']
-            log.extend('  - {}'.format(i) for i in successful_tasks)
+            log.extend(f'  - {i}' for i in successful_tasks)
             if failed_tasks:
                 log .append('Failed tasks')
-                log.extend('  - {}'.format(i) for i in failed_tasks)
+                log.extend(f'  - {i}' for i in failed_tasks)
             self.log(self.bbe_name, 'finished',
                      (1 if failed_tasks else 0), '\n'.join(log))
 

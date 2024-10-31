@@ -48,22 +48,22 @@ class BrainVISAJenkins:
         self.password = password
 
     def get(self, route, **kwargs):
-        return requests.get('{}/{}'.format(self.server, route),
+        return requests.get(f'{self.server}/{route}',
                             auth=(self.login, self.password),
                             **kwargs)
 
     def post(self, route, **kwargs):
-        return requests.post('{}/{}'.format(self.server, route),
+        return requests.post(f'{self.server}/{route}',
                              auth=(self.login, self.password),
                              **kwargs)
 
     def delete(self, route, **kwargs):
-        return requests.delete('{}/{}'.format(self.server, route),
+        return requests.delete(f'{self.server}/{route}',
                                auth=(self.login, self.password),
                                **kwargs)
 
     def job_exists(self, environment):
-        r = self.get('/job/{}/api/json'.format(environment))
+        r = self.get(f'/job/{environment}/api/json')
         if r.status_code == 404:
             return False
         r.raise_for_status()
@@ -81,7 +81,7 @@ class BrainVISAJenkins:
         metadata     : values that are added to the description of the job
         '''
         description = xmlescape('\n'.join(
-            ['environment = {}'.format(environment)]
+            [f'environment = {environment}']
             + ['{} = {}'.format(*i) for i in metadata.items()]))
         r = self.post('createItem',
                       params={'name': environment},
@@ -90,7 +90,7 @@ class BrainVISAJenkins:
         r.raise_for_status()
 
     def delete_job(self, job):
-        r = self.delete('job/{}/'.format(job))
+        r = self.delete(f'job/{job}/')
         r.raise_for_status()
 
     def jobs(self):
@@ -117,7 +117,7 @@ class BrainVISAJenkins:
         if not isinstance(log, six.binary_type):
             log = log.encode('UTF8')
         hex_log = binascii.hexlify(log)
-        r = self.post('job/{}/postBuildResult'.format(environment),
+        r = self.post(f'job/{environment}/postBuildResult',
                       headers={'Content-Type': 'application/xml'},
                       data=self.build_xml.format(
                           build=xmlescape(str(task)),
