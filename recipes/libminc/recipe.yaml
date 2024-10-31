@@ -9,8 +9,6 @@ source:
 build:
   number: 1
   script: |
-    # Due to a bug in rattler-build 0.13.0, it is necessary to select appropriate tag
-    git -C "$SRC_DIR" checkout libminc-2-3-00
     cmake -DCMAKE_BUILD_TYPE=Release -DBUILD_TESTING=OFF -DLIBMINC_BUILD_SHARED_LIBS=ON -DLIBMINC_MINC1_SUPPORT=ON "-DCMAKE_INSTALL_PREFIX=$PREFIX" "-DCMAKE_PREFIX_PATH=$CONDA_PREFIX;$CONDA_PREFIX/x86_64-conda-linux-gnu/sysroot/usr"  "-DCMAKE_REQUIRED_INCLUDES=$CONDA_PREFIX/include;$CONDA_PREFIX/x86_64-conda-linux-gnu/sysroot/usr/include" "$SRC_BUILD"
     make -j -k
     make install
