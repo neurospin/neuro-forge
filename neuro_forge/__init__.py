@@ -120,8 +120,8 @@ def publish(channel_dir):
         # Double check that not using the default directory is done for a
         # good reason
         print(
-            f"WARNING: You are about to replace the neuro-forge public "
-            "channel with the content of {channel_dir}"
+            "WARNING: You are about to replace the neuro-forge public "
+            f"channel with the content of {channel_dir}"
         )
         user_input = input("Confirm ? [Y/N] ")
         if user_input.lower() not in ("y", "yes"):
