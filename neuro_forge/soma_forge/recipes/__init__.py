@@ -6,7 +6,7 @@ def read_recipe(package):
     """
     Read a single recip given its package name
     """
-    recipe_file = Pathlib.Path(__file__).parent / f"{package}.yaml"
+    recipe_file = pathlib.Path(__file__).parent / f"{package}.yaml"
     with open(recipe_file) as f:
         recipe = yaml.safe_load(f)
     return recipe
