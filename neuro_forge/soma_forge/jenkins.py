@@ -1,9 +1,5 @@
-import binascii
-from xml.sax.saxutils import escape as xmlescape
-
-
 import requests
-import six
+from xml.sax.saxutils import escape as xmlescape
 
 
 class BrainVISAJenkins:
@@ -112,16 +108,13 @@ class BrainVISAJenkins:
         duration    : (optional) duration of the build in milliseconds
         description : (optional) description text attached to the build
         '''
-        # Python 2 need binascii module to convert str
-        # to hex string. In Python 3, bytes have an hex() method.
-        if not isinstance(log, six.binary_type):
+        if not isinstance(log, bytes):
             log = log.encode('UTF8')
-        hex_log = binascii.hexlify(log)
         r = self.post(f'job/{environment}/postBuildResult',
                       headers={'Content-Type': 'application/xml'},
                       data=self.build_xml.format(
                           build=xmlescape(str(task)),
-                          hex_log=hex_log,
+                          hex_log=log.hex(),
                           result=result or 0,
                           duration=int(round(duration)) if duration else 0,
                           description=xmlescape(description or ''),
