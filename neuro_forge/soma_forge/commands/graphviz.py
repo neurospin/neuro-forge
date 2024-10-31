@@ -27,9 +27,11 @@ def graphviz(packages, conda_forge):
         package = stack.pop(0)
         selected_recipes.add(package)
         recipe = recipes[package]
-        for dependency in recipe["soma-forge"].get("internal-dependencies", []):
-            if dependency not in selected_recipes:
-                stack.append(dependency)
+        stack.extend(
+            dependency
+            for dependency in recipe["soma-forge"].get("internal-dependencies", [])
+            if dependency not in selected_recipes
+        )
 
     all_neuro_forge_packages = set(find_neuro_forge_packages())
     for package in selected_recipes:
