@@ -15,8 +15,6 @@ build:
   #   - osx
   number: 0
   script: |
-    # Due to a bug in rattler-build 0.13.0, it is necessary to select appropriate tag
-    git -C "$SRC_DIR" checkout ${{ version }}
     patch server/CMakeLists.txt "$RECIPE_DIR/CMakeLists.txt.patch"
     cmake -G"Unix Makefiles" "-DCMAKE_INSTALL_PREFIX=$PREFIX" -DCMAKE_IGNORE_PATH=/usr/include "-DCMAKE_PREFIX_PATH=$CONDA_PREFIX;;$CONDA_PREFIX/x86_64-conda-linux-gnu/sysroot/usr"  "-DCMAKE_REQUIRED_INCLUDES=$CONDA_PREFIX/include;$CONDA_PREFIX/x86_64-conda-linux-gnu/sysroot/usr/include" "-DOPENGL_egl_LIBRARY=$CONDA_PREFIX/x86_64-conda-linux-gnu/sysroot/usr/lib64/libEGL_mesa.so.0" "$SRC_DIR"
     make -j -k || make
