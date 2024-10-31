@@ -31,7 +31,7 @@ def graphviz(packages, conda_forge):
             if dependency not in selected_recipes:
                 stack.append(dependency)
 
-    all_neuro_forge_packages = {i for i in find_neuro_forge_packages()}
+    all_neuro_forge_packages = set(find_neuro_forge_packages())
     for package in selected_recipes:
         recipe = recipes[package]
         if recipe["soma-forge"]["type"] == "interpreted":
