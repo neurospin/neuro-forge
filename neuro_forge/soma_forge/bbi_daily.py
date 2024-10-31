@@ -261,7 +261,7 @@ class BBIDaily:
                         timeout = float(timeout)
                         break
                 if timeout is not None and timeout < 9.999e+06:
-                    command = 'timeout -k 10 %s %s' % (timeout, command)
+                    command = 'timeout -k 10 {} {}'.format(timeout, command)
                 commands.append(command)
 
             if commands:  # skip empty command lists
