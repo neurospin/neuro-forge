@@ -14,7 +14,7 @@ def check_merge(src, branch):
         src = stack.pop()
         if (src / ".git").exists():
             repo = git.Repo(str(src))
-            branches = set(i.name.rsplit("/", 1)[-1] for i in repo.remote().refs)
+            branches = {i.name.rsplit("/", 1)[-1] for i in repo.remote().refs}
             if branch is None:
                 if "master" in branches:
                     branch = "master"
@@ -22,11 +22,11 @@ def check_merge(src, branch):
                     branch = "main"
 
             repo.git.fetch()
-            non_merged = set(
+            non_merged = {
                 i.split(None, 1)[0]
                 for i in repo.git.branch("-r", "--no-merge").split("\n")
                 if i
-            )
+            }
             if f"origin/{branch}" in non_merged:
                 print(f"git -C '{src}' merge --no-edit origin/{branch}")
                 print(f"git -C '{src}' push")
