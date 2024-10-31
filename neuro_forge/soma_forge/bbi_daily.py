@@ -170,8 +170,7 @@ class BBIDaily:
                     if result in (124, 128+9):
                         log.append(f'TIMED OUT (exit code {result})')
                     else:
-                        log.append(f'FAILED with exit code {result}'
-                                   )
+                        log.append(f'FAILED with exit code {result}')
                 else:
                     log.append(f'SUCCESS (exit code {result})')
             duration = int(1000 * (time.time() - start))
@@ -329,8 +328,7 @@ class BBIDaily:
                 if result in (124, 128+9):
                     log.append(f'TIMED OUT (exit code {result})')
                 else:
-                    log.append(f'FAILED with exit code {result}'
-                               )
+                    log.append(f'FAILED with exit code {result}')
             else:
                 log.append(f'SUCCESS (exit code {result})')
 
