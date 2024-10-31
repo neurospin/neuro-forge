@@ -48,22 +48,22 @@ class BrainVISAJenkins:
         self.password = password
 
     def get(self, route, **kwargs):
-        return requests.get('{0}/{1}'.format(self.server, route),
+        return requests.get('{}/{}'.format(self.server, route),
                             auth=(self.login, self.password),
                             **kwargs)
 
     def post(self, route, **kwargs):
-        return requests.post('{0}/{1}'.format(self.server, route),
+        return requests.post('{}/{}'.format(self.server, route),
                              auth=(self.login, self.password),
                              **kwargs)
 
     def delete(self, route, **kwargs):
-        return requests.delete('{0}/{1}'.format(self.server, route),
+        return requests.delete('{}/{}'.format(self.server, route),
                                auth=(self.login, self.password),
                                **kwargs)
 
     def job_exists(self, environment):
-        r = self.get('/job/{0}/api/json'.format(environment))
+        r = self.get('/job/{}/api/json'.format(environment))
         if r.status_code == 404:
             return False
         r.raise_for_status()
@@ -81,8 +81,8 @@ class BrainVISAJenkins:
         metadata     : values that are added to the description of the job
         '''
         description = xmlescape('\n'.join(
-            ['environment = {0}'.format(environment)]
-            + ['{0} = {1}'.format(*i) for i in metadata.items()]))
+            ['environment = {}'.format(environment)]
+            + ['{} = {}'.format(*i) for i in metadata.items()]))
         r = self.post('createItem',
                       params={'name': environment},
                       headers={'Content-Type': 'application/xml'},
@@ -90,7 +90,7 @@ class BrainVISAJenkins:
         r.raise_for_status()
 
     def delete_job(self, job):
-        r = self.delete('job/{0}/'.format(job))
+        r = self.delete('job/{}/'.format(job))
         r.raise_for_status()
 
     def jobs(self):
@@ -117,7 +117,7 @@ class BrainVISAJenkins:
         if not isinstance(log, six.binary_type):
             log = log.encode('UTF8')
         hex_log = binascii.hexlify(log)
-        r = self.post('job/{0}/postBuildResult'.format(environment),
+        r = self.post('job/{}/postBuildResult'.format(environment),
                       headers={'Content-Type': 'application/xml'},
                       data=self.build_xml.format(
                           build=xmlescape(str(task)),
