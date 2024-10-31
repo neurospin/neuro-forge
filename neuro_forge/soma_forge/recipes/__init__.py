@@ -8,8 +8,7 @@ def read_recipe(package):
     """
     recipe_file = pathlib.Path(__file__).parent / f"{package}.yaml"
     with open(recipe_file) as f:
-        recipe = yaml.safe_load(f)
-    return recipe
+        return yaml.safe_load(f)
 
 
 def read_recipes():
