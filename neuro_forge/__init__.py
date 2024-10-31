@@ -140,7 +140,7 @@ def publish(channel_dir):
     # If the most recent is not an index.html file, then run conda index
     if "index.html" not in recents:
         command = ["conda", "index", channel_dir]
-    recent = sorted(to_sort)[-1][1]
+    recent = max(to_sort)[1]
 
     # If the most recent is not an index.html file, then run conda index
     if os.path.basename(recent) != "index.html":
