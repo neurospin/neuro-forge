@@ -564,7 +564,7 @@ if __name__ == '__main__':
 
     base_directory = os.getcwd()
     jenkins_server = None
-    jenkins_auth = '{base_directory}/jenkins_auth'
+    jenkins_auth = f'{base_directory}/jenkins_auth'
 
     parser = argparse.ArgumentParser(
         description='run tests for a Conda-based build of BrainVisa, and log '
