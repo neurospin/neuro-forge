@@ -97,7 +97,7 @@ def create_package(context, package, test):
     with open(context.pixi_root / "pixi.toml") as f:
         pixi_toml = toml.load(f)
     channels = pixi_toml["project"]["channels"]
-    for i in channels + [f"file://{str(output)}"]:
+    for i in channels + [f"file://{output}"]:
         command.extend(["-c", i])
     try:
         subprocess.check_call(command)
