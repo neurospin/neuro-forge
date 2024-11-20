@@ -524,9 +524,9 @@ class BBIDaily:
                     successful_tasks.extend(
                         '{}: {}'.format(dev_config['name'], i)
                         for i in successful)
-                    failed_tasks.extend('{}: {}'.format(dev_config['name'],
-                                                          i)
-                                        for i in failed)
+                    failed_tasks.extend(
+                        '{}: {}'.format(dev_config['name'], i)
+                        for i in failed)
 
                 if pack:
                     success = self.build_packages(dev_config)
@@ -539,15 +539,21 @@ class BBIDaily:
 
                 if install_packages:
                     success = self.recreate_user_env(user_config, dev_config)
+                    if success:
+                        successful_tasks.append(
+                            '{}: install_packages'.format(dev_config['name']))
+                    else:
+                        failed_tasks.append(
+                            '{}: install_packages'.format(dev_config['name']))
 
                 if user_tests:
                     successful, failed = self.tests(user_config, dev_config)
                     successful_tasks.extend(
                         '{}: {}'.format(user_config['name'], i)
                         for i in successful)
-                    failed_tasks.extend('{}: {}'.format(user_config['name'],
-                                                          i)
-                                        for i in failed)
+                    failed_tasks.extend(
+                        '{}: {}'.format(user_config['name'], i)
+                        for i in failed)
 
         except Exception:
             log = ['Successful tasks']
