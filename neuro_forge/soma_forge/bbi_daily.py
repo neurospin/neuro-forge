@@ -79,7 +79,7 @@ class BBIDaily:
 
         return p.returncode, '\n'.join(log)
 
-    def update_casa_distro(self):
+    def update_neuroforge(self):
         start = time.time()
         result, log = self.call_output(['git',
                                         '-C', self.neuro_forge_src,
@@ -483,14 +483,24 @@ class BBIDaily:
         return success
 
     def run_bbi(self, dev_configs, user_configs,
+                update_neuroforge=True,
                 bv_maker_steps='sources,configure,build,doc',
                 dev_tests=True, pack=True, install_packages=True,
                 user_tests=True):
         successful_tasks = []
         failed_tasks = []
+
+        if bv_maker_steps:
+            bv_maker_steps = bv_maker_steps.split(',')
+
         try:
-            if bv_maker_steps:
-                bv_maker_steps = bv_maker_steps.split(',')
+
+            if update_neuroforge:
+                successful = self.update_neuroforge()
+                if successful:
+                    successful_tasks.extend('update_neuroforge')
+                else:
+                    failed_tasks.extend('update_neuroforge')
 
             for dev_config, user_config in zip(dev_configs, user_configs):
                 # doc_build_success = False
@@ -581,6 +591,11 @@ if __name__ == '__main__':
     parser.add_argument('-a', '--jenkins_auth',
                         help=f'Jenkins auth file. default: {jenkins_auth}',
                         default=jenkins_auth)
+    parser.add_argument('--update_neuroforge',
+                        action=argparse.BooleanOptionalAction,
+                        help='Update the neuro-forge repository before '
+                        'proceeding. default: true',
+                        default=True)
     parser.add_argument('--bv_maker_steps',
                         help='Coma separated list of bv_maker commands to '
                         'perform on dev environments. May be empty to do '
@@ -610,6 +625,7 @@ if __name__ == '__main__':
     jenkins_server = args.jenkins_server
     jenkins_auth = args.jenkins_auth
     environments = args.environment
+    update_neuroforge = args.update_neuroforge
     bv_maker_steps = args.bv_maker_steps
     dev_tests = args.dev_tests
     user_tests = args.user_tests
@@ -658,5 +674,6 @@ if __name__ == '__main__':
                     for e in dev_configs]
 
     bbi_daily = BBIDaily(base_directory, jenkins=jenkins)
-    bbi_daily.run_bbi(dev_configs, user_configs, bv_maker_steps, dev_tests,
-                      pack, install_packages, user_tests)
+    bbi_daily.run_bbi(dev_configs, user_configs, update_neuroforge,
+                      bv_maker_steps, dev_tests, pack, install_packages,
+                      user_tests)
