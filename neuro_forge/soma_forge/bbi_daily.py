@@ -498,9 +498,9 @@ class BBIDaily:
             if update_neuroforge:
                 successful = self.update_neuroforge()
                 if successful:
-                    successful_tasks.extend('update_neuroforge')
+                    successful_tasks.append('update_neuroforge')
                 else:
-                    failed_tasks.extend('update_neuroforge')
+                    failed_tasks.append('update_neuroforge')
 
             for dev_config, user_config in zip(dev_configs, user_configs):
                 # doc_build_success = False
