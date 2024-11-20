@@ -338,40 +338,40 @@ class BBIDaily:
                 self.log(environment, 'packaging failed', 1,
                          'The packaging failed.')
 
-            #else:
+            else:
 
-                # index - not needed if the repos is newly created
-                #cmd = ['pixi', 'run', 'conda', 'index',
-                       #osp.join(env_dir, 'plan', 'packages')]
-                #log = ['buid packages index', 'command:', ' '.join(cmd),
-                       #'from dir:', self.neuro_forge_src]
-                #self.log(environment, 'buid packages index', 0,
-                         #'\n'.join(log), duration=0)
-                #start = time.time()
-                #result, output = self.call_output(cmd,
-                                                  #cwd=self.neuro_forge_src)
-                #log = []
-                #log.append('=' * 80)
-                #log.append(output)
-                #log.append('=' * 80)
-                #success = True
-                #if result:
-                    #success = False
-                    #if result in (124, 128+9):
-                        #log.append('TIMED OUT (exit code {0})'.format(result))
-                    #else:
-                        #log.append('FAILED with exit code {0}'
-                                   #.format(result))
-                #else:
-                    #log.append('SUCCESS (exit code {0})'.format(result))
+                # index - needed even if the repos is newly created
+                cmd = ['pixi', 'run', 'conda', 'index',
+                       osp.join(env_dir, 'plan', 'packages')]
+                log = ['buid packages index', 'command:', ' '.join(cmd),
+                       'from dir:', self.neuro_forge_src]
+                self.log(environment, 'buid packages index', 0,
+                         '\n'.join(log), duration=0)
+                start = time.time()
+                result, output = self.call_output(cmd,
+                                                  cwd=self.neuro_forge_src)
+                log = []
+                log.append('=' * 80)
+                log.append(output)
+                log.append('=' * 80)
+                success = True
+                if result:
+                    success = False
+                    if result in (124, 128+9):
+                        log.append('TIMED OUT (exit code {0})'.format(result))
+                    else:
+                        log.append('FAILED with exit code {0}'
+                                   .format(result))
+                else:
+                    log.append('SUCCESS (exit code {0})'.format(result))
 
-                #duration = int(1000 * (time.time() - start))
-                #self.log(environment, 'packaging index',
-                         #(0 if success else 1),
-                         #'\n'.join(log), duration=duration)
-                #if not success:
-                    #self.log(environment, 'packaging failed', 1,
-                             #'The packaging failed.')
+                duration = int(1000 * (time.time() - start))
+                self.log(environment, 'packaging index',
+                         (0 if success else 1),
+                         '\n'.join(log), duration=duration)
+                if not success:
+                    self.log(environment, 'packaging failed', 1,
+                             'The packaging failed.')
 
         return success
 
