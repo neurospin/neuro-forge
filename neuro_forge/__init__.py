@@ -115,6 +115,10 @@ def publish(channel_dir):
     """Run conda index if necessary and publish channel_dir to
     https://brainvisa.info/neuro-forge"""
 
+    if os.name == "nt":
+        print("ERROR: This command is not implemented on Windows because rsync doesn't exist.", file=sys.stderr)
+        sys.exit(1)
+
     if channel_dir != default_channel_dir:
         # Double check that not using the default directory is done for a
         # good reason
