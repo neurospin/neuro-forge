@@ -8,6 +8,10 @@ package:
   version: ${{ latest_tag }}
 
 
+extra:
+  neuro-forge:
+    platforms: ["linux-64"]
+
 
 source:
   git: ${{ git_repo_url }}
@@ -21,7 +25,7 @@ requirements:
   build:
     - python
     - pip
-    - tree
+#    - tree
 
   run: 
     - bitarray >=2.6.0
