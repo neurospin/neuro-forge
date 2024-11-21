@@ -1,5 +1,6 @@
 import click
 import functools
+import json
 import operator
 import os
 from pathlib import Path
@@ -25,6 +26,9 @@ def find_neuro_forge_packages(recipes_dir=default_recipes_dir):
         if (i / "recipe.yaml").exists()
     )
 
+def pixi_info():
+    j = subprocess.check_output(["pixi", "info", "--json"])
+    return json.loads(j)
 
 @click.group(context_settings={"help_option_names": ["-h", "--help"]})
 def main():
@@ -71,6 +75,16 @@ def build(channel_dir, packages):
             raise ValueError(
                 f'Wrong package name "{package}": file {recipe_file} does not exist'
             )
+        with open(recipe_file) as f:
+            recipe = yaml.safe_load(f)
+        neuro_forge_options = recipe.get("extra", {}).get("neuro-forge", {})
+
+        platforms = neuro_forge_options.get("platforms")
+        if platforms:
+            info = pixi_info()
+            if info["platform"] not in platforms:
+                continue
+        
         recipe_dir = recipe_file.parent
         extension_file = recipe_dir / "neuro-forge.yaml"
         channels = ["conda-forge", "bioconda"]
