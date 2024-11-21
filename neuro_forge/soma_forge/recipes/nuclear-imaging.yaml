@@ -1,0 +1,23 @@
+package:
+  name: nuclear-imaging
+
+soma-forge:
+  components:
+    - nuclear_imaging-nonfree
+    - nuclear_imaging-gpl
+
+  internal-dependencies:
+      - soma
+      - soma-spm
+      - morphologist
+      - anatomist
+
+  type: compiled
+
+requirements:
+  run:
+    - pydicom
+    - xlrd
+    - xlwt
+    - openpyxl
+ 

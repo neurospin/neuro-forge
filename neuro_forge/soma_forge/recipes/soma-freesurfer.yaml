@@ -1,0 +1,12 @@
+package:
+  name: soma-freesurfer
+
+soma-forge:
+  components:
+    - brainvisa_freesurfer
+
+  internal-dependencies:
+    - soma
+    - morphologist
+
+  type: interpreted

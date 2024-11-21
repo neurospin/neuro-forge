@@ -1,0 +1,13 @@
+package:
+  name: cortical-surface
+
+soma-forge:
+  components:
+    - cortical_surface-gpl
+    - cortical_surface-nonfree
+
+  internal-dependencies:
+    - morphologist
+    - soma-freesurfer
+
+  type: compiled

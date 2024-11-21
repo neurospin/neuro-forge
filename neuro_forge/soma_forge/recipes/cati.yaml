@@ -1,0 +1,15 @@
+package:
+  name: cati
+
+soma-forge:
+  internal-dependencies:
+      - qualicati
+      - cati-longitudinal
+      - cati-rsfmri
+      - cati-sacha
+      - cati-whasa
+      - cati-deidentification
+      - catidb
+      - nuclear-imaging
+
+  type: virtual

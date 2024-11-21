@@ -1,0 +1,20 @@
+package:
+  name: qualicati
+
+soma-forge:
+  components:
+    - qualicati
+
+  internal-dependencies:
+    - soma
+    - anatomist
+
+  type: compiled
+
+requirements:
+  run:
+    - nibabel
+    - pydicom
+    - scikit-image
+    - pandas
+    - pycryptodome

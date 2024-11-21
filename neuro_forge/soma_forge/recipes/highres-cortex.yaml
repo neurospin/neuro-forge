@@ -1,0 +1,12 @@
+package:
+  name: highres-cortex
+
+soma-forge:
+  components:
+    - highres-cortex
+
+  internal-dependencies:
+    - soma
+    - anatomist
+
+  type: compiled

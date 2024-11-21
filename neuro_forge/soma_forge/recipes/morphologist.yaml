@@ -1,0 +1,35 @@
+package:
+  name: morphologist
+
+soma-forge:
+  components:
+    - morphologist-nonfree
+    - morphologist-gpl
+    - morphologist-ui
+    - sulci-nonfree
+    - morpho-deepsulci
+
+  internal-dependencies:
+    - soma
+    - anatomist
+    - soma-spm
+    - capsul
+
+  type: compiled
+
+
+requirements:
+  run:
+    - pytorch
+    - torchvision
+    # dependencies found in deepsulci
+    - scikit-learn
+    - pcl
+    # Following dependencies are required to run "morphologist"
+    - configobj
+    - pyqtwebkit
+    - scipy
+    - traits
+    - spm12
+    - reportlab
+    - libsvm

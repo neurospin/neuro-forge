@@ -1,0 +1,13 @@
+package:
+  name: cati-sacha
+
+soma-forge:
+  components:
+    - sacha-nonfree
+    - sacha-gpl
+
+  internal-dependencies:
+    - soma
+    - anatomist
+
+  type: compiled

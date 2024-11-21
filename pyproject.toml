@@ -15,9 +15,19 @@ classifiers = [
     "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
     "Natural Language :: English",
 ]
-dependencies = ["fire", "pyaml", "toml"]
+
+dependencies = [
+    "fire", 
+    "click", 
+    "rich", 
+    "toml", 
+    "pyaml", 
+    "gitpython",
+]
+
 
 [project.urls]
 repository = "https://github.com/neurospin/neuro-forge"
@@ -26,13 +36,33 @@ repository = "https://github.com/neurospin/neuro-forge"
 requires = ["setuptools >= 61.0"]
 build-backend = "setuptools.build_meta"
 
-[tool.setuptools.packages.find]
-where = ["soma-forge/python"]
-include = ["soma_forge"]
-
 [project.scripts]
-soma-forge = "soma_forge:main"
+neuro-forge = "neuro_forge:main"
+soma-forge = "neuro_forge.soma_forge.commands:cli"
 
 [tool.setuptools]
 include-package-data = true
-script-files=["neuro-forge"]
+
+[tool.setuptools.packages.find]
+exclude = ["recipes"]
+
+[tool.pixi.project]
+channels = ["conda-forge", "bioconda"]
+platforms = ["linux-64"]
+
+[tool.pixi.dependencies]
+click ="*"
+conda-build = "*"
+fire = "*"
+git = "*"
+gitpython = "*"
+pip = "*"
+pyaml = "*"
+rattler-build = "*"
+requests = "*"
+rich = "*"
+rsync = "*"
+toml = "*"
+
+[tool.pixi.pypi-dependencies]
+neuro_forge = { path = ".", editable = true }

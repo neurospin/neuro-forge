@@ -1,0 +1,12 @@
+package:
+  name: constellation
+
+soma-forge:
+  components:
+    - constellation-gpl
+    - constellation-nonfree
+
+  internal-dependencies:
+    - morphologist
+
+  type: compiled

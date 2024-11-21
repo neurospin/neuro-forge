@@ -1,0 +1,20 @@
+package:
+  name: soma-spm
+
+soma-forge:
+  components:
+    - brainvisa-spm
+
+  type: interpreted
+
+  internal-dependencies:
+    - soma
+    - anatomist
+
+requirements:
+  run:
+    - nipype <1.9
+    - xlrd
+    - xlwt
+    - openpyxl
+

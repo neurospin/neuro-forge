@@ -1,0 +1,56 @@
+context:
+  git_repo_url: "https://github.com/neurospin/neuro-forge.git"
+  latest_tag: ${{ git.latest_tag( git_repo_url ) }}
+
+
+package:
+  name: "neuro-forge"
+  version: ${{ latest_tag }}
+
+source:
+  git: ${{ git_repo_url }}
+  tag: ${{ latest_tag }}
+
+build:
+  noarch: python
+    
+requirements:
+  build:
+    - python
+    - click
+    - conda-build
+    - fire
+    - git
+    - gitpython
+    - pip
+    - pyaml
+    - rattler-build
+    - requests
+    - rich
+    - rsync
+    - toml
+
+  run:
+    - python
+    - click
+    - conda-build
+    - fire
+    - git
+    - gitpython
+    - pip
+    - pyaml
+    - rattler-build
+    - requests
+    - rich
+    - rsync
+    - toml
+
+tests:
+  - python:
+      imports:
+        - neuro_forge
+        - neuro_forge.soma_forge
+        
+  - script:
+     - neuro-forge -h
+     - soma-forge -h

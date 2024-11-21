@@ -1,0 +1,11 @@
+package:
+  name: catidb
+
+soma-forge:
+  components:
+    - catidb-client
+
+  internal-dependencies:
+    - soma
+
+  type: interpreted

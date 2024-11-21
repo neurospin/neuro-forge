@@ -9,14 +9,14 @@ package:
 build:
   number: 0
   script: |
-    python "$RECIPE_DIR/download_package.py" mesalib '${{ version }}' "$PREFIX"
+    mkdir "$PREFIX/mesalib"
+    python "$RECIPE_DIR/download_package.py" mesalib '${{ version }}' "$PREFIX/mesalib"
 
 requirements:
   build:
     - python
     - requests
-
-
+    - conda-package-handling
 
 about:
   summary: A copy of the mesalib conda-forge package not included in standard paths.
