@@ -577,7 +577,9 @@ if __name__ == '__main__':
 
     import argparse
 
-    base_directory = os.getcwd()
+    base_directory = os.environ.get('CASA_BASE_DIRECTORY')
+    if not base_directory:
+        base_directory = os.getcwd()
     jenkins_server = None
     jenkins_auth = f'{base_directory}/jenkins_auth'
 
