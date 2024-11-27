@@ -1,0 +1,34 @@
+context:
+  version: 1.20.13 # Ubuntu 20.04
+  # version: 21.1.12 # Ubuntu 24.04
+
+package:
+  name: xvfb
+  version: ${{ version }}
+
+requirements:
+  build:
+    - apptainer
+    - squashfs-tools
+
+  run:
+    - libbrotlidec
+    - libgcrypt
+    - libsystemd
+    - libunwind
+
+build:
+  script: |
+    apptainer build --fakeroot xvfb.sif $RECIPE_DIR/xvfb_apptainer_recipe
+    mkdir "$PREFIX/bin"
+    apptainer run -B $PREFIX:/prefix xvfb.sif cp -a /xorg-server-${{ version }}/debian/local/xvfb-run /xorg-server-${{ version }}/hw/vfb/Xvfb /prefix/bin
+    chmod a+rx "$PREFIX/bin/xvfb-run"
+    
+tests:
+  - script:
+     - Xvfb -help
+     - xvfb-run --help
+    requirements:
+      run:
+        - libgl
+
