@@ -107,6 +107,9 @@
     rattler-build: '>=0.13'
     six: '*'
     sphinx: '*'
+    sphinxcontrib-mermaid: '*'
+    myst-parser: '*'
+    sphinx_rtd_theme: '*'
     toml: '*'
     virtualgl: '*'
   default_packages:
