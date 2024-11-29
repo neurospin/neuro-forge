@@ -37,9 +37,8 @@ class BBIDaily:
             osp.join(osp.dirname(__file__), 'run_pixi_env.py')]
         self.casa_distro_cmd_env = {'cwd': base_directory}
         self.jenkins = jenkins
-        if self.jenkins:
-            if not self.jenkins.job_exists(self.bbe_name):
-                self.jenkins.create_job(self.bbe_name)
+        if self.jenkins and not self.jenkins.job_exists(self.bbe_name):
+            self.jenkins.create_job(self.bbe_name)
         self.env_prefix = '{environment_dir}'
 
     def log(self, environment, task_name, result, log,
@@ -92,10 +91,8 @@ class BBIDaily:
 
     def bv_maker(self, config, steps):
         environment = config['name']
-        if self.jenkins:
-            if not self.jenkins.job_exists(environment):
-                self.jenkins.create_job(environment,
-                                        **config)
+        if self.jenkins and not self.jenkins.job_exists(environment):
+            self.jenkins.create_job(environment, **config)
         done = []
         failed = []
         for step in steps:
@@ -117,10 +114,8 @@ class BBIDaily:
 
     def tests(self, test_config, dev_config):
         environment = test_config['name']
-        if self.jenkins:
-            if not self.jenkins.job_exists(environment):
-                self.jenkins.create_job(environment,
-                                        **test_config)
+        if self.jenkins and not self.jenkins.job_exists(environment):
+            self.jenkins.create_job(environment, **test_config)
         # get test commands dict, and log it in the test config log (which may
         # be the dev log or the user image log)
         tests = self.get_test_commands(dev_config,
@@ -393,10 +388,8 @@ class BBIDaily:
 
     def recreate_user_env(self, user_config, dev_config):
         environment = user_config['name']
-        if self.jenkins:
-            if not self.jenkins.job_exists(environment):
-                self.jenkins.create_job(environment,
-                                        **user_config)
+        if self.jenkins and not self.jenkins.job_exists(environment):
+            self.jenkins.create_job(environment, **user_config)
         start = time.time()
         env_dir = user_config['directory']
         dev_env_dir = osp.abspath(dev_config['directory'])
