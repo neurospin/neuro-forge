@@ -130,7 +130,7 @@ def publish(channel_dir):
 
     # Sort all files by modification date and get the most recent
     to_sort = []
-    for root, subFolders, files in os.walk(channel_dir):
+    for root, _, files in os.walk(channel_dir):
         for file in files:
             ff = os.path.join(root, file)
             to_sort.append((os.stat(ff).st_mtime, ff))
