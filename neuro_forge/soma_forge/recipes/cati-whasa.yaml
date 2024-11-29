@@ -11,3 +11,7 @@ soma-forge:
     - anatomist
 
   type: compiled
+
+requirements:
+  run:
+    - scikit-image
