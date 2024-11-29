@@ -484,15 +484,16 @@ def packaging_plan(pixi_directory, publication_directory, packages, force, test=
         actions.append({"action": "rebuild"})
     else:
         # Add an action to assess that compilation was successfully done
-        actions.append({"action": "check_build_status"})
-
-        actions.append(
+        actions.extend((
+            {
+                "action": "check_build_status",
+            },
             {
                 "action": "create_package",
                 "args": ["soma-env"],
                 "kwargs": {"test": False},
-            }
-        )
+            },
+        ))
 
         actions.extend(package_actions)
         release_history["environment_version"] = environment_version

@@ -156,9 +156,7 @@ class BBIDaily:
                     '--',
                     'sh', '-c', command
                 ])
-                log.append('=' * 80)
-                log.append(output)
-                log.append('=' * 80)
+                log.extend(('=' * 80, output, '=' * 80))
                 if result:
                     success = False
                     if result in (124, 128+9):
