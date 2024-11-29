@@ -353,12 +353,11 @@ class BBIDaily:
                 if result:
                     success = False
                     if result in (124, 128+9):
-                        log.append('TIMED OUT (exit code {0})'.format(result))
+                        log.append(f'TIMED OUT (exit code {result})')
                     else:
-                        log.append('FAILED with exit code {0}'
-                                   .format(result))
+                        log.append(f'FAILED with exit code {result}')
                 else:
-                    log.append('SUCCESS (exit code {0})'.format(result))
+                    log.append(f'SUCCESS (exit code {result})')
 
                 duration = int(1000 * (time.time() - start))
                 self.log(environment, 'packaging index',
