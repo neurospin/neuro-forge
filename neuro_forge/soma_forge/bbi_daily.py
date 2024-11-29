@@ -130,7 +130,7 @@ class BBIDaily:
         env_dir = self.env_prefix.format(
             environment_dir=test_config['directory'])
         dev_env_dir = dev_config['directory']
-        srccmdre = re.compile('/casa/host/src/.*/bin/')
+        srccmdre = re.compile(r'/casa/host/src/.*/bin/')
         dev_build = osp.join(dev_env_dir, 'build')
         user_root = osp.join(env_dir, '.pixi', 'envs', 'default')
         for test, commands in tests.items():
