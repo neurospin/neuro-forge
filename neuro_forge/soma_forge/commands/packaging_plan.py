@@ -294,6 +294,7 @@ def packaging_plan(pixi_directory, publication_directory, packages, force, test=
                     "  make install-\\${component}-dev",
                     "  make install-\\${component}-usrdoc",
                     "  make install-\\${component}-devdoc",
+                    "  make install-\\${component}-test",
                     "done",
                     "END",
                 )
