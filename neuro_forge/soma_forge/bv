@@ -43,7 +43,7 @@ if [ "$SHORT_ME" = bv ]; then
     fi
 fi
 # echo "$SHORT_ME"
-cd $DIR_BV
+# cd $DIR_BV
 # pixi run $SHORT_ME "$@"
 # echo "bash -c 'eval \"\$(pixi shell-hook)\"; eval "$SHORT_ME" "$@"'"
 # eval "$(pixi shell-hook)"
