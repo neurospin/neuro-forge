@@ -22,13 +22,19 @@ def get_pixi_env_dir():
     return real_me
 
 
-def get_bin_dir(pixi_env_dir):
+def get_bin_dirs(pixi_env_dir):
     src_bin = osp.join(pixi_env_dir, 'build/bin')
+    src_bins = [src_bin]
     dev = True
     if not osp.exists(src_bin):
         src_bin = osp.join(pixi_env_dir, '.pixi/envs/default/bin')
+        src_bins = [src_bin]
         dev = False
-    return (src_bin, dev)
+    if dev:
+        src_bvm = osp.join(pixi_env_dir, 'src/brainvisa-cmake/bin')
+        if osp.exists(src_bvm):
+            src_bins.append(src_bvm)
+    return (src_bins, dev)
 
 
 def get_commands_to_link(src_bin, dev_env):
@@ -37,7 +43,7 @@ def get_commands_to_link(src_bin, dev_env):
     prefixs = ['Aims', 'ana', 'si', 'yl', 'Vip', 'bio', 'axon', 'brainvisa',
                'Baby', 'bv_', 'carto', 'constel', 'disco', 'freesurfer',
                'morpho', 'qr', 'soma', 'sulci', ]
-    exc_prefixs = ['sip', 'sim']
+    exc_prefixs = ['sip', 'sim', 'bv_env']
     cmds = []
     for p in os.listdir(src_bin):
         for prefix in prefixs:
@@ -53,14 +59,15 @@ def get_commands_to_link(src_bin, dev_env):
     return cmds
 
 
-def remove_dead_links(dst_bin, src_bin):
+def remove_dead_links(dst_bin, src_bins):
     for p in os.listdir(dst_bin):
         fullp = osp.join(dst_bin, p)
         if not osp.exists(fullp):
             os.unlink(fullp)
         elif osp.islink(fullp):
             if os.readlink(fullp) == 'bv' \
-                    and not osp.exists(osp.join(src_bin, p)):
+                    and not any(osp.exists(osp.join(src_bin, p))
+                                for src_bin in src_bins):
                 # print('remove dead link:', fullp)
                 os.unlink(fullp)
 
@@ -99,7 +106,7 @@ me = sys.argv[0]
 real_me = osp.dirname(osp.realpath(me))
 pixi_env_dir = get_pixi_env_dir()
 print('pixi dir:', pixi_env_dir)
-src_bin, dev_env = get_bin_dir(pixi_env_dir)
+src_bins, dev_env = get_bin_dirs(pixi_env_dir)
 dst_bin = osp.join(pixi_env_dir, 'bin')
 if not osp.exists(dst_bin):
     # print('mkdir', dst_bin)
@@ -114,16 +121,17 @@ if not osp.exists(bv) or osp.realpath(bv) != osp.join(real_me, 'bv'):
         os.unlink(bv)
     os.symlink(bv_link, bv)
 
-remove_dead_links(dst_bin, src_bin)
+remove_dead_links(dst_bin, src_bins)
 
-cmds = get_commands_to_link(src_bin, dev_env)
-print('cmds:', len(cmds))
-# print(cmds)
-for c in cmds:
-    d = osp.join(dst_bin, c)
-    if osp.exists(d) or osp.islink(d):
-        if os.readlink(d) == 'bv':
-            continue
-        os.unlink(d)
-    os.symlink('bv', d)
+for src_bin in src_bins:
+    cmds = get_commands_to_link(src_bin, dev_env)
+    print('cmds:', len(cmds))
+    # print(cmds)
+    for c in cmds:
+        d = osp.join(dst_bin, c)
+        if osp.exists(d) or osp.islink(d):
+            if os.readlink(d) == 'bv':
+                continue
+            os.unlink(d)
+        os.symlink('bv', d)
 
