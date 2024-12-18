@@ -31,21 +31,25 @@ def get_bin_dirs(pixi_env_dir):
         src_bins = [src_bin]
         dev = False
     if dev:
-        src_bvm = osp.join(pixi_env_dir, 'src/brainvisa-cmake/bin')
-        if osp.exists(src_bvm):
-            src_bins.append(src_bvm)
+        for comp in ('brainvisa-cmake', 'casa-distro'):
+            src_bvm = osp.join(pixi_env_dir, 'src', comp, 'bin')
+            if osp.exists(src_bvm):
+                src_bins.append(src_bvm)
     return (src_bins, dev)
 
 
 def get_commands_to_link(src_bin, dev_env):
+    exc_cmd = set(['bv'])
     if dev_env:
-        return os.listdir(src_bin)
+        return [cmd for cmd in os.listdir(src_bin) if cmd not in exc_cmd]
     prefixs = ['Aims', 'ana', 'si', 'yl', 'Vip', 'bio', 'axon', 'brainvisa',
-               'Baby', 'bv_', 'carto', 'constel', 'disco', 'freesurfer',
-               'morpho', 'qr', 'soma', 'sulci', ]
+               'Baby', 'bv_', 'carto', 'casa', 'constel', 'disco',
+               'freesurfer', 'morpho', 'qr', 'soma', 'sulci', ]
     exc_prefixs = ['sip', 'sim', 'bv_env']
     cmds = []
     for p in os.listdir(src_bin):
+        if p in exc_cmd:
+            continue
         for prefix in prefixs:
             if p.startswith(prefix):
                 skip = False
@@ -117,7 +121,7 @@ bv = osp.join(dst_bin, 'bv')
 if not osp.exists(bv) or osp.realpath(bv) != osp.join(real_me, 'bv'):
     bv_link = osp.relpath(osp.join(real_me, 'bv'), dst_bin)
     # print('bv symlink', bv_link)
-    if osp.exists(bv):
+    if osp.exists(bv) or osp.islink(bv):
         os.unlink(bv)
     os.symlink(bv_link, bv)
 
