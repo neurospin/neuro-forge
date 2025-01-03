@@ -22,6 +22,7 @@ requirements:
     - python
     - pip
     - tree
+    - setuptools
 
   run: 
     - bitarray >=2.6.0
