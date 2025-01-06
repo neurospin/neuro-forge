@@ -1,6 +1,8 @@
+context:
+  version: 7771
 package:
   name: spm12
-  version: 7771
+  version: ${{version}}
 
 source:
   url: https://www.fil.ion.ucl.ac.uk/spm/download/restricted/utopia/spm12/spm12_r${{version}}_Linux_R2019b.zip
