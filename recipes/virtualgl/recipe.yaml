@@ -16,7 +16,7 @@ build:
   number: 0
   script: |
     patch server/CMakeLists.txt "$RECIPE_DIR/CMakeLists.txt.patch"
-    cmake -G"Unix Makefiles" "-DCMAKE_INSTALL_PREFIX=$PREFIX" -DCMAKE_IGNORE_PATH=/usr/include "-DCMAKE_PREFIX_PATH=$CONDA_PREFIX;;$CONDA_PREFIX/x86_64-conda-linux-gnu/sysroot/usr"  "-DCMAKE_REQUIRED_INCLUDES=$CONDA_PREFIX/include;$CONDA_PREFIX/x86_64-conda-linux-gnu/sysroot/usr/include" "-DOPENGL_egl_LIBRARY=$CONDA_PREFIX/x86_64-conda-linux-gnu/sysroot/usr/lib64/libEGL_mesa.so.0" "$SRC_DIR"
+    cmake -G"Unix Makefiles" "-DCMAKE_INSTALL_PREFIX=$PREFIX" -DCMAKE_IGNORE_PATH=/usr/include "-DCMAKE_PREFIX_PATH=$CONDA_PREFIX;$CONDA_PREFIX/x86_64-conda-linux-gnu/sysroot/usr"  "-DCMAKE_REQUIRED_INCLUDES=$CONDA_PREFIX/include;$CONDA_PREFIX/x86_64-conda-linux-gnu/sysroot/usr/include" "-DOPENGL_egl_LIBRARY=$CONDA_PREFIX/x86_64-conda-linux-gnu/sysroot/usr/lib64/libEGL_mesa.so.0" "-DX11_X11_INCLUDE_PATH=$CONDA_PREFIX/include" "$SRC_DIR"
     make -j -k || make
     make install
 
@@ -32,6 +32,7 @@ requirements:
     - xorg-libx11
     - xorg-libxi
     - xorg-libxext
+    - xorg-xorgproto
     - mesalib
     - cuda-opencl-dev
     - mesa-libgl-devel-cos7-x86_64
