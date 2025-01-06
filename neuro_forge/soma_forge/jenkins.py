@@ -116,7 +116,7 @@ class BrainVISAJenkins:
                           build=xmlescape(str(task)),
                           hex_log=log.hex(),
                           result=result or 0,
-                          duration=int(round(duration)) if duration else 0,
+                          duration=round(duration) if duration else 0,
                           description=xmlescape(description or ''),
                       ))
         r.raise_for_status()
