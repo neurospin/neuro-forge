@@ -60,7 +60,11 @@ def build(channel_dir, packages):
         # Select packages for automatic building
         packages = []
         for i in (neuro_forge / "recipes").iterdir():
-            if (i / "recipe.yaml").exists() and not any(channel_dir.glob(f"*/{i.name}-*.conda")):
+            if (i / "recipe.yaml").exists():
+                existing = list(channel_dir.glob(f"*/{i.name}-*.conda"))
+                if existing:
+                    print(f"Skip {i} because {existing[0]} exists")
+                    continue
                 with open(i / "recipe.yaml") as f:
                     recipe = yaml.safe_load(f)
                 if not recipe.get("extra", {}).get("neuro-forge", {}).get("exclude"):
