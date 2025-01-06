@@ -35,3 +35,8 @@ tests:
   - script:
      - pysolar_heritability_analysis -h
      - pysolar_make_pedigree -h
+
+extra:
+  neuro-forge:
+    # exclude this package from automatic building with neuro-forge
+    exclude: true
