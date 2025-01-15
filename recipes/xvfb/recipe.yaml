@@ -16,8 +16,11 @@ requirements:
     - libgcrypt
     - libsystemd
     - libunwind
+    - xorg-xauth
+    - xkeyboard-config
 
 build:
+  number: 3
   script: |
     apptainer build --fakeroot xvfb.sif $RECIPE_DIR/xvfb_apptainer_recipe
     mkdir "$PREFIX/bin"
