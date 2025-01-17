@@ -14,7 +14,7 @@ From: ubuntu:20.04
     apt -y install libtirpc-dev libbz2-dev
     cd xorg-server-1.20.13/ # Ubuntu 20.04
     # cd xorg-server-21.1.12/ # Ubuntu 24.04
-    ./configure --enable-static
+    ./configure --enable-static --with-xkb-bin-directory=""
     make -j
     cd hw/vfb
     make clean
