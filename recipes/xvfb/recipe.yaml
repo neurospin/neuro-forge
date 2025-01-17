@@ -18,6 +18,7 @@ requirements:
     - libunwind
     - xorg-xauth
     - xkeyboard-config
+    - xkbcomp
 
 build:
   number: 4
