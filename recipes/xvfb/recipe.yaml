@@ -21,11 +21,11 @@ requirements:
     - xkbcomp
 
 build:
-  number: 3
+  number: 5
   script: |
     apptainer build --fakeroot xvfb.sif $RECIPE_DIR/xvfb_apptainer_recipe
     mkdir "$PREFIX/bin"
-    apptainer run -B $PREFIX:/prefix xvfb.sif cp -a /xorg-server-${{ version }}/debian/local/xvfb-run /xorg-server-${{ version }}/hw/vfb/Xvfb /prefix/bin
+    apptainer run -B $PREFIX:/prefix xvfb.sif cp -a /xorg-server-${{ version }}/debian/local/xvfb-run /xorg-server-${{ version }}/hw/vfb/Xvfb /xorg-server-${{ version }}/hw/vfb/Xvfb.bin /prefix/bin
     chmod a+rx "$PREFIX/bin/xvfb-run"
     
 tests:
