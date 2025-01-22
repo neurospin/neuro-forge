@@ -1,13 +1,17 @@
+context:
+  version: 2.3.00
+
 package:
     name: libminc
-    version: 2.3.0
+    version: ${{version}}
 
 source:
   git: https://github.com/BIC-MNI/libminc
+  #tag: release-${{version}}
   tag: libminc-2-3-00
 
 build:
-  number: 1
+  number: 2
   script: |
     cmake -DCMAKE_BUILD_TYPE=Release -DBUILD_TESTING=OFF -DLIBMINC_BUILD_SHARED_LIBS=ON -DLIBMINC_MINC1_SUPPORT=ON "-DCMAKE_INSTALL_PREFIX=$PREFIX" "-DCMAKE_PREFIX_PATH=$CONDA_PREFIX;$CONDA_PREFIX/x86_64-conda-linux-gnu/sysroot/usr"  "-DCMAKE_REQUIRED_INCLUDES=$CONDA_PREFIX/include;$CONDA_PREFIX/x86_64-conda-linux-gnu/sysroot/usr/include" "$SRC_BUILD"
     make -j -k
@@ -19,12 +23,12 @@ requirements:
     - ${{ compiler('cxx') }}
     - cmake
     - make
-    - hdf5>=1.14.3,<1.14.4.0a0
+    - hdf5
     - zlib
     - libnetcdf
 
   run:
-    - hdf5>=1.14.3,<1.14.4.0a0
+    - hdf5
     - zlib
     - libnetcdf
 
