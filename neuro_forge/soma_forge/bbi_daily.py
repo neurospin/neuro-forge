@@ -91,8 +91,19 @@ class BBIDaily:
 
     def bv_maker(self, config, steps):
         environment = config['name']
+<<<<<<< HEAD
         if self.jenkins and not self.jenkins.job_exists(environment):
             self.jenkins.create_job(environment, **config)
+||||||| parent of 6218347 (Apply ruff/flake8-simplify rule SIM102)
+        if self.jenkins:
+            if not self.jenkins.job_exists(environment):
+                self.jenkins.create_job(environment,
+                                        **config)
+=======
+        if self.jenkins and not self.jenkins.job_exists(environment):
+            self.jenkins.create_job(environment,
+                                    **config)
+>>>>>>> 6218347 (Apply ruff/flake8-simplify rule SIM102)
         done = []
         failed = []
         for step in steps:
@@ -114,8 +125,19 @@ class BBIDaily:
 
     def tests(self, test_config, dev_config):
         environment = test_config['name']
+<<<<<<< HEAD
         if self.jenkins and not self.jenkins.job_exists(environment):
             self.jenkins.create_job(environment, **test_config)
+||||||| parent of 6218347 (Apply ruff/flake8-simplify rule SIM102)
+        if self.jenkins:
+            if not self.jenkins.job_exists(environment):
+                self.jenkins.create_job(environment,
+                                        **test_config)
+=======
+        if self.jenkins and not self.jenkins.job_exists(environment):
+            self.jenkins.create_job(environment,
+                                    **test_config)
+>>>>>>> 6218347 (Apply ruff/flake8-simplify rule SIM102)
         # get test commands dict, and log it in the test config log (which may
         # be the dev log or the user image log)
         tests = self.get_test_commands(dev_config,
