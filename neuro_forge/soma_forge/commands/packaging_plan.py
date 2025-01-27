@@ -111,6 +111,7 @@ def brainvisa_cmake_component_version(src):
         version = p.get("project", {}).get("version")
         if version is None:
             raise ValueError(f"Cannot find version in {pyproject_toml}")
+        return version
 
     # Check info.py
     info_py = list(
