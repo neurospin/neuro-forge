@@ -386,14 +386,9 @@ class BBIDaily:
 
     def read_packages_list(self, dev_config):
         with open(osp.join(dev_config['directory'], 'conf',
-                           'build_info.json')) \
-                as f:
+                           'soma-env.json')) as f:
             binfo = json.load(f)
-        build_str = binfo.get('build_string')
-        pack_binfo = {}
-        if build_str is not None:
-            pack_binfo = {'build': f'{build_str}'}
-        packages = {p: pack_binfo for p in binfo['packages']}
+        packages = {p: {'version': v} for p, v in binfo['packages'].items()}
         for p, d in packages.items():
             recipe_f = osp.join(dev_config['directory'], 'plan', 'recipes', p,
                                 'recipe.yaml')
@@ -414,7 +409,9 @@ class BBIDaily:
             shutil.rmtree(env_dir)
         os.makedirs(env_dir)
         cmd = ['pixi', 'init', '-c', f'file://{dev_env_dir}/plan/packages',
-               '-c', 'https://brainvisa.info/neuro-forge',
+               # '-c', 'https://brainvisa.info/neuro-forge',
+               '-c', 'file:///drf/neuro-forge/public',
+               '-c', 'file:///drf/neuro-forge/brainvisa-cea',
                '-c', 'nvidia', '-c', 'pytorch', '-c', 'conda-forge']
         log = ['create user environment', 'command:', ' '.join(cmd),
                'from dir:', env_dir]
