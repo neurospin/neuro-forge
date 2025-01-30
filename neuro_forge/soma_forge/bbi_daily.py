@@ -389,8 +389,11 @@ class BBIDaily:
                            'build_info.json')) \
                 as f:
             binfo = json.load(f)
-        build_str = f'{binfo["build_string"]}'
-        packages = {p: {'build': f'{build_str}'} for p in binfo['packages']}
+        build_str = binfo.get('build_string')
+        pack_binfo = {}
+        if build_str is not None:
+            pack_binfo = {'build': f'{build_str}'}
+        packages = {p: pack_binfo for p in binfo['packages']}
         for p, d in packages.items():
             recipe_f = osp.join(dev_config['directory'], 'plan', 'recipes', p,
                                 'recipe.yaml')
