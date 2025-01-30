@@ -89,6 +89,25 @@ class BBIDaily:
                  duration=duration)
         return result == 0
 
+    def update_soma_env(self, config):
+        start = time.time()
+        env_dir = self.env_prefix.format(
+            environment_dir=config['directory'])
+        if osp.exists(osp.join(env_dir, '.git')) \
+                and osp.exists(osp.join(env_dir, 'pixi.toml')):
+            result, log = self.call_output(['git',
+                                            '-C', env_dir,
+                                            'pull'])
+            msg = f'update soma-env for environment {config["name"]}'
+        else:
+            msg = f'update soma-env skipped: environment {config["name"]} ' \
+                'is not a soma-env directory'
+            result = 0
+            log = 'nothing to be done done.'
+        duration = int(1000 * (time.time() - start))
+        self.log(self.bbe_name, msg, result, log, duration=duration)
+        return result == 0
+
     def bv_maker(self, config, steps):
         environment = config['name']
         if self.jenkins and not self.jenkins.job_exists(environment):
@@ -270,15 +289,15 @@ class BBIDaily:
         if osp.exists(osp.join(env_dir, 'plan')):
             shutil.rmtree(osp.join(env_dir, 'plan'))
         # packaging plan, don't test, don't publish.
-        cmd = ['pixi', 'run', 'soma-forge', 'packaging-plan', '--test',
-               '0', env_dir, '--publication-directory', '']
+        cmd = ['pixi', 'run', '--frozen', 'soma-env', 'packaging-plan',
+               '--test', '0']
         log = ['buid packages plan', 'command:', ' '.join(cmd), 'from dir:',
-               self.neuro_forge_src]
+               env_dir]
         environment = config['name']
         self.log(environment, 'buid packages plan', 0,
                  '\n'.join(log), duration=0)
         start = time.time()
-        result, output = self.call_output(cmd, cwd=self.neuro_forge_src)
+        result, output = self.call_output(cmd, cwd=env_dir)
         log = []
         log.append('=' * 80)
         log.append(output)
@@ -302,14 +321,13 @@ class BBIDaily:
 
         if success:
             # pack
-            cmd = ['pixi', 'run', 'soma-forge', 'apply-plan',
-                   env_dir]
+            cmd = ['pixi', 'run', '--frozen', 'soma-env', 'apply-plan']
             log = ['buid packages plan', 'command:', ' '.join(cmd),
-                   'from dir:', self.neuro_forge_src]
+                   'from dir:', env_dir]
             self.log(environment, 'buid packages', 0,
                      '\n'.join(log), duration=0)
             start = time.time()
-            result, output = self.call_output(cmd, cwd=self.neuro_forge_src)
+            result, output = self.call_output(cmd, cwd=env_dir)
             log = []
             log.append('=' * 80)
             log.append(output)
@@ -334,15 +352,14 @@ class BBIDaily:
             else:
 
                 # index - needed even if the repos is newly created
-                cmd = ['pixi', 'run', 'conda', 'index',
+                cmd = ['pixi', 'run', '--frozen', 'conda', 'index',
                        osp.join(env_dir, 'plan', 'packages')]
                 log = ['buid packages index', 'command:', ' '.join(cmd),
-                       'from dir:', self.neuro_forge_src]
+                       'from dir:', env_dir]
                 self.log(environment, 'buid packages index', 0,
                          '\n'.join(log), duration=0)
                 start = time.time()
-                result, output = self.call_output(cmd,
-                                                  cwd=self.neuro_forge_src)
+                result, output = self.call_output(cmd, cwd=env_dir)
                 log = []
                 log.append('=' * 80)
                 log.append(output)
@@ -494,6 +511,7 @@ class BBIDaily:
 
             for dev_config, user_config in zip(dev_configs, user_configs):
                 # doc_build_success = False
+                self.update_soma_env(dev_config)
                 if bv_maker_steps:
                     successful, failed = self.bv_maker(dev_config,
                                                        bv_maker_steps)

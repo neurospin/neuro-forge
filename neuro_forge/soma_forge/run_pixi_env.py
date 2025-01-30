@@ -59,7 +59,7 @@ if __name__ == '__main__':
     if args[0] == 'run':  # the default run action
         args = args[1:]
 
-    cmd = ['pixi', 'run']
+    cmd = ['pixi', 'run', '--frozen']
     if cd is not None:
         # WARNING quotes are not properly handled
         cmd.append(f'cd {cd}; {" ".join(args)}')
