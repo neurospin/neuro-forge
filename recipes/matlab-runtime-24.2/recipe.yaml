@@ -1,0 +1,28 @@
+context:
+  version: 5
+
+package:
+  name: matlab-runtime-24.2
+  version: ${{version}}
+
+source:
+  url: https://ssd.mathworks.com/supportfiles/downloads/R2024b/Release/${{version}}/deployment_files/installer/complete/glnxa64/MATLAB_Runtime_R2024b_Update_${{version}}_glnxa64.zip
+  sha256: 755c7d28cf433450b3a0ff52272fae431e66c65916a603f84c60d48d5e68f24a
+
+build:
+  number: 0
+  script:
+    - ./install -mode silent -agreeToLicense yes -outputFile install_log.txt -destinationFolder $PREFIX/MATLAB/MATLAB_Runtime
+  dynamic_linking:
+    binary_relocation: false
+
+about:
+  homepage: https://mathworks.com/help/compiler/install-the-matlab-runtime.html
+  license_file: MCR_license.txt
+  summary: |
+    Run packaged MATLAB applications on computers without MATLAB
+  description: |
+    MATLAB Runtime (MCR) is a freely-available set of shared libraries,
+    MATLAB code, and other files that enables the execution of MATLAB files
+    on computers without an installed version of MATLAB.
+  documentation: https://mathworks.com/help/compiler/matlab-runtime.html
