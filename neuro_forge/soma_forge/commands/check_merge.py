@@ -1,7 +1,8 @@
-import git
 import pathlib
 
 import click
+import git
+
 from . import cli
 
 
@@ -16,10 +17,7 @@ def check_merge(src, branch):
             repo = git.Repo(str(src))
             branches = {i.name.rsplit("/", 1)[-1] for i in repo.remote().refs}
             if branch is None:
-                if "master" in branches:
-                    branch = "master"
-                else:
-                    branch = "main"
+                branch = "master" if "master" in branches else "main"
 
             repo.git.fetch()
             non_merged = {

@@ -1,0 +1,20 @@
+---
+files: ^(.*\.(py|json|md|sh|yaml|yml|in|cfg|txt|rst|toml|precommit-toml|wordlist))$
+exclude: ^(\.[^/]*cache/.*)$
+repos:
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v5.0.0
+    hooks:
+      - id: end-of-file-fixer
+      - id: trailing-whitespace
+      - id: mixed-line-ending
+      - id: check-case-conflict
+      - id: check-toml
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.9.9
+    hooks:
+      - id: ruff
+      - id: ruff-format
+
+ci:
+  autoupdate_schedule: monthly

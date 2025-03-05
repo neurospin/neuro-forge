@@ -59,5 +59,3 @@ build:
         # -D glvnd=enabled
     ninja
     ninja install
-
-

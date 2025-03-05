@@ -17,4 +17,3 @@ requirements:
     - xlrd
     - xlwt
     - openpyxl
-

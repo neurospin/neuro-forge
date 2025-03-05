@@ -20,4 +20,3 @@ requirements:
     - xlrd
     - xlwt
     - openpyxl
- 

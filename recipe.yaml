@@ -30,7 +30,7 @@ requirements:
 tests:
   - python:
       imports:
-        - soma_forge 
+        - soma_forge
 
 
 

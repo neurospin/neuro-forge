@@ -1,22 +1,22 @@
 import fnmatch
-import git
 import itertools
 import json
 import os
 import pathlib
-import rich
 import re
 import shlex
 import shutil
 import subprocess
 import sys
+
+import click
+import git
+import rich
 import toml
 import yaml
 
-import click
-
-from . import cli
 from ..recipes import sorted_recipies
+from . import cli
 
 neuro_forge_url = "https://brainvisa.info/neuro-forge"
 
@@ -288,14 +288,14 @@ def packaging_plan(pixi_directory, publication_directory, packages, force, test=
                 (
                     f"cd '{pixi_root}'",
                     f"pixi run --manifest-path='{pixi_root}/pixi.toml' bash << END",
-                    'cd "\\$CASA_BUILD"',
+                    r'cd "\$CASA_BUILD"',
                     'export BRAINVISA_INSTALL_PREFIX="$PREFIX"',
                     f"for component in {' '.join(components)}; do",
-                    "  make install-\\${component}",
-                    "  make install-\\${component}-dev",
-                    "  make install-\\${component}-usrdoc",
-                    "  make install-\\${component}-devdoc",
-                    "  make install-\\${component}-test",
+                    r"  make install-\${component}",
+                    r"  make install-\${component}-dev",
+                    r"  make install-\${component}-usrdoc",
+                    r"  make install-\${component}-devdoc",
+                    r"  make install-\${component}-test",
                     "done",
                     "END",
                 )
@@ -367,7 +367,7 @@ def packaging_plan(pixi_directory, publication_directory, packages, force, test=
     for package, recipe in recipes.items():
         if package not in selected_packages:
             continue
-        print(f"Generate recipe for {package} {recipe["package"]["version"]}")
+        print(f"Generate recipe for {package} {recipe['package']['version']}")
         if not force:
             src_errors = recipe["soma-forge"].get("src_errors")
             if src_errors:
@@ -418,7 +418,6 @@ def packaging_plan(pixi_directory, publication_directory, packages, force, test=
                     ),
                 )
             else:
-                file_format = "python"
                 version_regexps = (
                     re.compile(r"(\bversion_major\s*=\s*)([0-9]+)(\b)"),
                     re.compile(r"(\bversion_minor\s*=\s*)([0-9]+)(\b)"),
@@ -486,16 +485,18 @@ def packaging_plan(pixi_directory, publication_directory, packages, force, test=
         actions.append({"action": "rebuild"})
     else:
         # Add an action to assess that compilation was successfully done
-        actions.extend((
-            {
-                "action": "check_build_status",
-            },
-            {
-                "action": "create_package",
-                "args": ["soma-env"],
-                "kwargs": {"test": False},
-            },
-        ))
+        actions.extend(
+            (
+                {
+                    "action": "check_build_status",
+                },
+                {
+                    "action": "create_package",
+                    "args": ["soma-env"],
+                    "kwargs": {"test": False},
+                },
+            )
+        )
 
         actions.extend(package_actions)
         release_history["environment_version"] = environment_version

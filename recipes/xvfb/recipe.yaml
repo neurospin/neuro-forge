@@ -27,7 +27,7 @@ build:
     mkdir "$PREFIX/bin"
     apptainer run -B $PREFIX:/prefix xvfb.sif cp -a /xorg-server-${{ version }}/debian/local/xvfb-run /xorg-server-${{ version }}/hw/vfb/Xvfb /xorg-server-${{ version }}/hw/vfb/Xvfb.bin /prefix/bin
     chmod a+rx "$PREFIX/bin/xvfb-run"
-    
+
 tests:
   - script:
      - Xvfb -help
@@ -35,4 +35,3 @@ tests:
     requirements:
       run:
         - libgl
-

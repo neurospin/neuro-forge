@@ -23,7 +23,7 @@ requirements:
     - tree
     - conda-forge::git
 
-  run: 
+  run:
     - numpy >=1.6.1
     - pandas >=0.23.4
     - solar  >=${{ latest_tag }},<9

@@ -41,7 +41,7 @@ The creation of packages for neuro-forge is based on the use of [rattler-build](
 
 - [Standard recipes](https://github.com/neurospin/neuro-forge/tree/main/recipes) that are standard rattler-build recipes that are git compatible (i.e. composed of, at most, a few text file) and can be built independently using only dependencies from standard channels such as conda-forge and bioconda.
 - Internal recipes that are located in the neuro-forge directory in Neurospin. Packages are put here either because they are too big (some packages requires several giga bytes of data) or because the recipe is not public.
-- [soma-forge recipes](https://github.com/neurospin/neuro-forge/tree/main/soma-forge) that are used to create packages for the [BrainVISA](https://brainvisa.info) project. Most of these packages are compiled ; that adds a binary dependency between them. Therefore their compilation and packaging requires a soma-forge development environment.
+- [soma-forge recipes](https://github.com/neurospin/neuro-forge/tree/main/soma-forge) that are used to create packages for the [BrainVISA](https://brainvisa.info) project. Most of these packages are compiled; that adds a binary dependency between them. Therefore their compilation and packaging requires a soma-forge development environment.
 
 # Use standard recipes
 
@@ -86,10 +86,10 @@ bv_maker
 ## soma-forge packages
 
 The packages currently built have the following dependencies:
-- blue: empty package with only dependencies ;
-- dark green: package containing compiled brainvisa-cmake components ;
-- light green: package containing interpreted brainvisa-cmake components ;
-- bisque: neuro-forge package ; 
+- blue: empty package with only dependencies;
+- dark green: package containing compiled brainvisa-cmake components;
+- light green: package containing interpreted brainvisa-cmake components;
+- bisque: neuro-forge package;
 - light grey: package from public channel such as conda-forge or bioconda.
 
 ![brainvisa](https://github.com/user-attachments/assets/6ff053d8-5959-4b9c-b181-74b2783073fe)

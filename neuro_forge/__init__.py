@@ -1,11 +1,12 @@
-import click
 import functools
 import operator
 import os
-from pathlib import Path
 import shutil
 import subprocess
 import sys
+from pathlib import Path
+
+import click
 import yaml
 
 default_channel_dir = "/drf/neuro-forge/public"
@@ -194,7 +195,7 @@ def publish(channel_dir):
     print("ssh neuroforge@brainvisa.info /usr/bin/bash << EOF")
     print(bash_script)
     print("EOF")
-    p = subprocess.run(
+    subprocess.run(
         [
             "ssh",
             "neuroforge@brainvisa.info",

@@ -1,5 +1,6 @@
 import copy
 from pathlib import Path
+
 import yaml
 
 """
@@ -77,7 +78,9 @@ def component_source(component, environment):
     result = environment_info.get("components", {}).get(component)
     if not result:
         return None
-    default_branch = result.get("default_branch", environment_info.get("default_branch"))
+    default_branch = result.get(
+        "default_branch", environment_info.get("default_branch")
+    )
     branch = result.get("branch", environment_info.get("branch", default_branch))
     if branch and "branch" not in result:
         result = result.copy()

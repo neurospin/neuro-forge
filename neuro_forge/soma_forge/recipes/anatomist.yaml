@@ -8,7 +8,7 @@ soma-forge:
 
   internal-dependencies:
     - soma
-  
+
   type: compiled
 
 requirements:

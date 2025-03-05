@@ -18,13 +18,13 @@ cd /tmp/myroot
 git clone https://github.com/neurospin/neuro-forge
 cd neuro-forge
 pixi shell
-pip install -e . 
+pip install -e .
 ```
 
 ### Now build the mlukb environment
 
-The conda package is created in ./output. 
- - Suppose the channel is CHANNEL. 
+The conda package is created in ./output.
+ - Suppose the channel is CHANNEL.
  - copy the locally produced conda package in it
  - refresh (re-index) the channel CHANNEL
 
@@ -57,7 +57,7 @@ pixi add mlukb
 
 A two step process.
 
-### Use the conda-pack 
+### Use the conda-pack
 ```bash
 cd /tmp
 export MYENV=myenv

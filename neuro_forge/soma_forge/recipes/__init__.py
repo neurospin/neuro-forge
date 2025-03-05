@@ -1,4 +1,5 @@
 import pathlib
+
 import yaml
 
 
@@ -43,10 +44,7 @@ def selected_recipes(selection=None):
         else:
             remove = False
         m = metapackages.get(s)
-        if m is not None:
-            s = m
-        else:
-            s = {s}
+        s = m or {s}
         if remove:
             selected_packages = selected_packages.difference(s)
         else:

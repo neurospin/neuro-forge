@@ -8,7 +8,7 @@ package:
 
 
 #source:
-#  path: 
+#  path:
 
 
 build:
@@ -19,7 +19,7 @@ requirements:
 #    - python
 #    - pip
 
-  run: 
+  run:
     - scikit-learn
     - nilearn
     - ipython
@@ -36,4 +36,3 @@ tests:
 
 about:
   summary: Kamalaker D., GigaScience 2021
-

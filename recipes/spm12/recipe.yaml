@@ -36,7 +36,7 @@ about:
     The SPM software package has been designed for the analysis of brain
     imaging data sequences. The sequences can be a series of images from
     different cohorts, or time-series from the same subject.
-    
+
     A standalone SPM is a version of SPM that has been compiled using
     the MATLAB Compiler so that it does not require the availability
     of a MATLAB licence.
