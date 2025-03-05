@@ -1,7 +1,6 @@
 import click
-
-from rich.console import Console
 import rich.traceback
+from rich.console import Console
 
 rich.traceback.install()
 
@@ -13,8 +12,4 @@ def cli():
     pass
 
 
-from . import apply_plan
-from . import check_merge
-from . import graphviz
-from . import init
-from . import packaging_plan
+from . import apply_plan, check_merge, graphviz, init, packaging_plan

@@ -1,7 +1,8 @@
-import git
 import pathlib
 
 import click
+import git
+
 from . import cli
 
 

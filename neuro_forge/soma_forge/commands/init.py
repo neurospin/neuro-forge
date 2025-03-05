@@ -1,5 +1,3 @@
-import click
-import git
 import itertools
 import json
 import pathlib
@@ -7,13 +5,15 @@ import shutil
 import subprocess
 import sys
 
-from rich.table import Table
+import click
+import git
 from rich.pretty import Pretty
+from rich.table import Table
 
-from . import cli, console
+from ..environments import component_source, get_environment_info
 from ..pixi import read_pixi_config, write_pixi_config
 from ..recipes import selected_recipes
-from ..environments import component_source, get_environment_info
+from . import cli, console
 
 default_python = "3.11"
 bv_maker_cfg_template = """[ source $CASA_SRC ]

@@ -1,4 +1,3 @@
-import git
 import json
 import os
 import pathlib
@@ -7,10 +6,12 @@ import shutil
 import subprocess
 import sys
 import types
+
+import click
+import git
 import toml
 import yaml
 
-import click
 from . import cli
 
 

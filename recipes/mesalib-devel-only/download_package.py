@@ -1,7 +1,8 @@
-import requests
 import shutil
 import subprocess
 import sys
+
+import requests
 
 package = sys.argv[1]
 version = sys.argv[2]

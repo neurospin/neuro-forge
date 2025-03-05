@@ -1,22 +1,22 @@
 import fnmatch
-import git
 import itertools
 import json
 import os
 import pathlib
-import rich
 import re
 import shlex
 import shutil
 import subprocess
 import sys
+
+import click
+import git
+import rich
 import toml
 import yaml
 
-import click
-
-from . import cli
 from ..recipes import sorted_recipies
+from . import cli
 
 neuro_forge_url = "https://brainvisa.info/neuro-forge"
 

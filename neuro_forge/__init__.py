@@ -1,11 +1,12 @@
-import click
 import functools
 import operator
 import os
-from pathlib import Path
 import shutil
 import subprocess
 import sys
+from pathlib import Path
+
+import click
 import yaml
 
 default_channel_dir = "/drf/neuro-forge/public"
