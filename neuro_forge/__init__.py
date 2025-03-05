@@ -194,7 +194,7 @@ def publish(channel_dir):
     print("ssh neuroforge@brainvisa.info /usr/bin/bash << EOF")
     print(bash_script)
     print("EOF")
-    p = subprocess.run(
+    subprocess.run(
         [
             "ssh",
             "neuroforge@brainvisa.info",

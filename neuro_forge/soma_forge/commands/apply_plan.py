@@ -111,7 +111,7 @@ def create_package(context, package, test):
         raise
     with open(context.pixi_root / "plan" / "recipes" / package / "recipe.yaml") as f:
         recipe = yaml.safe_load(f)
-    version = recipe["package"]["version"]
+    _version = recipe["package"]["version"]
 
 
 def publish(

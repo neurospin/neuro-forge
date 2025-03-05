@@ -418,7 +418,6 @@ def packaging_plan(pixi_directory, publication_directory, packages, force, test=
                     ),
                 )
             else:
-                file_format = "python"
                 version_regexps = (
                     re.compile(r"(\bversion_major\s*=\s*)([0-9]+)(\b)"),
                     re.compile(r"(\bversion_minor\s*=\s*)([0-9]+)(\b)"),
