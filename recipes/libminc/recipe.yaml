@@ -43,6 +43,6 @@ about:
     programming interfaces for both low-level data access and high-level
     volume manipulation. On top of the libraries is a suite of generic
     image-file manipulation tools. The format, libraries and tools are
-    designed for use in a medical-imaging research environment : they are
+    designed for use in a medical-imaging research environment: they are
     simple and powerful and make no attempt to provide a pretty interface
     to users.

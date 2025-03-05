@@ -32,7 +32,7 @@ tree /tmp/channel/
     └── repodata.json
 ```
 
-Copy to the conda repos of NeuroSpin : **https://brainvisa.info/public**
+Copy to the conda repos of NeuroSpin: **https://brainvisa.info/public**
 
 ```
 # copy to the intermediate NS local repository

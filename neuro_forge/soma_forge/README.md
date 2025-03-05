@@ -16,9 +16,9 @@ Soma-orge packages are hosted in neuro-forge channel and can be tested by [insta
 ## soma-forge packages
 
 The packages currently built have the following dependencies:
-- green: package containing brainvisa-cmake components ;
-- olive: empty package with dependencies ;
-- bisque: neuro-forge base package ; 
+- green: package containing brainvisa-cmake components;
+- olive: empty package with dependencies;
+- bisque: neuro-forge base package; 
 - light blue: package from conda-forge.
 
 ![dependencies](https://github.com/brainvisa/soma-forge/assets/3062350/c34edacd-ec27-49b4-b68d-75505390d63b)

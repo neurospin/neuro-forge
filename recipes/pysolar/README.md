@@ -2,7 +2,7 @@
 
 Create the packages from the repos
 
-**Note** Require ssh-key access to the repos : git@gitlab.com:brainomics/pysolar.git
+**Note** Require ssh-key access to the repos: git@gitlab.com:brainomics/pysolar.git
 
 ```bash
 mkdir /tmp/myroot /tmp/channel
@@ -34,7 +34,7 @@ tree /tmp/channel/
 ```
 
 
-Copy to the conda repos of NeuroSpin : **https://brainvisa.info/public**
+Copy to the conda repos of NeuroSpin: **https://brainvisa.info/public**
 
 ```
 # copy to the intermediate NS local repository
