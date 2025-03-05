@@ -18,7 +18,7 @@ Soma-orge packages are hosted in neuro-forge channel and can be tested by [insta
 The packages currently built have the following dependencies:
 - green: package containing brainvisa-cmake components;
 - olive: empty package with dependencies;
-- bisque: neuro-forge base package; 
+- bisque: neuro-forge base package;
 - light blue: package from conda-forge.
 
 ![dependencies](https://github.com/brainvisa/soma-forge/assets/3062350/c34edacd-ec27-49b4-b68d-75505390d63b)
@@ -57,4 +57,3 @@ pixi run forge --no-test
 If not already done, this runs `pixi run build` that executes `bv_maker` and creates a `build/success` file when all steps (except sources) are successful. Then it creates non existing packages for all internal or external software. By default, packages are only created when tests are successful but some packages (such as `soma` that contains Aims) need some reference data for testing therefore I recommend to skip tests with `--no-test` until a procedure is created to generate these data.
 --!>
 </html>
-

@@ -89,7 +89,7 @@ The packages currently built have the following dependencies:
 - blue: empty package with only dependencies;
 - dark green: package containing compiled brainvisa-cmake components;
 - light green: package containing interpreted brainvisa-cmake components;
-- bisque: neuro-forge package; 
+- bisque: neuro-forge package;
 - light grey: package from public channel such as conda-forge or bioconda.
 
 ![brainvisa](https://github.com/user-attachments/assets/6ff053d8-5959-4b9c-b181-74b2783073fe)

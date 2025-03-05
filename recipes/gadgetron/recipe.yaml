@@ -82,7 +82,7 @@ requirements:
     - "xsdata >=24.9,<25"
     - "yq >=3.4.3,<4"
 
-  run: 
+  run:
     - "bioconda::dcmtk 3.6.1.*"
     - "armadillo >=14.0.2,<15"
     - "boost >=1.80.0,<2"
