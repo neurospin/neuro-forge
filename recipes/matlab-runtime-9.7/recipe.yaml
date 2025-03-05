@@ -1,9 +1,12 @@
-package:
-  name: matlab-runtime-9.7
+context:
   version: 9
 
+package:
+  name: matlab-runtime-9.7
+  version: ${{version}}
+
 source:
-  url: https://ssd.mathworks.com/supportfiles/downloads/R2019b/Release/9/deployment_files/installer/complete/glnxa64/MATLAB_Runtime_R2019b_Update_9_glnxa64.zip
+  url: https://ssd.mathworks.com/supportfiles/downloads/R2019b/Release/${{version}}/deployment_files/installer/complete/glnxa64/MATLAB_Runtime_R2019b_Update_${{version}}_glnxa64.zip
   sha256: d213e2960a20332f121ec4addf81469b2a2aab2ad8b4ed4226875da6e8af7c65
 
 build:
