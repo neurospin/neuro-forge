@@ -367,7 +367,7 @@ def packaging_plan(pixi_directory, publication_directory, packages, force, test=
     for package, recipe in recipes.items():
         if package not in selected_packages:
             continue
-        print(f"Generate recipe for {package} {recipe["package"]["version"]}")
+        print(f"Generate recipe for {package} {recipe['package']['version']}")
         if not force:
             src_errors = recipe["soma-forge"].get("src_errors")
             if src_errors:
@@ -485,16 +485,18 @@ def packaging_plan(pixi_directory, publication_directory, packages, force, test=
         actions.append({"action": "rebuild"})
     else:
         # Add an action to assess that compilation was successfully done
-        actions.extend((
-            {
-                "action": "check_build_status",
-            },
-            {
-                "action": "create_package",
-                "args": ["soma-env"],
-                "kwargs": {"test": False},
-            },
-        ))
+        actions.extend(
+            (
+                {
+                    "action": "check_build_status",
+                },
+                {
+                    "action": "create_package",
+                    "args": ["soma-env"],
+                    "kwargs": {"test": False},
+                },
+            )
+        )
 
         actions.extend(package_actions)
         release_history["environment_version"] = environment_version

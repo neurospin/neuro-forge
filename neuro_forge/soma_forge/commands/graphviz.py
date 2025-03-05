@@ -21,7 +21,7 @@ def graphviz(packages, conda_forge):
     linked = set()
     print("digraph {")
     print("  node [shape=box, color=black, style=filled]")
-    recipes ={recipe["package"]["name"]: recipe for recipe in sorted_recipies()}
+    recipes = {recipe["package"]["name"]: recipe for recipe in sorted_recipies()}
     selected_recipes = set()
     stack = [i for i in recipes if selector.match(i)]
     while stack:

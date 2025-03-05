@@ -28,7 +28,6 @@ dependencies = [
     "gitpython",
 ]
 
-
 [project.urls]
 repository = "https://github.com/neurospin/neuro-forge"
 
@@ -66,3 +65,19 @@ toml = "*"
 
 [tool.pixi.pypi-dependencies]
 neuro_forge = { path = ".", editable = true }
+
+[tool.ruff]
+extend-select = [
+    "B",
+    "C4",
+    "ISC",
+    "I",
+    "PGH",
+    "RUF",
+]
+ignore = [
+    "E402",
+    "F401",
+    "RUF005",
+    "RUF027",
+]
