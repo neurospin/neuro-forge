@@ -40,7 +40,7 @@ requirements:
 
 
 build:
-  number: 2
+  number: 3
   script: |
     echo PWD: $(pwd)
     echo BUILD: ${BUILD_PREFIX}
