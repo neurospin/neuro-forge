@@ -1,0 +1,14 @@
+{
+    "publication": {
+        "neuro-forge": {
+            "directory": "/drf/neuro-forge/public",
+            "ssh": {
+                "destination": "neuroforge@brainvisa.info",
+                "directory": "/var/www/html/neuro-forge"
+            }
+        },
+        "brainvisa-cea": {
+            "directory": "/drf/neuro-forge/brainvisa-cea"
+        }
+    }
+}

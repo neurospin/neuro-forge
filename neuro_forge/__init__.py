@@ -1,5 +1,6 @@
 import click
 import functools
+import json
 import operator
 import os
 from pathlib import Path
@@ -116,90 +117,86 @@ def build(channel_dir, packages):
 
 
 @main.command()
-@click.argument("channel_dir", type=click.Path(), default=default_channel_dir)
-def publish(channel_dir):
-    """Run conda index if necessary and publish channel_dir to
-    https://brainvisa.info/neuro-forge"""
+def publish():
+    """Run conda index if necessary and publish channels"""
 
-    if channel_dir != default_channel_dir:
-        # Double check that not using the default directory is done for a
-        # good reason
-        print(
-            "WARNING: You are about to replace the neuro-forge public "
-            f"channel with the content of {channel_dir}"
-        )
-        user_input = input("Confirm ? [Y/N] ")
-        if user_input.lower() not in ("y", "yes"):
-            print("Operation canceled")
-            return
-        channel_dir = os.path.abspath(os.path.normpath(channel_dir))
+    pixi_root = Path(os.environ["PIXI_PROJECT_ROOT"])
+    with open(pixi_root / "neuro-forge.json") as f:
+        neuro_forge_conf = json.load(f)
 
-    # Sort all files by modification date and get the most recent
-    to_sort = []
-    for root, _, files in os.walk(channel_dir):
-        for file in files:
-            ff = os.path.join(root, file)
-            to_sort.append((os.stat(ff).st_mtime, ff))
-    recents = [os.path.basename(i[1]) for i in sorted(to_sort)[-2:]]
+    for name, info in neuro_forge_conf["publication"].items():
+        print("-" * 40)
+        print(f"Processing {name}:")
+        print("-" * 40)
+        channel_dir = info.get("directory")
+        if channel_dir:
+            # Sort all files by modification date and get the most recent
+            to_sort = []
+            conda_time = 0
+            index_time = None
+            for root, _, files in os.walk(channel_dir):
+                for file in files:
+                    ff = os.path.join(root, file)
+                    if ff.endswith(".conda"):
+                        conda_time = max(conda_time, os.stat(ff).st_mtime)
+                    elif os.path.basename(ff) == 'index.html':
+                        index_time = os.stat(ff).st_mtime
+            if index_time is None or index_time < conda_time:
+                command = ["conda", "index", channel_dir]
+                print(" ".join(f"'{i}'" for i in command))
+                subprocess.check_call(command)
 
-    # If the most recent is not an index.html file, then run conda index
-    if "index.html" not in recents:
-        command = ["conda", "index", channel_dir]
-    recent = max(to_sort)[1]
+            if "ssh" in info:
+                destination = info["ssh"]["destination"]
+                directory = info["ssh"]["directory"]
 
-    # If the most recent is not an index.html file, then run conda index
-    if os.path.basename(recent) != "index.html":
-        command = ["conda", "index", channel_dir]
-        print(" ".join(f"'{i}'" for i in command))
-        subprocess.check_call(command)
+                # On web server, make a copy of the channel directory using hard links
+                command = [
+                    "ssh",
+                    f"{destination}",
+                    "cp",
+                    "-ral",
+                    f"{directory}",
+                    f"{directory}-update",
+                ]
+                print(" ".join(f"'{i}'" for i in command))
+                subprocess.check_call(command)
 
-    # On web server, make a copy of the channel directory using hard links
-    command = [
-        "ssh",
-        "neuroforge@brainvisa.info",
-        "cp",
-        "-ral",
-        "/var/www/html/neuro-forge",
-        "/var/www/html/neuro-forge-update",
-    ]
-    print(" ".join(f"'{i}'" for i in command))
-    subprocess.check_call(command)
+                # Update the copy of the channel directory. This can take a while.
+                # During the process, the published channel is untouched.
+                channel_dir = os.path.normpath(os.path.abspath(channel_dir))
+                command = [
+                    "rsync",
+                    "-r",
+                    "--progress",
+                    "--delete",
+                    "--no-perms",
+                    "--times",
+                    "--no-owner",
+                    "--no-group",
+                    "--exclude=.cache",
+                    channel_dir + "/",
+                    f"{destination}:{directory}-update/neuro-forge/",
+                ]
+                print(" ".join(f"'{i}'" for i in command))
+                subprocess.check_call(command)
 
-    # Update the copy of the channel directory. This can take a while.
-    # During the process, the published channel is untouched.
-    channel_dir = os.path.normpath(os.path.abspath(channel_dir))
-    command = [
-        "rsync",
-        "-r",
-        "--progress",
-        "--delete",
-        "--no-perms",
-        "--times",
-        "--no-owner",
-        "--no-group",
-        "--exclude=.cache",
-        channel_dir + "/",
-        "neuroforge@brainvisa.info:/var/www/html/neuro-forge-update/neuro-forge/",
-    ]
-    print(" ".join(f"'{i}'" for i in command))
-    subprocess.check_call(command)
-
-    # Replace the remote channel by its updated copy
-    bash_script = """set -xe
-    chmod -R a+r /var/www/html/neuro-forge-update/neuro-forge
-    rm -Rf /var/www/html/neuro-forge-update/backup/*
-    mv /var/www/html/neuro-forge/* /var/www/html/neuro-forge-update/backup
-    mv /var/www/html/neuro-forge-update/neuro-forge/* /var/www/html/neuro-forge
-    """
-    print("ssh neuroforge@brainvisa.info /usr/bin/bash << EOF")
-    print(bash_script)
-    print("EOF")
-    p = subprocess.run(
-        [
-            "ssh",
-            "neuroforge@brainvisa.info",
-            "/usr/bin/bash",
-        ],
-        input=bash_script.encode(),
-        check=True,
-    )
+                # Replace the remote channel by its updated copy
+                bash_script = f"""set -xe
+                chmod -R a+r {directory}-update/neuro-forge
+                rm -Rf {directory}-update/backup/*
+                mv {directory}/* {directory}-update/backup
+                mv {directory}-update/neuro-forge/* {directory}
+                """
+                print(f"ssh {destination} /usr/bin/bash << EOF")
+                print(bash_script)
+                print("EOF")
+                p = subprocess.run(
+                    [
+                        "ssh",
+                        destination,
+                        "/usr/bin/bash",
+                    ],
+                    input=bash_script.encode(),
+                    check=True,
+                )
