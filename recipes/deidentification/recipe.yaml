@@ -1,0 +1,34 @@
+context:
+  version: 1.2.9
+
+package:
+  name: deidentification
+  version: ${{ version }}
+
+source:
+  git: https://github.com/cati-neuroimaging/deidentification
+  tag: ${{ version }}
+
+build:
+  number: 0
+  noarch: python
+  script: |
+    mkdir $PREFIX/site-packages
+    pip install $SRC_DIR -t $PREFIX/site-packages -v
+
+requirements:
+  build:
+    - pip
+    - setuptools
+  
+  run:
+    - pydicom <2.3,>=1.4.2
+
+tests:
+  - python:
+      imports:
+      - deidentification.anonymizer
+      - deidentification.archive
+      - deidentification.config
+      - deidentification.tag_lists
+  
