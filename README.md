@@ -11,6 +11,8 @@ Most action with neuro-forge requires to [install Pixi](https://pixi.sh). Pixi i
 
 neuro-forge packages are contained in a Conda channel located in https://brainvisa.info/neuro-forge. They can be installed using [Pixi](https://pixi.sh), [Mamba](https://mamba.readthedocs.io) or [Conda](https://docs.conda.io). We recommend the use of pixi. For instance, once pixi is installed, one can use the following script to setup a workspace containing anatomist:
 
+## Without CUDA in PyTorch:
+
 ```
 # Create a workspace directory
 mkdir ~/workspace
@@ -18,6 +20,34 @@ mkdir ~/workspace
 # Setup workspace
 cd ~/workspace
 pixi init -c https://brainvisa.info/neuro-forge -c conda-forge
+
+# Enter workspace
+pixi shell
+
+# Install anatomist
+pixi add anatomist
+
+# Run anatomist
+anatomist
+```
+
+## With PyTorch + CUDA
+
+This variant adds pytorch and nvida channels, and needs a bit of config tweaking to avoid conflicts between packages provided by these added channels. Thus, it is a bit more complex. By the way we also add a pipy package. Note that this added complexity is not due to Neuro-forge or BrainVisa packages, but just to enable the added channels to work well together (and, yes, with Neuro-forge packages).
+
+```
+# Create a workspace directory
+mkdir ~/workspace
+
+# Setup workspace
+cd ~/workspace
+pixi init -c https://brainvisa.info/neuro-forge -c pytorch -c nvidia -c conda-forge
+
+echo 'soma-env = ">=0.0"' >> pixi.toml
+echo 'libjpeg-turbo = {channel= "conda-forge", version= ">=3.0"}' >> pixi.toml
+echo "" >> pixi.toml
+echo "[pypi-dependencies]" >> pixi.toml
+echo 'dracopy = ">=1.4.2"' >> pixi.toml
 
 # Enter workspace
 pixi shell
