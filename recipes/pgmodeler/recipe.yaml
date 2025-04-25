@@ -1,0 +1,43 @@
+package:
+  name: pgmodeler
+  version: 1.2.0beta1
+
+source:
+  git: https://github.com/pgmodeler/pgmodeler
+  branch: develop
+
+build:
+  number: 1
+  script: |
+    ln -s libGL.so.1.7.0 $CONDA_PREFIX/lib/libGL.so
+    mkdir $PREFIX/bin $PREFIX/lib
+    cp -a $CONDA_PREFIX/lib/libGL.so $PREFIX/lib
+    export PATH="$CONDA_PREFIX/lib/qt6/bin:$PATH"
+    export LD_LIBRARY_PATH="$CONDA_PREFIX/lib/qt6/lib:$LD_LIBRARY_PATH"
+    git clone https://github.com/pgmodeler/plugins
+    export PKG_CONFIG_PATH="$CONDA_PREFIX/lib/pkgconfig"
+    qmake CONFIG+=release PREFIX="$PREFIX" BINDIR="$PREFIX/bin" PRIVATEBINDIR="$PREFIX/bin" PRIVATELIBDIR="$PREFIX/lib" pgmodeler.pro
+    make -j8
+    make install
+
+requirements:
+  build:
+    - git
+    - pkg-config
+    - qt6-main=6.7.3
+    - libgl=1.7.0
+    - libxml2
+    - libpq
+    - clang
+    - gcc
+    - gxx
+
+  run: 
+    - qt6-main=6.7.3
+    - libgl
+    - libxml2
+    - libpq
+
+tests:
+  - script:
+     - pgmodeler-cli -h
