@@ -93,33 +93,3 @@ For instance, to build a package for the latest `ldscore` release:
 neuro-forge build /tmp/channel ldscore
 ```
 
-# How to create a soma-forge development workspace
-
-First install soma-forge command that is located in neuro-forge project.
-```
-git clone https://github.com/neurospin/neuro-forge
-cd neuro-forge
-```
-
-Then create the BrainVISA development directory by giving its location and the environment version, plus optionally a list of target packages. Environment version is `0.0` for standard development using default git branches, `0.1` for development with Capsul 3 or `6.0` for the compilation of `brainvisa-6.0` branches. Target packages are the name of soma-forge packages. It will select all corresponding brainvisa-cmake components (taking into account packages dependencies) and put them in `bv_maker.cfg` file. By default, a selection of packages defined specifically for the environment will be included.
-```
-pixi run soma-forge init /somewhere/soma-forge-0.0 0.0
-```
-
-Finally, the development directory can be used independently of neuroforge:
-```
-cd /somewhere/soma-forge-0.0
-pixi shell
-bv_maker
-```
-
-## soma-forge packages
-
-The packages currently built have the following dependencies:
-- blue: empty package with only dependencies ;
-- dark green: package containing compiled brainvisa-cmake components ;
-- light green: package containing interpreted brainvisa-cmake components ;
-- bisque: neuro-forge package ; 
-- light grey: package from public channel such as conda-forge or bioconda.
-
-![brainvisa](https://github.com/user-attachments/assets/6ff053d8-5959-4b9c-b181-74b2783073fe)
