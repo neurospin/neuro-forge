@@ -1,0 +1,63 @@
+context:
+  version: 4.3.2
+
+package:
+  name: soma-openslide
+  version: ${{ version }}
+
+source:
+  git: https://github.com/MIRCen/openslide.git
+  tag:  v${{ version }}
+
+build:
+  number: 0
+  script: |
+    export PKG_CONFIG_PATH="$CONDA_PREFIX/lib/pkgconfig"
+    autoreconf -i
+    ./configure --prefix=$PREFIX
+    make -j8
+    make install
+
+requirements:
+  build:
+    - git
+    - ${{ compiler('c') }}
+    - pkg-config
+    - autoconf
+    - automake
+    - libtool
+    - make
+    - zlib
+    - xorg-kbproto
+    - xorg-renderproto
+    - xorg-xproto
+    - xorg-xextproto
+    - openjpeg
+    - jxrlib
+    - cairo
+    - libpng
+    - libtiff
+    - expat
+    - gdk-pixbuf
+    - liblzma-devel
+    - libxml2
+    - glib
+    
+  run:
+    - zlib
+    - openjpeg
+    - jxrlib
+    - cairo
+    - libpng
+    - libtiff
+    - expat
+    - gdk-pixbuf
+    - liblzma
+    - libxml2
+    - glib
+    
+about:
+  homepage: https://openslide.org
+  summary: OPENSLIDE is a C library for reading virtual slide images (with CZI format support)
+  description: |
+    OPENSLIDE is a C library for reading virtual slide images (with CZI format support)
