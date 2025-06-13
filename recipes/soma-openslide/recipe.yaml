@@ -33,7 +33,7 @@ requirements:
     - xorg-xproto
     - xorg-xextproto
     - openjpeg
-    - jxrlib
+    - jxrlib-dev
     - cairo
     - libpng
     - libtiff
