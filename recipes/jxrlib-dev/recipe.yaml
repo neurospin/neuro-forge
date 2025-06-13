@@ -1,0 +1,44 @@
+context:
+  version: 1.1
+
+package:
+  name: jxrlib-dev
+  version: ${{ version }}
+
+source:
+  git: https://github.com/conda-forge/jxrlib-feedstock.git
+  #tag: v${{version}}
+  
+build:
+  number: 0
+  script: |
+    mkdir -p "${PREFIX}/lib/pkgconfig"
+    cat <<EOF > "${PREFIX}/lib/pkgconfig/libjxr.pc"
+    prefix=${PREFIX}
+    exec_prefix=\${prefix}
+    libdir=\${exec_prefix}/lib
+    includedir=\${prefix}/include
+    
+    Name: libjxr
+    Description: A library for reading JPEG XR images.
+    
+    Version: ${{ version }}
+    Libs: -L\${libdir} -ljpegxr -ljxrglue
+    Libs.private: -lm
+    Cflags: -I\${includedir}/jxrlib -D__ANSI__ -DDISABLE_PERF_MEASUREMENT
+    EOF
+
+requirements:
+  build:
+    - git
+    - jxrlib
+    
+  run:
+    - jxrlib
+    
+about:
+  homepage: https://github.com/conda-forge/jxrlib-feedstock
+  summary: Development files associated to the jxrlib - JPEG XR library by Microsoft.
+  description: |
+    Development files associated to the jxrlib. JPEG XR library was originally developed 
+    by Microsoft but seems to be no longer maintained by the original developer (Microsoft).
