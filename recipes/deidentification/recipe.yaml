@@ -7,10 +7,11 @@ package:
 
 source:
   git: https://github.com/cati-neuroimaging/deidentification
-  tag: ${{ version }}
+  # tag: ${{ version }}
+  branch: pixi
 
 build:
-  number: 0
+  number: 1
   noarch: python
   script: |
     mkdir $PREFIX/site-packages
@@ -22,7 +23,7 @@ requirements:
     - setuptools
   
   run:
-    - pydicom <2.3,>=1.4.2
+    - pydicom<3
 
 tests:
   - python:
