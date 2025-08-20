@@ -1,13 +1,13 @@
 context:
-  version: 9
+  version: 5
 
 package:
-  name: matlab-runtime-9.7
+  name: matlab-runtime-24.2
   version: ${{version}}
 
 source:
-  url: https://ssd.mathworks.com/supportfiles/downloads/R2019b/Release/${{version}}/deployment_files/installer/complete/glnxa64/MATLAB_Runtime_R2019b_Update_${{version}}_glnxa64.zip
-  sha256: d213e2960a20332f121ec4addf81469b2a2aab2ad8b4ed4226875da6e8af7c65
+  url: https://ssd.mathworks.com/supportfiles/downloads/R2024b/Release/${{version}}/deployment_files/installer/complete/glnxa64/MATLAB_Runtime_R2024b_Update_${{version}}_glnxa64.zip
+  sha256: 755c7d28cf433450b3a0ff52272fae431e66c65916a603f84c60d48d5e68f24a
 
 build:
   number: 0
