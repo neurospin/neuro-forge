@@ -53,7 +53,7 @@ def build(channel_dir, packages):
     channel_dir.mkdir(exist_ok=True)
     (channel_dir / "noarch").mkdir(exist_ok=True)
     (channel_dir / "linux-64").mkdir(exist_ok=True)
-    subprocess.check_call(["conda", "index", channel_dir])
+    subprocess.check_call(["rattler-index", "fs", channel_dir])
 
     # Select packages
     neuro_forge = Path(__file__).parent.parent
@@ -108,7 +108,7 @@ def build(channel_dir, packages):
             sys.exit(1)
 
     # Cleanup and create channel index
-    subprocess.check_call(["conda", "index", channel_dir])
+    subprocess.check_call(["rattler-index", "fs", channel_dir])
     to_delete = [channel_dir / i for i in ("bld", "src_cache", ".rattler", ".cache")]
     to_delete.extend(channel_dir.glob("*/.cache"))
     for i in to_delete:
@@ -118,7 +118,7 @@ def build(channel_dir, packages):
 
 @main.command()
 def publish():
-    """Run conda index if necessary and publish channels"""
+    """Run rattler-index if necessary and publish channels"""
 
     pixi_root = Path(os.environ["PIXI_PROJECT_ROOT"])
     with open(pixi_root / "neuro-forge.json") as f:
@@ -142,7 +142,7 @@ def publish():
                     elif os.path.basename(ff) == 'index.html':
                         index_time = os.stat(ff).st_mtime
             if index_time is None or index_time < conda_time:
-                command = ["conda", "index", channel_dir]
+                command = ["rattler-index", "fs", channel_dir]
                 print(" ".join(f"'{i}'" for i in command))
                 subprocess.check_call(command)
 
@@ -183,7 +183,7 @@ def publish():
 
                 # Replace the remote channel by its updated copy
                 bash_script = f"""set -xe
-                chmod -R a+r {directory}-update/neuro-forge
+                chmod -R a+rx {directory}-update/neuro-forge
                 rm -Rf {directory}-update/backup/*
                 mv {directory}/* {directory}-update/backup
                 mv {directory}-update/neuro-forge/* {directory}
