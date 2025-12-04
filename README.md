@@ -2,8 +2,6 @@
 
 This project contains everything needed to build and update the neuro-forge packages. neuro-forge is a set of packages for the Conda ecosystem dedicated to image analysis and data analysis in neuroimaging. The URL for neuro-forge channel is https://brainvisa.info/neuro-forge.
 
-neuro-forge is still in early alpha stage and should only be used for testing.
-
 ## Prerequisite
 Most action with neuro-forge requires to [install Pixi](https://pixi.sh). Pixi is a package manager fully compatible with Conda packages ecosystem but, at the time of this writing, much more efficient than Conda.
 
