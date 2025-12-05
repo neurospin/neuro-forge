@@ -40,7 +40,7 @@ requirements:
     - expat
     - gdk-pixbuf
     - liblzma-devel
-    - libxml2
+    - libxml2 <2.14.0
     - glib
     
   run:
@@ -53,7 +53,7 @@ requirements:
     - expat
     - gdk-pixbuf
     - liblzma
-    - libxml2
+    - ${{ pin_compatible('libxml2', lower_bound='2.x.x', upper_bound='2.13.x') }}
     - glib
     
 about:
