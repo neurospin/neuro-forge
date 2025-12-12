@@ -139,7 +139,7 @@ def publish():
                     ff = os.path.join(root, file)
                     if ff.endswith(".conda"):
                         conda_time = max(conda_time, os.stat(ff).st_mtime)
-                    elif os.path.basename(ff) == 'index.html':
+                    elif os.path.basename(ff) == 'repodata.json':
                         index_time = os.stat(ff).st_mtime
             if index_time is None or index_time < conda_time:
                 command = ["rattler-index", "fs", channel_dir, "--force"]
