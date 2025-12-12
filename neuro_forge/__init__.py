@@ -142,7 +142,7 @@ def publish():
                     elif os.path.basename(ff) == 'index.html':
                         index_time = os.stat(ff).st_mtime
             if index_time is None or index_time < conda_time:
-                command = ["rattler-index", "fs", channel_dir]
+                command = ["rattler-index", "fs", channel_dir, "--force"]
                 print(" ".join(f"'{i}'" for i in command))
                 subprocess.check_call(command)
 
