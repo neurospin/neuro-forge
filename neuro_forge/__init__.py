@@ -108,7 +108,7 @@ def build(channel_dir, packages):
             sys.exit(1)
 
     # Cleanup and create channel index
-    subprocess.check_call(["rattler-index", "fs", channel_dir])
+    subprocess.check_call(["rattler-index", "fs", channel_dir, "--force"])
     to_delete = [channel_dir / i for i in ("bld", "src_cache", ".rattler", ".cache")]
     to_delete.extend(channel_dir.glob("*/.cache"))
     for i in to_delete:
@@ -139,10 +139,10 @@ def publish():
                     ff = os.path.join(root, file)
                     if ff.endswith(".conda"):
                         conda_time = max(conda_time, os.stat(ff).st_mtime)
-                    elif os.path.basename(ff) == 'index.html':
+                    elif os.path.basename(ff) == 'repodata.json':
                         index_time = os.stat(ff).st_mtime
             if index_time is None or index_time < conda_time:
-                command = ["rattler-index", "fs", channel_dir]
+                command = ["rattler-index", "fs", channel_dir, "--force"]
                 print(" ".join(f"'{i}'" for i in command))
                 subprocess.check_call(command)
 
