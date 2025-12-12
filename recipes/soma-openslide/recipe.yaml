@@ -1,5 +1,5 @@
 context:
-  version: 4.3.2
+  version: 4.3.3
 
 package:
   name: soma-openslide
@@ -10,7 +10,7 @@ source:
   tag:  v${{ version }}
 
 build:
-  number: 1
+  number: 0
   script: |
     export PKG_CONFIG_PATH="$CONDA_PREFIX/lib/pkgconfig"
     autoreconf -i
