@@ -108,7 +108,7 @@ def build(channel_dir, packages):
             sys.exit(1)
 
     # Cleanup and create channel index
-    subprocess.check_call(["rattler-index", "fs", channel_dir])
+    subprocess.check_call(["rattler-index", "fs", channel_dir, "--force"])
     to_delete = [channel_dir / i for i in ("bld", "src_cache", ".rattler", ".cache")]
     to_delete.extend(channel_dir.glob("*/.cache"))
     for i in to_delete:
