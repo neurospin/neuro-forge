@@ -1,0 +1,22 @@
+context:
+  version: 1.0.0
+
+package:
+  name: soma-pytorch
+  version: ${{ version }}
+
+build:
+  number: 0
+  script: |
+    mkdir --parents "$PREFIX/bin"
+    cp "$RECIPE_DIR/soma-pytorch.sh" "$PREFIX/bin"
+  
+    mkdir --parents "$PREFIX/etc/conda/activate.d"
+    echo '. $CONDA_PREFIX/bin/soma-pytorch.sh' S> "$PREFIX/etc/conda/activate.d/soma-pytorch.sh"
+
+requirements:
+  run:
+    - python
+    - pip
+    - pytorch
+    - torchvision
