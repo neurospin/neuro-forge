@@ -1,0 +1,44 @@
+context:
+  version: 2.0.0
+  py_version: 3.11
+  pyversion: 311
+  build_number: 0
+
+package:
+  name: dracopy
+  version: ${{ version }}
+
+source:
+  git: https://github.com/seung-lab/DracoPy
+  tag:  ${{ version }}
+
+build:
+  number: ${{ build_number }}
+  string: py${{ pyversion }}_${{ build_number }}
+  script: |
+    # cmake detection fails but we install it already
+    sed -i "/setup_requires.append('cmake')/d" setup.py
+    python setup.py install
+    mkdir -p $PREFIX/lib/python3.11/site-packages
+    cp -a $BUILD_PREFIX/lib/python3.11/site-packages/DracoPy* $PREFIX/lib/python3.11/site-packages/
+
+requirements:
+  build:
+    - "python = ${{ py_version }}"
+    - pip
+    - setuptools
+    - scikit-build
+    - "numpy < 2"
+    - cython
+    - draco
+    - cmake
+    - sed
+
+  run:
+    - python
+
+about:
+  homepage: https://github.com/seung-lab/DracoPy
+  summary: DracoPy is a Python wrapper for Google's Draco mesh compression library.
+  description: |
+    DracoPy is a Python wrapper for Google's Draco mesh compression library.
