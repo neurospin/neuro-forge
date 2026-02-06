@@ -16,12 +16,14 @@ requirements:
     - matlab-runtime-9.7
 
 build:
-  number: 1
+  number: 2
   script:
     - mkdir $PREFIX/spm12
-    - sed -i 's+  export LD_LIBRARY_PATH;+  LD_LIBRARY_PATH=${LD_LIBRARY_PATH}:${CONDA_PREFIX}/lib;\n  export LD_LIBRARY_PATH;+' run_spm12.sh
-    - mv run_spm12.sh spm12 spm12.ctf $PREFIX/spm12/
+    - cp run_spm12.sh spm12 spm12.ctf $PREFIX/spm12/
+    - sed -i 's+  export LD_LIBRARY_PATH;+  LD_LIBRARY_PATH=${LD_LIBRARY_PATH}:${CONDA_PREFIX}/lib;\n  export LD_LIBRARY_PATH;+' $PREFIX/spm12/run_spm12.sh
     - $PREFIX/spm12/run_spm12.sh $PREFIX/MATLAB/MATLAB_Runtime/v97 quit
+    - mkdir -p $PREFIX/spm12/spm12_mcr/spm12_708957E92FFF8977911B2A9C79DFC6CA
+    - touch $PREFIX/spm12/spm12_mcr/spm12_708957E92FFF8977911B2A9C79DFC6CA/.keep
     - mkdir $PREFIX/bin
     - cp $RECIPE_DIR/spm12.sh $PREFIX/bin/spm12
   dynamic_linking:
