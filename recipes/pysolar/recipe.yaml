@@ -1,5 +1,5 @@
 context:
-  git_repo_url: "git@gitlab.com:brainomics/pysolar.git"
+  git_repo_url: "git@github.com:neurospin-brainomics/pysolar.git"
   latest_tag: ${{ git.latest_tag( git_repo_url ) }}
 
 
