@@ -10,7 +10,7 @@ source:
   tag:  v${{ version }}
 
 build:
-  number: 0
+  number: 2
   script: |
     export PKG_CONFIG_PATH="$CONDA_PREFIX/lib/pkgconfig"
     autoreconf -i
@@ -20,6 +20,7 @@ build:
 
 requirements:
   build:
+    - sysroot_linux-64==2.17
     - git
     - ${{ compiler('c') }}
     - pkg-config
