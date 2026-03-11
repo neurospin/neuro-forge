@@ -13,6 +13,12 @@ build:
   dynamic_linking:
     binary_relocation: false
 
+requirements:
+  build:
+    - libxcrypt1
+  run:
+    - libxcrypt1
+
 about:
   homepage: https://mathworks.com/help/compiler/install-the-matlab-runtime.html
   license_file: MCR_license.txt
