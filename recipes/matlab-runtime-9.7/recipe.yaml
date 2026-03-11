@@ -7,7 +7,7 @@ source:
   sha256: d213e2960a20332f121ec4addf81469b2a2aab2ad8b4ed4226875da6e8af7c65
 
 build:
-  number: 0
+  number: 1
   script:
     - ./install -mode silent -agreeToLicense yes -outputFile install_log.txt -destinationFolder $PREFIX/MATLAB/MATLAB_Runtime
   dynamic_linking:
