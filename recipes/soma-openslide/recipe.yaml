@@ -10,7 +10,7 @@ source:
   tag:  v${{ version }}
 
 build:
-  number: 0
+  number: 2
   script: |
     export PKG_CONFIG_PATH="$CONDA_PREFIX/lib/pkgconfig"
     autoreconf -i
@@ -34,15 +34,16 @@ requirements:
     - xorg-xproto
     - xorg-xextproto
     - openjpeg
-    - jxrlib-dev
+    - jxrlib
     - cairo
     - libpng
     - libtiff
     - expat
     - gdk-pixbuf
     - liblzma-devel
-    - libxml2 <2.14.0
+    - libxml2-devel
     - glib
+    - freetype
     
   run:
     - zlib
@@ -54,7 +55,7 @@ requirements:
     - expat
     - gdk-pixbuf
     - liblzma
-    - ${{ pin_compatible('libxml2', lower_bound='2.x.x', upper_bound='2.13.x') }}
+    - libxml2
     - glib
     
 about:
