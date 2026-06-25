@@ -1,5 +1,5 @@
 context:
-  version: 4.3.4
+  version: 4.3.4.1
 
 package:
   name: soma-openslide
@@ -10,13 +10,11 @@ source:
   tag:  v${{ version }}
 
 build:
-  number: 2
+  number: 1
   script: |
     export PKG_CONFIG_PATH="$CONDA_PREFIX/lib/pkgconfig"
-    autoreconf -i
-    ./configure --prefix=$PREFIX
-    make -j8
-    make install
+    meson setup meson_build
+    meson install -C meson_build --destdir /tmp/test-install
 
 requirements:
   build:
@@ -24,10 +22,9 @@ requirements:
     - git
     - ${{ compiler('c') }}
     - pkg-config
-    - autoconf
-    - automake
     - libtool
     - make
+    - meson
     - zlib
     - xorg-kbproto
     - xorg-renderproto
