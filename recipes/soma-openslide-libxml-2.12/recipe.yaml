@@ -11,6 +11,7 @@ source:
 
 build:
   number: 6
+  string: libxml-2.12_${{build_number}}
   script: |
     export PKG_CONFIG_PATH="$CONDA_PREFIX/lib/pkgconfig"
     meson setup meson_build --prefix=$PREFIX --libdir=lib
@@ -38,7 +39,7 @@ requirements:
     - expat
     - gdk-pixbuf
     - liblzma-devel
-    - libxml2-devel>=2.14
+    - libxml2>=2.12,<2.14
     - glib
     - freetype
     
@@ -52,11 +53,11 @@ requirements:
     - expat
     - gdk-pixbuf
     - liblzma
-    - libxml2>=2.14
+    - libxml2>=2.12,<2.14
     - glib
     - zstd
     - sqlite
-
+    
   run_exports:
     - ${{ pin_subpackage("soma-openslide", lower_bound="x.x", upper_bound="x") }}
 
