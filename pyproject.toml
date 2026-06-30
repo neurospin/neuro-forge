@@ -46,7 +46,7 @@ include-package-data = true
 [tool.setuptools.packages.find]
 exclude = ["recipes"]
 
-[tool.pixi.project]
+[tool.pixi.workspace]
 channels = ["conda-forge", "bioconda"]
 platforms = ["linux-64"]
 
