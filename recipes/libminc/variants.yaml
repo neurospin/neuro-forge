@@ -1,0 +1,12 @@
+
+# entries per package version that users are interested in
+libnetcdf:
+# Note that versions are _strings_ (not numbers)
+- "4.9"
+- "4.10"
+
+# special entry #2, the pin_run_as_build key
+pin_run_as_build:
+  libnetcdf:
+    min_pin: 'x.x'
+    max_pin: 'x.x'

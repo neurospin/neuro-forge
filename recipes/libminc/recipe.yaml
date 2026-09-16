@@ -11,21 +11,25 @@ source:
   tag: libminc-2-3-00
 
 build:
-  number: 2
+  number: 5
   script: |
+    sed -i 's/         int (\*handlerProc)() =  (int (\*)())(uintptr_t)infoPtr->src;/         int (*handlerProc)(const char *, const char *, const char *) =  (int (*)(const char *, const char *, const char *))(uintptr_t)infoPtr->src;/' libsrc/ParseArgv.c
+    sed -i 's/         int (\*handlerProc)() = (int (\*)())(uintptr_t)infoPtr->src;/         int (*handlerProc)(const char *, const char *, int, char **) = (int (*)(const char *, const char *, int, char **))(uintptr_t)infoPtr->src;/' libsrc/ParseArgv.c
     cmake -DCMAKE_BUILD_TYPE=Release -DBUILD_TESTING=OFF -DLIBMINC_BUILD_SHARED_LIBS=ON -DLIBMINC_MINC1_SUPPORT=ON "-DCMAKE_INSTALL_PREFIX=$PREFIX" "-DCMAKE_PREFIX_PATH=$CONDA_PREFIX;$CONDA_PREFIX/x86_64-conda-linux-gnu/sysroot/usr"  "-DCMAKE_REQUIRED_INCLUDES=$CONDA_PREFIX/include;$CONDA_PREFIX/x86_64-conda-linux-gnu/sysroot/usr/include" "$SRC_BUILD"
     make -j -k
     make install
 
 requirements:
-  build:
-    - git
-    - ${{ compiler('cxx') }}
-    - cmake
-    - make
+  host:
     - hdf5
     - zlib
     - libnetcdf
+
+  build:
+    - git
+    - ${{ compiler('cxx') }}
+    - cmake < 4
+    - make
 
   run:
     - hdf5
