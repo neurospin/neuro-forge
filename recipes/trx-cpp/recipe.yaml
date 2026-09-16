@@ -1,0 +1,45 @@
+context:
+  version: 0.1.0
+  build_number: 0
+
+package:
+  name: trx-cpp
+  version: ${{ version }}
+
+source:
+  git: https://github.com/tee-ar-ex/trx-cpp
+  branch:  main
+
+build:
+  number: ${{ build_number }}
+  string: ${{ build_number }}
+  script: |
+    # patch the CMakeLists to allow eigen v5
+    sed -i 's/find_package(Eigen3 3.4 /find_package(Eigen3 3.4...5 /' CMakeLists.txt
+    sed -i 's/add_library(trx$/add_library(trx SHARED/' CMakeLists.txt
+    sed -i 's/#include <cmath>$/#include <cmath>\n#include <cstdint>/' third_party/json11/json11.cpp
+    cmake -DCMAKE_BUILD_TYPE=Release \
+    -DTRX_BUILD_EXAMPLES=OFF \
+    -DTRX_ENABLE_INSTALL=ON \
+    "-DCMAKE_INSTALL_PREFIX=$PREFIX" \
+    "-DCMAKE_PREFIX_PATH:FILEPATH=$CONDA_PREFIX" \
+    -DFETCHCONTENT_FULLY_DISCONNECTED=ON \
+    "-DCMAKE_CXX_FLAGS=-fPIC" \
+    .
+    make -j -k
+    make install
+
+requirements:
+  build:
+    - gxx
+    - libzip
+    - cmake
+    - eigen
+    - pkg-config
+    - sed
+
+about:
+  homepage: https://tee-ar-ex.github.io/trx-cpp
+  summary: TRX tractography format
+  description: |
+    A C++17 library for reading, writing, and memory-mapping the TRX tractography format — efficient storage for large-scale tractography data.
