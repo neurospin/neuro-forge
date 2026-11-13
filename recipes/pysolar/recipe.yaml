@@ -1,5 +1,5 @@
 context:
-  git_repo_url: "git@github.com:neurospin-brainomics/pysolar.git"
+  git_repo_url: "ssh://git@github.com/neurospin-brainomics/pysolar.git"
   latest_tag: ${{ git.latest_tag( git_repo_url ) }}
 
 
@@ -15,10 +15,20 @@ source:
 
 build:
   noarch: python
+  python:
+    entry_points:
+      - pysolar_heritability_analysis = pysolar.scripts.pysolar_heritability_analysis:main
+      - pysolar_make_pedigree = pysolar.scripts.pysolar_make_pedigree:main
 
 requirements:
+  host:
+    - python >=3.9,<3.12
+    - pip
+    - setuptools
+    - wheel
+
   build:
-    - python
+    - python >=3.9,<3.12
     - pip
     - tree
     - conda-forge::git
