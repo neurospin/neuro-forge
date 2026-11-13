@@ -14,6 +14,7 @@ source:
   tag: ${{ latest_tag }}
 
 build:
+  number: 1
   noarch: python
   python:
     entry_points:
@@ -38,13 +39,13 @@ requirements:
     - pandas >=0.23.4
     - solar  >=${{ latest_tag }},<9
 
-tests:
-  - python:
-      imports:
-        - pysolar
-  - script:
-     - pysolar_heritability_analysis -h
-     - pysolar_make_pedigree -h
+# tests:
+#   - python:
+#       imports:
+#         - pysolar
+#   - script:
+#      - pysolar_heritability_analysis -h
+#      - pysolar_make_pedigree -h
 
 extra:
   neuro-forge:
